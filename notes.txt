@@ -12,10 +12,11 @@
 
 * uses pubsubhubbub to consume activity streams from other sites
 * finds sites via account information in giraffe-friends
-* views to render activities for the site owner or for a whole group of people visible only to the site owner
+* views to render activities for the site owner or for a whole group of people visible only to the site owner, optionally filtered by type
 * outgoing salmon to allow local commenting on remote content, for sources that support salmon
+* rather than the crazy-generic stuff we tried in the last generation of giraffe, support only the core stuff in activity streams and if it's not a recognized thing just use some fixed fallback behavior. This gets use the 80% case with a simple schema.
 
-== giraffe-status/bloggything ==
+== giraffe-publisher ==
 
 * allows the site owner to post text, photo, videos and links ("assets")
 * all assets are public
