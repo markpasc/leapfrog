@@ -1,0 +1,43 @@
+
+== giraffe-friends ==
+
+* a list of people I know and their contact info and elsewhere accounts on other sites
+* a portable contacts implementation for exporting them
+* friend groups
+* interface for other modules to consume people and friend groups for authz
+* supports the concept of a "site owner" which is one person that is the owner of the site
+* each friend is optionally associated with an auth.User object
+
+== giraffe-aggregator ==
+
+* uses pubsubhubbub to consume activity streams from other sites
+* finds sites via account information in giraffe-friends
+* views to render activities for the site owner or for a whole group of people visible only to the site owner
+* outgoing salmon to allow local commenting on remote content, for sources that support salmon
+
+== giraffe-status/bloggything ==
+
+* allows the site owner to post text, photo, videos and links ("assets")
+* all assets are public
+* accepts responses to top-level assets from authed and optionally unauthed users
+* can produce activity streams object feeds for the main asset stream and comments on a particular asset
+* supports pubsubhubbub pings to zero or more hubs for new assets and comments
+* accepts new comments via salmon
+
+== giraffe-profile ==
+
+* view that produces a profile page for the site owner
+* allows the site owner to choose for each field whether it is public or restricted one friends group
+
+== giraffe-openid-consumer ==
+
+* provides a generic view for doing openid consumering to get people logged in
+* provides a mapping between openid identifiers and django users
+
+== giraffe-identity-server ==
+
+* provides openid server for the owner to use to sign in elsewhere
+* provides a way to build an XRD for webfinger and/or LRDD
+
+
+
