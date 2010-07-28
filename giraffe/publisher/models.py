@@ -13,7 +13,11 @@ class Asset(models.Model):
 class Subscription(models.Model):
 
     callback = models.CharField(max_length=200)
+    topic = models.CharField(max_length=200)
     secret = models.CharField(max_length=200, blank=True)
     user = models.ForeignKey(User, blank=True, null=True)
     lease_until = models.DateTimeField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('callback', 'topic'),)
