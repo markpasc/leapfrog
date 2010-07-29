@@ -6,6 +6,6 @@ setup(
     packages=['giraffe'],
     include_package_data=True,
 
-    requires=['Django'],
-    install_requires=['Django'],
+    requires=['Django', 'south', 'celery', 'django-celery'],
+    install_requires=['Django', 'south', 'celery', 'django-celery'],
 )
