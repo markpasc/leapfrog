@@ -6,5 +6,5 @@ urlpatterns = patterns('giraffe.publisher.views',
     url(r'^feed$', 'index', {'template': 'publisher/feed.xml', 'content_type': 'text/plain'}, name='publisher-feed'),
     url(r'^asset/(?P<slug>[\w-]+)$', 'asset', name='publisher-asset'),
 
-    url(r'^subscribe$', 'subscribe'),
+    url(r'^subscribe$', 'subscribe', name='publisher-subscribe'),
 )
