@@ -9,6 +9,8 @@
     <entry>
         <title>{{ asset.title }}</title>
         <link href="{% absoluteurl %}{{ asset.get_absolute_url }}{% endabsoluteurl %}" />
+        <id>{{ asset.atom_id }}</id>
+        <published>{{ asset.published|date:"c" }}Z</published>
         {% if asset.summary %}
         <summary>{{ asset.summary }}</summary>
         {% endif %}
