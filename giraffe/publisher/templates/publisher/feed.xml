@@ -1,0 +1,20 @@
+<?xml version="1.0" charset="utf-8"?>
+{% load abs %}
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>hi</title>
+    <link href="{% absoluteurl %}{% url publisher-index %}{% endabsoluteurl %}" />
+    <id>tag:example.com,2010</id>
+
+    {% for asset in assets %}
+    <entry>
+        <title>{{ asset.title }}</title>
+        {% if asset.summary %}
+        <summary>{{ asset.summary }}</summary>
+        {% endif %}
+        {% if asset.content %}
+        <content>{{ asset.content }}</content>
+        {% endif %}
+    </entry>
+    {% endfor %}
+
+</feed>
