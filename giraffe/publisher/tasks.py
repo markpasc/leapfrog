@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import hmac
 from random import choice
 import logging
 import string
@@ -67,7 +68,7 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
 
 
 @task
-def ping_subscriber(callback, asset_pk):
+def ping_subscriber(callback, asset_pk, secret=None):
     log = logging.getLogger('.'.join((__name__, 'ping_subscriber')))
 
     log.debug('Pinging subscriber %r about asset %r', callback, asset_pk)
@@ -81,11 +82,14 @@ def ping_subscriber(callback, asset_pk):
     feed = render_to_string('publisher/feed.xml', {
         'assets': [asset],
     })
+    headers = {'Content-Type': 'application/atom+xml'}
+
+    if secret is not None:
+        headers['X-Hub-Signature'] = hmac.new(secret, feed).hexdigest()
 
     http = httplib2.Http()
     log.debug("Pinging %r with %d bytes of made-up feed", callback, len(feed))
-    resp, cont = http.request(uri=callback, method='POST', body=feed,
-        headers={'Content-Type': 'application/atom+xml'})
+    resp, cont = http.request(uri=callback, method='POST', body=feed, headers=headers)
 
     if 200 <= resp.status and resp.status < 300:
         # Sweet, that worked.
