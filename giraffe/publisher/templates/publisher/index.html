@@ -1,0 +1,17 @@
+{% extends "publisher/base.html" %}
+
+{% block htmltitle %}hi{% endblock %}
+
+{% block content %}
+
+    <h1>hi</h1>
+
+    {% for asset in assets %}
+        <div class="asset" id="asset-{{ asset.pk }}">
+            <h2>{{ asset.title }}</h2>
+
+            {{ asset.content }}
+        </div>
+    {% endfor %}
+
+{% endblock %}

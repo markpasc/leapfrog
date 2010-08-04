@@ -1,6 +1,18 @@
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 
-from giraffe.publisher.models import Subscription
+from giraffe.publisher.models import Subscription, Asset
+
+
+def index(request, template=None):
+    data = {
+        'assets': Asset.objects.all(),
+    }
+
+    if template is None:
+        template = 'publisher/index.html'
+    return render_to_response(template, data, context_instance=RequestContext(request))
 
 
 def subscribe(request):
