@@ -1,10 +1,7 @@
-
 from django.http import HttpResponse
-import models
+
+from giraffe.aggregator import models
 
 
 def activity_stream(request):
     return HttpResponse('foo')
-
-
-

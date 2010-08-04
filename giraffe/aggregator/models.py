@@ -1,9 +1,6 @@
-
+import hashlib
 
 from django.db import models
-
-
-import hashlib
 
 
 class Subscription(models.Model):
@@ -111,8 +108,6 @@ class Activity(models.Model):
         print "Hash for lookup is "+hash
 
         return cls.objects.get(uniq_hash=hash)
-
-
 
     def save(self):
         parts = []
