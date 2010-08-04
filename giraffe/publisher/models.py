@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.template.defaultfilters import truncatewords
 
 
 class Asset(models.Model):
@@ -8,6 +9,14 @@ class Asset(models.Model):
     summary = models.TextField(blank=True)
     content = models.TextField(blank=True)
     slug = models.SlugField()
+
+    @property
+    def preview(self):
+        text = self.summary or self.content
+        return truncatewords(text, 10)
+
+    def __unicode__(self):
+        return self.title
 
 
 class Subscription(models.Model):
