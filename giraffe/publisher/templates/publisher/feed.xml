@@ -8,6 +8,7 @@
     {% for asset in assets %}
     <entry>
         <title>{{ asset.title }}</title>
+        <link href="{% absoluteurl %}{{ asset.get_absolute_url }}{% endabsoluteurl %}" />
         {% if asset.summary %}
         <summary>{{ asset.summary }}</summary>
         {% endif %}

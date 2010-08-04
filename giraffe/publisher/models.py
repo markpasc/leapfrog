@@ -18,6 +18,10 @@ class Asset(models.Model):
     def __unicode__(self):
         return self.title
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('publisher-asset', (), {'slug': self.slug})
+
 
 class Subscription(models.Model):
 

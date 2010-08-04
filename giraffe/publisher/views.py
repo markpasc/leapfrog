@@ -16,6 +16,10 @@ def index(request, template=None, content_type=None):
         context_instance=RequestContext(request), mimetype=content_type)
 
 
+def asset(request, slug):
+    raise NotImplementedError
+
+
 def subscribe(request):
     if request.method != 'POST':
         return HttpResponse('POST required', status=405, content_type='text/plain')
