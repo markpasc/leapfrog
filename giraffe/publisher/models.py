@@ -1,11 +1,16 @@
 from datetime import datetime
+import logging
 from random import randint
 import sys
+from urlparse import urljoin
 
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import truncatewords
+
+from giraffe.publisher import tasks
 
 
 class Asset(models.Model):
@@ -48,3 +53,20 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = (('callback', 'topic'),)
+
+
+def ping_subscribers(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    log = logging.getLogger('.'.join((__name__, 'ping_subscribers')))
+    log.debug("Saw a new asset! Looking for subscribers")
+    guess_root = 'http://%s/' % Site.objects.get_current().domain
+    feed_url = urljoin(guess_root, reverse('publisher-feed'))
+    subs = Subscription.objects.filter(topic=feed_url)
+
+    log.debug("Posting %d jobs to tell subscribers about the new asset", len(subs))
+    for sub in subs:
+        tasks.ping_subscriber.delay(callback, instance.pk)
+
+models.signals.post_save.connect(ping_subscribers, sender=Asset)

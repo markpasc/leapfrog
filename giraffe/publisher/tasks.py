@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
 from random import choice
+import logging
 import string
 from urllib import urlencode
 import urlparse
 
 from celery.decorators import task
+from django.template.loader import render_to_string
+import httplib2
 
 
 ONE_YEAR_SECONDS = 31556926
@@ -61,3 +64,34 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
             sub.lease_until = lease_until
             sub.secret = secret
             sub.save()
+
+
+@task
+def ping_subscriber(callback, asset_pk):
+    log = logging.getLogger('.'.join((__name__, 'ping_subscriber')))
+
+    log.debug('Pinging subscriber %r about asset %r', callback, asset_pk)
+    try:
+        asset = Asset.objects.get(pk=asset_pk)
+    except Asset.DoesNotExist:
+        # OH WELL
+        log.debug("Oops, no such asset %r; guess we won't ping about it", asset_pk)
+        return
+
+    feed = render_to_string('publisher/feed.xml', {
+        'assets': [asset],
+    })
+
+    http = httplib2.Http()
+    log.debug("Pinging %r with %d bytes of made-up feed", callback, len(feed))
+    resp, cont = http.request(uri=callback, method='POST', body=feed,
+        headers={'Content-Type': 'application/atom+xml'})
+
+    if 200 <= resp.status and resp.status < 300:
+        # Sweet, that worked.
+        log.debug("Yay, got response %d telling %r about asset %d!", resp.status, callback, asset_pk)
+        return
+
+    # TODO: try again?
+    log.warning("Unexpected response notifying subscriber %r about asset %d: %d %s", callback, asset_pk, resp.status, resp.reason)
+    return

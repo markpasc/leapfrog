@@ -1,3 +1,6 @@
+from urlparse import urljoin
+
+from django.contrib.sites.models import Site
 from django.template import Library
 from django.template.defaulttags import url, URLNode
 
@@ -12,7 +15,8 @@ class AbsoluteURLNode(URLNode):
 
     def render(self, context):
         output = self.nodelist.render(context)
-        return context['request'].build_absolute_uri(output)
+        root = 'http://%s/' % Site.objects.get_current().domain
+        return urljoin(root, output)
 
 
 @register.tag
