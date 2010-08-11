@@ -38,7 +38,7 @@ def subscribe(feed_url, sub_pk):
         'hub.topic': feed_url,
         'hub.verify': 'async',
     }
-    h.request(uri=hub_url, method='POST', body=urlencode(subreq),
+    resp, cont = h.request(uri=hub_url, method='POST', body=urlencode(subreq),
         headers={'Content-Type': 'application/x-www-form-urlencoded'})
 
     if resp.status not in (202, 204):
