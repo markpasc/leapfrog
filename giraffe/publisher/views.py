@@ -21,6 +21,7 @@ def asset(request, slug):
 
 
 def subscribe(request):
+    log = logging.getLogger("%s.subscribe" % __name__)
     if request.method != 'POST':
         return HttpResponse('POST required', status=405, content_type='text/plain')
 
