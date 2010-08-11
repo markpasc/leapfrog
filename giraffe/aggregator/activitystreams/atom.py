@@ -55,8 +55,7 @@ MEDIA_DURATION = MEDIA_PREFIX + "duration"
 MEDIA_DESCRIPTION = MEDIA_PREFIX + "description"
 
 
-def make_activities_from_feed(et):
-    feed_elem = et.getroot()
+def make_activities_from_feed(feed_elem):
     entry_elems = feed_elem.findall(ATOM_ENTRY)
 
     activities = []
