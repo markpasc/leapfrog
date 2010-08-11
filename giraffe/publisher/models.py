@@ -67,6 +67,6 @@ def ping_subscribers(sender, instance, created, **kwargs):
 
     log.debug("Posting %d jobs to tell subscribers about the new asset", len(subs))
     for sub in subs:
-        tasks.ping_subscriber.delay(callback, instance.pk, secret=sub.secret)
+        tasks.ping_subscriber.delay(instance.callback, instance.pk, secret=sub.secret)
 
 models.signals.post_save.connect(ping_subscribers, sender=Asset)
