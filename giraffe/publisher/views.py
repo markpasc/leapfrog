@@ -20,6 +20,17 @@ def asset(request, slug):
     raise NotImplementedError
 
 
+def oops(func):
+    def otherfunc(request, *args, **kwargs):
+        try:
+            return func(request, *args, **kwargs)
+        except Exception, exc:
+            logging.exception(exc)
+            raise
+    return otherfunc
+
+
+@oops
 def subscribe(request):
     log = logging.getLogger("%s.subscribe" % __name__)
     if request.method != 'POST':
