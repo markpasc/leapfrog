@@ -66,6 +66,9 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
             sub.secret = secret
             sub.save()
 
+    else:
+        logging.error("Either not successful or you were wrong in mode")
+
 
 @task
 def ping_subscriber(callback, asset_pk, secret=None):
