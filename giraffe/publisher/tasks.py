@@ -75,6 +75,8 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
 def ping_subscriber(callback, asset_pk, secret=None):
     log = logging.getLogger('.'.join((__name__, 'ping_subscriber')))
 
+    from giraffe.publisher.models import Asset
+
     log.debug('Pinging subscriber %r about asset %r', callback, asset_pk)
     try:
         asset = Asset.objects.get(pk=asset_pk)
