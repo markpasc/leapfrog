@@ -47,7 +47,7 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
         # The action was refused, so don't do anything.
         return
 
-    success = 200 <= resp.status and resp.status < 300 and verify_token in content
+    success = 200 <= resp.status and resp.status < 300 and challenge == content
 
     if success and mode == 'unsubscribe':
         try:
