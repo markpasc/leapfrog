@@ -25,19 +25,20 @@ def subscribe(request):
         return HttpResponse('POST required', status=405, content_type='text/plain')
 
     try:
-        callback = request.GET['hub.callback']
-        mode = request.GET['hub.mode']
-        topic = request.GET['hub.topic']
+        callback = request.POST['hub.callback']
+        mode = request.POST['hub.mode']
+        topic = request.POST['hub.topic']
     except KeyError, exc:
+        log.debug("Parameter %s required", str(exc))
         return HttpResponse('Parameter %s required' % str(exc), status=400, content_type='text/plain')
 
-    verify = request.GET.getlist('hub.verify')
+    verify = request.POST.getlist('hub.verify')
     if not verify:
+        log.debug("Parameter verify required")
         return HttpResponse('Parameter verify required', status=400, content_type='text/plain')
 
-    lease_secs = request.GET.get('hub.lease_seconds')
-    secret = request.GET.get('hub.secret')
-    verify_token = request.GET.get('hub.verify_token')
+    lease_secs = request.POST.get('hub.lease_seconds')
+    secret = request.POST.get('hub.secret')
 
     try:
         sub = Subscription.objects.get(callback=callback)
