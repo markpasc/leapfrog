@@ -1,8 +1,11 @@
+import logging
+
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 from giraffe.publisher.models import Subscription, Asset
+from giraffe.publisher import tasks
 
 
 def index(request, template=None, content_type=None):
@@ -71,6 +74,7 @@ def subscribe(request):
     }
 
     if mode not in ('subscribe', 'unsubscribe'):
+        log.debug("Unknown mode %r", mode)
         return HttpResponse('Unknown mode %r' % mode, status=400, content_type='text/plain')
 
     task = tasks.verify_subscription
@@ -82,7 +86,9 @@ def subscribe(request):
         try:
             task(**kwargs)
         except Exception, exc:
+            log.debug("%s: %s", type(exc).__name__, str(exc))
             return HttpResponse('%s: %s' % (type(exc).__name__, str(exc)), status=400, content_type='text/plain')
         return HttpResponse('', status=204)
 
+    log.debug("This should not have happened")
     return HttpResponse("No supported verification modes ('async' and 'sync') in %r" % verify, status=400, content_type='text/plain')
