@@ -49,17 +49,18 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
 
     success = 200 <= resp.status and resp.status < 300 and challenge == content
 
+    from giraffe.publisher import models
+
     if success and mode == 'unsubscribe':
         try:
-            sub = Subscription.objects.get(callback=callback, topic=topic)
-        except Subscription.DoesNotExist:
+            sub = models.Subscription.objects.get(callback=callback, topic=topic)
+        except models.Subscription.DoesNotExist:
             pass
         else:
             sub.delete()
 
     elif success and mode == 'subscribe':
-        lease_until = datetime.now() + timedelta(seconds=lease_seconds)
-        sub, created = Subscription.objects.get_or_create(callback=callback, topic=topic,
+        sub, created = models.Subscription.objects.get_or_create(callback=callback, topic=topic,
             defaults={'lease_until': lease_until, 'secret': secret})
         if not created:  # we got, so update
             sub.lease_until = lease_until
