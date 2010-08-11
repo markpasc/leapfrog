@@ -1,10 +1,12 @@
 import logging
 from urllib import urlencode
+from urlparse import urljoin
 from xml.etree import ElementTree
 
-import httplib2
-
 from celery.decorators import task
+from django.contrib.sites.models import Site
+from django.core.urlresolvers import reverse
+import httplib2
 
 
 @task
