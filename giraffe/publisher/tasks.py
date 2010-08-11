@@ -60,6 +60,7 @@ def verify_subscription(callback, mode, topic, lease_seconds=None, secret=None, 
             sub.delete()
 
     elif success and mode == 'subscribe':
+        lease_until = datetime.now() + timedelta(seconds=lease_seconds or ONE_YEAR_SECONDS)
         sub, created = models.Subscription.objects.get_or_create(callback=callback, topic=topic,
             defaults={'lease_until': lease_until, 'secret': secret})
         if not created:  # we got, so update
