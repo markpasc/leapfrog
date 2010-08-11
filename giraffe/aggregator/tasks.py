@@ -33,7 +33,7 @@ def subscribe(feed_url, sub_pk):
 
     # Try to subscribe.
     callback_root = 'http://%s/' % Site.objects.get_current().domain
-    callback = urljoin(callback_root, reverse('aggregator-callback'))
+    callback = urljoin(callback_root, reverse('aggregator-callback', kwargs={"sub_pk":sub_pk}))
     log.debug("My hub.callback will be %s", callback)
     subreq = {
         'hub.callback': callback,
