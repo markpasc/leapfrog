@@ -2,6 +2,8 @@ import hashlib
 
 from django.db import models
 
+from giraffe.aggregator import tasks
+
 
 class Subscription(models.Model):
 
@@ -9,6 +11,10 @@ class Subscription(models.Model):
     topic_url = models.CharField(max_length=255)
     topic_url_hash = models.CharField(max_length=40, db_index=True, unique=True)
     user = models.ForeignKey('auth.User', null=True, blank=True, related_name="aggregator_subscriptions")
+    mode = models.CharField(max_length=20, choices=(
+        ('poll', 'Poll'),
+        ('push', 'Pubsubhubbub'),
+    ), default='poll')
 
     @classmethod
     def lookup_by_topic_url(cls, url):
@@ -21,6 +27,15 @@ class Subscription(models.Model):
 
     def __unicode__(self):
         return self.topic_url
+
+
+def subscribe(sender, instance, created, **kwargs):
+    if not created:
+        return
+
+    tasks.subscribe.delay(instance.topic_url, instance.pk)
+
+models.signals.post_save.connect(subscribe, sender=Subscription)
 
 
 class Object(models.Model):
