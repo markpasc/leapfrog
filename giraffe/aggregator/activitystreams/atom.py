@@ -91,6 +91,9 @@ def make_activities_from_entry(entry_elem, feed_elem):
     if published_elem is not None:
         published_w3cdtf = published_elem.text
         published_datetime = _parse_date_w3cdtf(published_w3cdtf)
+        if published_datetime is None:
+            # Just make up a date, I guess?
+            published_datetime = _parse_date_w3cdtf("1970-01-01T00:00:00Z")
 
     verb_elem = entry_elem.find(ACTIVITY_VERB)
     verb = None
