@@ -21,7 +21,9 @@ def subscribe(feed_url, sub_pk):
     # Look for the hub link.
     try:
         doc = ElementTree.fromstring(cont)
-        hubs = [elem for elem in doc.findall('feed/link') if elem.attrib['rel'] == 'hub']
+        elems = doc.findall('{http://www.w3.org/2005/Atom}link')
+        log.debug("elems is %r", elems);
+        hubs = [elem for elem in elems if elem.attrib['rel'] == 'hub']
         hub_url = hubs[0].attrib['href']
     except Exception, exc:
         log.warning('%s trying to find hub in feed %s: %s', type(exc).__name__, feed_url, str(exc))
