@@ -13,7 +13,7 @@ class Subscription(models.Model):
     user = models.ForeignKey('auth.User', null=True, blank=True, related_name="aggregator_subscriptions")
     mode = models.CharField(max_length=20, choices=(
         ('poll', 'Poll'),
-        ('push', 'Pubsubhubbub'),
+        ('push', 'Push'),
     ), default='poll')
 
     @classmethod
