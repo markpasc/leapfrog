@@ -51,6 +51,7 @@ def subscribe(request):
 
     lease_secs = request.POST.get('hub.lease_seconds')
     secret = request.POST.get('hub.secret')
+    verify_token = request.POST.get('hub.verify_token')
 
     try:
         sub = Subscription.objects.get(callback=callback)
