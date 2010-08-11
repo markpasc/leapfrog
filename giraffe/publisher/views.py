@@ -72,6 +72,8 @@ def subscribe(request):
     if mode not in ('subscribe', 'unsubscribe'):
         return HttpResponse('Unknown mode %r' % mode, status=400, content_type='text/plain')
 
+    task = tasks.verify_subscription
+
     if 'async' in verify:
         task.delay(**kwargs)
         return HttpResponse('', status=202, content_type='text/plain')
