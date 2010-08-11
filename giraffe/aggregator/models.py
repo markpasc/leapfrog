@@ -54,7 +54,7 @@ class Object(models.Model):
 
     attachments = models.ManyToManyField("Object", related_name="attached_to")
 
-    object_type = models.CharField(max_length=15)
+    object_type = models.CharField(max_length=15, blank=True, default='')
 
     @classmethod
     def lookup_by_foreign_id(cls, foreign_id):
