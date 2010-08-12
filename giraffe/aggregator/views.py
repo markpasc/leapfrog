@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as etree
+
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from giraffe.aggregator import models
 import giraffe.aggregator.activitystreams.atom as as_atom
@@ -9,8 +11,7 @@ def activity_stream(request):
     return HttpResponse('foo')
 
 
-def callback(request):
-    return HttpResponse('meh')
+@csrf_exempt
 def callback(request, sub_pk):
     method = request.method
     subscription = models.Subscription.objects.get(id=sub_pk)

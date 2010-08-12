@@ -1,8 +1,10 @@
+from functools import wraps
 import logging
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.views.decorators.csrf import csrf_exempt
 
 from giraffe.publisher.models import Subscription, Asset
 from giraffe.publisher import tasks
@@ -24,6 +26,7 @@ def asset(request, slug):
 
 
 def oops(func):
+    @wraps(func)
     def otherfunc(request, *args, **kwargs):
         try:
             return func(request, *args, **kwargs)
@@ -33,6 +36,7 @@ def oops(func):
     return otherfunc
 
 
+@csrf_exempt
 @oops
 def subscribe(request):
     log = logging.getLogger("%s.subscribe" % __name__)
