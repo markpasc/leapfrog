@@ -1,7 +1,10 @@
 import xml.etree.ElementTree as etree
 
 from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
+try:
+    from django.views.decorators.csrf import csrf_exempt
+except ImportError:
+    from django.contrib.csrf.middleware import csrf_exempt
 
 from giraffe.aggregator import models
 import giraffe.aggregator.activitystreams.atom as as_atom
