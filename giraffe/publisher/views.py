@@ -4,7 +4,10 @@ import logging
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
-from django.views.decorators.csrf import csrf_exempt
+try:
+    from django.views.decorators.csrf import csrf_exempt
+except ImportError:
+    from django.contrib.csrf.middleware import csrf_exempt
 
 from giraffe.publisher.models import Subscription, Asset
 from giraffe.publisher import tasks
