@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as etree
 
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
+from django.template import RequestContext
 try:
     from django.views.decorators.csrf import csrf_exempt
 except ImportError:
@@ -11,7 +13,16 @@ import giraffe.aggregator.activitystreams.atom as as_atom
 
 
 def activity_stream(request):
-    return HttpResponse('foo')
+
+    activities = models.Activity.objects.order_by("time")[:50]
+
+    data = {
+        'activities': activities,
+    }
+
+    template = 'aggregator/index.html'
+    return render_to_response(template, data,
+        context_instance=RequestContext(request), mimetype="text/html")
 
 
 @csrf_exempt
