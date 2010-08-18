@@ -47,12 +47,12 @@ class Object(models.Model):
     permalink_url = models.CharField(max_length=255, blank=True, null=True)
 
     image_url = models.CharField(max_length=255, null=True, blank=True)
-    image_width = models.IntegerField(null=True)
-    image_height = models.IntegerField(null=True)
+    image_width = models.IntegerField(null=True, blank=True)
+    image_height = models.IntegerField(null=True, blank=True)
 
-    in_reply_to = models.ForeignKey("Object", null=True)
+    in_reply_to = models.ForeignKey("Object", null=True, blank=True)
 
-    attachments = models.ManyToManyField("Object", related_name="attached_to")
+    attachments = models.ManyToManyField("Object", related_name="attached_to", blank=True)
 
     object_type = models.CharField(max_length=15, blank=True, default='')
 
@@ -84,9 +84,9 @@ class Object(models.Model):
 class Activity(models.Model):
 
     verb = models.CharField(max_length=15)
-    actor = models.ForeignKey("Object", related_name="activities_with_actor", null=True)
-    object = models.ForeignKey("Object", related_name="activities_with_object", null=True)
-    target = models.ForeignKey("Object", related_name="activities_with_target", null=True)
+    actor = models.ForeignKey("Object", related_name="activities_with_actor", null=True, blank=True)
+    object = models.ForeignKey("Object", related_name="activities_with_object", null=True, blank=True)
+    target = models.ForeignKey("Object", related_name="activities_with_target", null=True, blank=True)
     time = models.DateTimeField(db_index=True)
     subscription = models.ForeignKey("Subscription", related_name="activities")
     user = models.ForeignKey("auth.User", null=True, blank=True, related_name="activities")
