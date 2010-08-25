@@ -76,8 +76,8 @@ def import_events(source, atomid_prefix):
             el_parent = el.parent
             el_index = el_parent.contents.index(el)
             el.extract()
-            for child in reversed(el.contents):
-                el_parent.insert(my_index, child)
+            for child in reversed(list(el.contents)):
+                el_parent.insert(el_index, child)
         # TODO: handle opt_nocomments prop
         # TODO: put music and mood in the post content
         # TODO: handle taglist prop
