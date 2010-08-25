@@ -15,7 +15,7 @@ from giraffe.publisher import tasks
 
 def index(request, template=None, content_type=None):
     data = {
-        'assets': Asset.objects.all(),
+        'assets': Asset.objects.all().order_by('-published'),
     }
 
     if template is None:
