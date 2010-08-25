@@ -2,10 +2,12 @@
 
 from datetime import datetime
 import logging
+import re
 import sys
 from xml.etree import ElementTree
 
 import argparse
+from BeautifulSoup import BeautifulSoup, NavigableString
 import django
 
 from giraffe.publisher.models import Asset
@@ -47,6 +49,12 @@ def import_events(source, atomid_prefix):
 
         post, created = Asset.objects.get_or_create(atom_id=atom_id)
 
+        event_props = {}
+        for prop in event.findall('props/prop'):
+            key = prop.get('name')
+            val = prop.get('value')
+            event_props[key] = val
+
         post.title = event.findtext('subject') or ''
 
         publ = event.findtext('date')
@@ -55,8 +63,25 @@ def import_events(source, atomid_prefix):
         # TODO: is this in the account's timezone or what?
         post.published = publ_dt
 
-        post.content = event.findtext('event')
-        # TODO: handle formatting options
+        content_root = BeautifulSoup(event.findtext('event'))
+        # Add line breaks to the post if it's not preformatted.
+        if not int(event_props.get('opt_preformatted', 0)):
+            for el in content_root.findAll(text='\n'):
+                if el.findParent(re.compile(r'pre|lj-raw|table')) is None:
+                    new_content = el.string.replace('\n', '<br>\n')
+                    el.replaceWith(BeautifulSoup(new_content))
+        # Remove any lj-raw tags.
+        for el in content_root.findAll(re.compile(r'lj-(?:raw|cut)')):
+            # Replace it with its children.
+            el_parent = el.parent
+            el_index = el_parent.contents.index(el)
+            el.extract()
+            for child in reversed(el.contents):
+                el_parent.insert(my_index, child)
+        # TODO: handle opt_nocomments prop
+        # TODO: put music and mood in the post content
+        # TODO: handle taglist prop
+        post.content = content_root.prettify()
 
         post.save()
         logging.info('Saved new post %s (%s) as #%d', ditemid, post.title, post.pk)
