@@ -1,0 +1,26 @@
+{% extends "publisher/base.html" %}
+
+{% block htmltitle %}{% spaceless %}
+    {% if asset.title %}
+        {{ asset.title }} &middot;
+    {% endif %}
+    {{ block.super }}
+{% endspaceless %}{% endblock %}
+
+{% block content %}
+
+    <div class="asset" id="asset-{{ asset.pk }}">
+        <h2 class="asset-header">
+            <a href="{% url publisher-asset slug=asset.slug %}">{{ asset.title }}</a>
+        </h2>
+
+        <div class="asset-content">
+            {% autoescape off %}{{ asset.content }}{% endautoescape %}
+        </div>
+
+        <div class="asset-footer">
+            {{ asset.published }}
+        </div>
+    </div>
+
+{% endblock %}

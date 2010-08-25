@@ -24,8 +24,20 @@ def index(request, template=None, content_type=None):
         context_instance=RequestContext(request), mimetype=content_type)
 
 
-def asset(request, slug):
-    raise NotImplementedError
+def asset(request, slug, template=None):
+    try:
+        asset = Asset.objects.get(slug=slug)
+    except Asset.DoesNotExist:
+        raise Http404
+
+    data = {
+        'asset': asset,
+    }
+
+    if template is None:
+        template = 'publisher/asset.html'
+    return render_to_response(template, data,
+        context_instance=RequestContext(request))
 
 
 def oops(func):
