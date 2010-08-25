@@ -2,7 +2,16 @@
 <html><head>
     <meta charset="utf-8">
     <title>{% block htmltitle %}{% endblock %}</title>
-    {% block htmlhead %}{% endblock %}
+    {% block htmlhead %}
+        <link rel="stylesheet" type="text/css" href="{% url publisher-static path="css/reset.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% url publisher-static path="css/text.css" %}">
+        <link rel="stylesheet" type="text/css" href="{% url publisher-static path="css/style.css" %}">
+    {% endblock %}
 </head><body>
-    {% block content %}{% endblock %}
+
+    <div id="content">
+
+        {% block content %}{% endblock %}
+
+    </div>
 </body></html>
