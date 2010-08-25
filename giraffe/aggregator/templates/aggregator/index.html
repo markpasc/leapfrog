@@ -1,8 +1,6 @@
-<html>
-<head>
-<title>Aggregator</title>
-</head>
-<body>
+{% extends "aggregator/base.html" %}
+
+{% block content %}
 
     {% for activity in activities %}
         {% if activity.object %}
@@ -46,7 +44,4 @@
         {% endif %}
     {% endfor %}
 
-
-</body>
-</html>
-
+{% endblock %}
