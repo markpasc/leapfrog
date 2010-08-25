@@ -66,7 +66,7 @@ def import_events(source, atomid_prefix):
         content_root = BeautifulSoup(event.findtext('event'))
         # Add line breaks to the post if it's not preformatted.
         if not int(event_props.get('opt_preformatted', 0)):
-            for el in content_root.findAll(text='\n'):
+            for el in content_root.findAll(text=lambda t: '\n' in t):
                 if el.findParent(re.compile(r'pre|lj-raw|table')) is None:
                     new_content = el.string.replace('\n', '<br>\n')
                     el.replaceWith(BeautifulSoup(new_content))
