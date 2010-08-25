@@ -8,7 +8,7 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.template.defaultfilters import truncatewords
+from django.template.defaultfilters import slugify, striptags, truncatewords
 
 from giraffe.publisher import tasks
 
@@ -35,10 +35,12 @@ class Asset(models.Model):
         return ('publisher-asset', (), {'slug': self.slug})
 
     def save(self, *args, **kwargs):
-        if not self.atom_id:
-            self.atom_id = 'tag:%s,2010:%s' % (Site.objects.get_current().domain, self.slug)
         if self.published is None:
             self.published = datetime.now()
+        if not self.slug:
+            self.slug = slugify(self.title) or slugify(truncatewords(self.summary or striptags(self.content), 10))
+        if not self.atom_id:
+            self.atom_id = 'tag:%s,2010:%s' % (Site.objects.get_current().domain, self.slug)
         return super(Asset, self).save(*args, **kwargs)
 
 
