@@ -1,3 +1,5 @@
+from os.path import join, dirname
+
 from django.conf.urls.defaults import *
 
 
@@ -7,4 +9,10 @@ urlpatterns = patterns('giraffe.publisher.views',
     url(r'^asset/(?P<slug>[\w-]+)$', 'asset', name='publisher-asset'),
 
     url(r'^subscribe$', 'subscribe', name='publisher-subscribe'),
+)
+
+urlpatterns += patterns('',
+    url(r'^static/(?P<path>.*)$', 'django.views.static.serve',
+        {'document_root': join(dirname(__file__), 'static')},
+        name='publisher-static'),
 )
