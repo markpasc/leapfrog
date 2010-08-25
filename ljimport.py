@@ -81,7 +81,7 @@ def import_events(source, atomid_prefix):
         # TODO: handle opt_nocomments prop
         # TODO: put music and mood in the post content
         # TODO: handle taglist prop
-        post.content = content_root.prettify()
+        post.content = str(content_root)
 
         post.save()
         logging.info('Saved new post %s (%s) as #%d', ditemid, post.title, post.pk)
