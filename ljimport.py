@@ -32,7 +32,7 @@ def main(argv=None):
     verbosity = sum(args.verbosity)
     verbosity = 0 if verbosity < 0 else verbosity if verbosity < 4 else 4
     log_level = [logging.CRITICAL, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][verbosity]
-    logging.basicConfig(level=log_level)
+    logging.getLogger().setLevel(level=log_level)
     logging.info('Set log level to %s', logging.getLevelName(log_level))
 
     import_events(sys.stdin if args.source == '-' else args.source,
