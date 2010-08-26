@@ -85,9 +85,9 @@ def import_events(source, atomid_prefix):
             ident_obj.save()
 
         # Update their groups.
-        group_objs = list(group_objs[groupid] for groupid in friend.findtext('group'))
-        logging.debug("Setting %s's groups to %r", username, tuple(groupid for groupid in friend.findtext('group')))
-        ident_obj.person.groups = group_objs
+        group_ids = tuple(groupnode.text for groupnode in friend.findall('groups/group'))
+        logging.debug("Setting %s's groups to %r", friendname, group_ids)
+        ident_obj.person.groups = [group_objs[id] for id in group_ids]
 
     # Import the posts.
     for event in tree.findall('/events/event'):
