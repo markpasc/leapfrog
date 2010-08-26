@@ -10,6 +10,7 @@ import argparse
 from BeautifulSoup import BeautifulSoup, NavigableString
 import django
 
+import giraffe.friends.models
 from giraffe.publisher.models import Asset
 
 
@@ -19,7 +20,7 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(description='Import posts from a livejournal XML export.')
     parser.add_argument('source', metavar='FILE', help='The filename of the XML export (or - for stdin)')
-    parser.add_argument('--atomid', help='The prefix of the Atom ID to store')
+    parser.add_argument('--atomid', help='The prefix of the Atom ID to store', default=None)
     parser.add_argument('-v', dest='verbosity', action='append_const', const=1,
         help='Be more verbose (stackable)', default=[2])
     parser.add_argument('-q', dest='verbosity', action='append_const', const=-1,
@@ -42,6 +43,46 @@ def main(argv=None):
 def import_events(source, atomid_prefix):
     tree = ElementTree.parse(source)
 
+    username = tree.getroot().get('username')
+    if atomid_prefix is None:
+        atomid_prefix = 'urn:lj:livejournal:atom1:%s:' % username
+
+    server = tree.getroot().get('server')
+    serverparts = server.rsplit('.', 2)
+    openid_tmpl = 'http://%%s.%s.%s/' % serverparts[1:]
+
+    # First, update groups and friends, so we can knit the posts together right.
+    group_objs = dict()
+    for group in tree.findall('/friends/group'):
+        id = group.findtext('id')
+        name = group.findtext('name')
+
+        tag = '%sgroup:%s' % (atomid_prefix, id)
+        group_obj, created = giraffe.friends.models.Group.objects.get_or_create(tag=tag)
+        group_obj.name = name
+        group_obj.save()
+
+        group_objs[id] = group_obj
+
+    for friend in tree.findall('/friends/friend'):
+        friendname = friend.findtext('username')
+        openid = openid_tmpl % username
+
+        ident_obj, created = giraffe.friends.models.Identity.objects.get_or_create(openid=openid)
+        if created:
+            # I guess we need to make a person for them too.
+            person = giraffe.friends.models.Person()
+            person.display_name = friend.findtext('fullname')
+            person.save()
+            ident_obj.person = person
+            ident_obj.save()
+
+        # Update their groups.
+        group_objs = list(group_objs[groupid] for groupid in friend.findtext('group'))
+        logging.debug("Setting %s's groups to %r", username, tuple(groupid for groupid in friend.findtext('group')))
+        ident_obj.person.groups = group_objs
+
+    # Import the posts.
     for event in tree.findall('/events/event'):
         ditemid = event.get('ditemid')
         logging.debug('Parsing event %s', ditemid)
