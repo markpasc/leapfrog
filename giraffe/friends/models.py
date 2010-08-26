@@ -1,5 +1,3 @@
-
-
 from django.db import models
 
 
@@ -21,3 +19,11 @@ class Group(models.Model):
     def __unicode__(self):
         return self.display_name
 
+
+class Identity(models.Model):
+
+    person = models.ForeignKey(Person)
+    openid = models.CharField(max_length=300)
+
+    def __unicode__(self):
+        return self.openid
