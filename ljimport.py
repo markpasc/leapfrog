@@ -73,9 +73,11 @@ def import_events(source, atomid_prefix):
         friendname = friend.findtext('username')
         openid = openid_for(friendname)
 
-        ident_obj, created = giraffe.friends.models.Identity.objects.get_or_create(openid=openid)
-        if created:
-            # I guess we need to make a person for them too.
+        try:
+            ident_obj = giraffe.friends.models.Identity.objects.get(openid=openid)
+        except giraffe.friends.models.Identity.DoesNotExist:
+            ident_obj = giraffe.friends.models.Identity(openid=openid)
+            # Who? I guess we need to make a Person too.
             person = giraffe.friends.models.Person()
             person.display_name = friend.findtext('fullname')
             person.save()
