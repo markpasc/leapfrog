@@ -64,7 +64,7 @@ def ping_subscribers(sender, instance, created, **kwargs):
         return
 
     # TODO: ping subscribers who are allowed to see the asset
-    if instance.private_to:
+    if instance.private_to.count():
         return
 
     log = logging.getLogger('.'.join((__name__, 'ping_subscribers')))

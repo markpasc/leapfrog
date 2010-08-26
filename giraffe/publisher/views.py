@@ -1,7 +1,7 @@
 from functools import wraps
 import logging
 
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 try:
@@ -32,7 +32,7 @@ def asset(request, slug, template=None):
         raise Http404
 
     # TODO: let users who are allowed to see the asset see it
-    if asset.private_to:
+    if asset.private_to.count():
         raise Http404
 
     data = {
