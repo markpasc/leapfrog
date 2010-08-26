@@ -61,10 +61,10 @@ def import_events(source, atomid_prefix):
     # First, update groups and friends, so we can knit the posts together right.
     group_objs = dict()
     for group in tree.findall('/friends/group'):
-        id = group.findtext('id')
+        id = int(group.findtext('id'))
         name = group.findtext('name')
 
-        tag = '%sgroup:%s' % (atomid_prefix, id)
+        tag = '%sgroup:%d' % (atomid_prefix, id)
         group_obj, created = giraffe.friends.models.Group.objects.get_or_create(tag=tag,
             defaults={'display_name': name})
         group_objs[id] = group_obj
@@ -85,7 +85,7 @@ def import_events(source, atomid_prefix):
             ident_obj.save()
 
         # Update their groups.
-        group_ids = tuple(groupnode.text for groupnode in friend.findall('groups/group'))
+        group_ids = tuple(int(groupnode.text) for groupnode in friend.findall('groups/group'))
         logging.debug("Setting %s's groups to %r", friendname, group_ids)
         ident_obj.person.groups = [group_objs[id] for id in group_ids]
 
@@ -130,6 +130,32 @@ def import_events(source, atomid_prefix):
         # TODO: put music and mood in the post content
         # TODO: handle taglist prop
         post.content = str(content_root)
+
+        security = event.get('security')
+        private_group = giraffe.friends.models.Group.objects.get(tag='private')
+        if security == 'private':
+            logging.debug('Oh ho post %s is all fancy private', ditemid)
+            post.private_to = [private_group]
+        elif security == 'usemask':
+            bin = lambda s: str(s) if s<=1 else bin(s>>1) + str(s&1)
+
+            mask = int(event.get('allowmask'))
+            logging.debug('Post %s has mask %s?', ditemid, bin(mask))
+            mask_groups = list()
+
+            for i in range(1, 30):
+                mask = mask >> 1
+                if mask == 0:
+                    break
+                logging.debug('    Remaining mask %s', bin(mask))
+                if mask & 0x01:
+                    logging.debug('    Yay %s has group %d!', ditemid, i)
+                    if i in group_objs:
+                        logging.debug('    And group %d exists woohoo!!', i)
+                        mask_groups.append(group_objs[i])
+
+            logging.debug('So post %s gets %d groups', ditemid, len(mask_groups))
+            post.private_to = mask_groups
 
         post.save()
         logging.info('Saved new post %s (%s) as #%d', ditemid, post.title, post.pk)
