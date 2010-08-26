@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from datetime import datetime
+from functools import partial
 import logging
 import re
 import sys
@@ -40,16 +41,22 @@ def main(argv=None):
     return 0
 
 
+def generate_openid(server_domain, username):
+    if username.startswith('_'):
+        return 'http://users.%s/%s/' % (server_domain, username)
+    username = username.replace('_', '-')
+    return 'http://%s.%s/' % (username, server_domain)
+
+
 def import_events(source, atomid_prefix):
     tree = ElementTree.parse(source)
 
     username = tree.getroot().get('username')
-    if atomid_prefix is None:
-        atomid_prefix = 'urn:lj:livejournal:atom1:%s:' % username
-
     server = tree.getroot().get('server')
-    serverparts = server.rsplit('.', 2)
-    openid_tmpl = 'http://%%s.%s.%s/' % serverparts[1:]
+    server_domain = '.'.join(server.rsplit('.', 2)[1:])
+    openid_for = partial(generate_openid, server_domain)
+    if atomid_prefix is None:
+        atomid_prefix = 'urn:lj:%s:atom1:%s:' % (server_domain, username)
 
     # First, update groups and friends, so we can knit the posts together right.
     group_objs = dict()
@@ -64,7 +71,7 @@ def import_events(source, atomid_prefix):
 
     for friend in tree.findall('/friends/friend'):
         friendname = friend.findtext('username')
-        openid = openid_tmpl % username
+        openid = openid_for(friendname)
 
         ident_obj, created = giraffe.friends.models.Identity.objects.get_or_create(openid=openid)
         if created:
