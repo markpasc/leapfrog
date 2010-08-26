@@ -58,10 +58,8 @@ def import_events(source, atomid_prefix):
         name = group.findtext('name')
 
         tag = '%sgroup:%s' % (atomid_prefix, id)
-        group_obj, created = giraffe.friends.models.Group.objects.get_or_create(tag=tag)
-        group_obj.name = name
-        group_obj.save()
-
+        group_obj, created = giraffe.friends.models.Group.objects.get_or_create(tag=tag,
+            defaults={'display_name': name})
         group_objs[id] = group_obj
 
     for friend in tree.findall('/friends/friend'):
