@@ -10,6 +10,7 @@ from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify, striptags, truncatewords
 
+import giraffe.friends.models
 from giraffe.publisher import tasks
 
 
@@ -21,6 +22,7 @@ class Asset(models.Model):
     slug = models.SlugField(unique=True)
     atom_id = models.CharField(max_length=200, unique=True, blank=True)
     published = models.DateTimeField(default=datetime.now)
+    private_to = models.ManyToManyField(giraffe.friends.models.Group)
 
     @property
     def preview(self):
@@ -59,6 +61,10 @@ class Subscription(models.Model):
 
 def ping_subscribers(sender, instance, created, **kwargs):
     if not created:
+        return
+
+    # TODO: ping subscribers who are allowed to see the asset
+    if instance.private_to:
         return
 
     log = logging.getLogger('.'.join((__name__, 'ping_subscribers')))

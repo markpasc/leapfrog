@@ -15,7 +15,8 @@ from giraffe.publisher import tasks
 
 def index(request, template=None, content_type=None):
     data = {
-        'assets': Asset.objects.all().order_by('-published')[:10],
+        # TODO: get the assets that the user is allowed to see
+        'assets': Asset.objects.all().filter(private_to=None).order_by('-published')[:10],
     }
 
     if template is None:
@@ -28,6 +29,10 @@ def asset(request, slug, template=None):
     try:
         asset = Asset.objects.get(slug=slug)
     except Asset.DoesNotExist:
+        raise Http404
+
+    # TODO: let users who are allowed to see the asset see it
+    if asset.private_to:
         raise Http404
 
     data = {
