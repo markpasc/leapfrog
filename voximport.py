@@ -68,6 +68,7 @@ def import_assets(source):
             html = ''.join(ElementTree.tostring(el, 'utf8') for el in html_el.getchildren())
             asset.content = html
 
+        asset.imported = True
         asset.save()
         logging.info('Saved new asset %s (%s) as #%d', atom_id, asset.title, asset.pk)
 
