@@ -131,6 +131,9 @@ def import_events(source, atomid_prefix):
         # TODO: handle taglist prop
         post.content = str(content_root)
 
+        post.save()
+        logging.info('Saved new post %s (%s) as #%d', ditemid, post.title, post.pk)
+
         security = event.get('security')
         private_group = giraffe.friends.models.Group.objects.get(tag='private')
         if security == 'private':
@@ -156,9 +159,6 @@ def import_events(source, atomid_prefix):
 
             logging.debug('So post %s gets %d groups', ditemid, len(mask_groups))
             post.private_to = mask_groups
-
-        post.save()
-        logging.info('Saved new post %s (%s) as #%d', ditemid, post.title, post.pk)
 
 
 if __name__ == '__main__':
