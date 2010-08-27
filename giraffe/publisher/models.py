@@ -15,6 +15,9 @@ import giraffe.friends.models
 from giraffe.publisher import tasks
 
 
+log = logging.getLogger(__name__)
+
+
 class Asset(models.Model):
 
     title = models.CharField(max_length=200, blank=True)
@@ -23,7 +26,10 @@ class Asset(models.Model):
     slug = models.SlugField(unique=True)
     atom_id = models.CharField(max_length=200, unique=True, blank=True)
     published = models.DateTimeField(default=datetime.now)
+    author = models.ForeignKey(giraffe.friends.models.Person, null=True)
     private_to = models.ManyToManyField(giraffe.friends.models.Group)
+    in_reply_to = models.ForeignKey('Asset', null=True, blank=True, related_name='replies')
+    in_thread_of = models.ForeignKey('Asset', null=True, blank=True, related_name='replies_in_thread')
 
     @property
     def preview(self):
@@ -38,23 +44,40 @@ class Asset(models.Model):
         return ('publisher-asset', (), {'slug': self.slug})
 
     def generate_slug(self):
-        other_assets = Asset.objects.filter(id__notequals=self.id) if self.pk else Asset.objects.all()
+        other_assets = Asset.objects.exclude(id=self.id) if self.pk else Asset.objects.all()
+        log.debug('Generating slug for %r', self)
 
-        slugstem = slugify(self.title) or slugify(truncatewords(self.summary or striptags(self.content), 10))
+        slugstem = ''
+        if self.title:
+            slugstem = slugify(self.title)
+            if slugstem:
+                log.debug('    Generated slug stem from title')
+        if not slugstem and self.summary:
+            slugstem = slugify(truncatewords(self.summary, 10))
+            if slugstem:
+                log.debug('    Generated slug stem from summary')
+        if not slugstem and self.content:
+            slugstem = slugify(truncatewords(striptags(self.content), 10))
+            if slugstem:
+                log.debug('    Generated slug stem from content')
+
         if slugstem:
+            log.debug('    Content yielded a slugstem of %r! Building slug from it', slugstem)
             slug = slugstem
             i = 1
             while other_assets.filter(slug=slug).exists():
                 slug = '%s-%d' % (slugstem, i)
                 i += 1
         else:
+            log.debug('    Asset has no content, so generating a random slug')
             len = 14
             while True:
-                slug = passogva.generate_password(len, len)
+                slug, dashed_slug = passogva.generate_password(len, len)
                 len += 1
                 if not other_assets.filter(slug=slug).exists():
                     break
 
+        log.debug('    Generated slug %r', slug)
         self.slug = slug
 
     def save(self, *args, **kwargs):
@@ -86,6 +109,9 @@ def ping_subscribers(sender, instance, created, **kwargs):
 
     # TODO: ping subscribers who are allowed to see the asset
     if instance.private_to.count():
+        return
+
+    if getattr(instance, 'imported', False):
         return
 
     log = logging.getLogger('.'.join((__name__, 'ping_subscribers')))
