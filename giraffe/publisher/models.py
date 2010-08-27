@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.template.defaultfilters import slugify, striptags, truncatewords
+import passogva
 
 import giraffe.friends.models
 from giraffe.publisher import tasks
@@ -36,11 +37,31 @@ class Asset(models.Model):
     def get_absolute_url(self):
         return ('publisher-asset', (), {'slug': self.slug})
 
+    def generate_slug(self):
+        other_assets = Asset.objects.filter(id__notequals=self.id) if self.pk else Asset.objects.all()
+
+        slugstem = slugify(self.title) or slugify(truncatewords(self.summary or striptags(self.content), 10))
+        if slugstem:
+            slug = slugstem
+            i = 1
+            while other_assets.filter(slug=slug).exists():
+                slug = '%s-%d' % (slugstem, i)
+                i += 1
+        else:
+            len = 14
+            while True:
+                slug = passogva.generate_password(len, len)
+                len += 1
+                if not other_assets.filter(slug=slug).exists():
+                    break
+
+        self.slug = slug
+
     def save(self, *args, **kwargs):
         if self.published is None:
             self.published = datetime.now()
         if not self.slug:
-            self.slug = slugify(self.title) or slugify(truncatewords(self.summary or striptags(self.content), 10))
+            self.generate_slug()
         if not self.atom_id:
             self.atom_id = 'tag:%s,2010:%s' % (Site.objects.get_current().domain, self.slug)
         return super(Asset, self).save(*args, **kwargs)
