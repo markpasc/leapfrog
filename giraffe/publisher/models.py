@@ -103,6 +103,12 @@ class Subscription(models.Model):
         unique_together = (('callback', 'topic'),)
 
 
+def merge_asset_authors(sender, person, into_person, **kwargs):
+    Asset.objects.filter(author=person).update(author=into_person)
+
+giraffe.friends.models.merge_person.connect(merge_asset_authors)
+
+
 def ping_subscribers(sender, instance, created, **kwargs):
     if not created:
         return

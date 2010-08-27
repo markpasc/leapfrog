@@ -1,4 +1,8 @@
 from django.db import models
+from django.dispatch import Signal
+
+
+merge_person = Signal(providing_args=('person', 'into_person'))
 
 
 class Person(models.Model):
@@ -9,6 +13,15 @@ class Person(models.Model):
 
     def __unicode__(self):
         return self.display_name
+
+    def merge_into(self, into_person):
+        for group in self.groups.all():
+            into_person.groups.add(group)
+
+        Identity.objects.filter(person=self).update(person=into_person)
+
+        # Let others do whatever they need too.
+        merge_person.send(Person, person=self, into_person=into_person)
 
 
 class Group(models.Model):
