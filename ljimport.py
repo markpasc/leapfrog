@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 import argparse
 from BeautifulSoup import BeautifulSoup, NavigableString
 import django
+from django.contrib.auth.models import User
 
 import giraffe.friends.models
 from giraffe.publisher.models import Asset
@@ -61,6 +62,25 @@ def person_for_openid(openid, display_name):
         ident_obj.save()
 
     return ident_obj.person
+
+
+def make_my_openid(openid):
+    person = User.objects.all().order_by('id')[0].person
+    try:
+        ident = giraffe.friends.models.Identity.objects.get(openid=openid)
+    except giraffe.friends.models.Identity.DoesNotExist:
+        logging.info('Creating new identity mapping to %s for %s', person.display_name, openid)
+        ident = giraffe.friends.models.Identity(openid=openid, person=person)
+        ident.save()
+    else:
+        if ident.person.pk == person.pk:
+            logging.debug('Identity %s is already yours, yay', openid)
+        else:
+            logging.info('Merging existing person %s for identity %s into person %s',
+                ident.person.display_name, openid, person.display_name)
+            ident.person.merge_into(person)
+
+    return person
 
 
 def format_soup(content_root):
@@ -127,7 +147,7 @@ def import_events(source, atomid_prefix):
     if atomid_prefix is None:
         atomid_prefix = 'urn:lj:%s:atom1:%s:' % (server_domain, username)
 
-    post_author = person_for_openid(openid_for(username), username)
+    post_author = make_my_openid(openid_for(username))
 
     # First, update groups and friends, so we can knit the posts together right.
     group_objs = dict()

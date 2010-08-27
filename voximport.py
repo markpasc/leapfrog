@@ -6,6 +6,7 @@ import sys
 from xml.etree import ElementTree
 
 import argparse
+from django.contrib.auth.models import User
 
 import giraffe.friends.models
 from giraffe.publisher.models import Asset
@@ -17,6 +18,8 @@ def main(argv=None):
 
     parser = argparse.ArgumentParser(description='Import posts from a Vox Atom XML export.')
     parser.add_argument('source', metavar='FILE', help='The filename of the XML export (or - for stdin)')
+    parser.add_argument('--openid', metavar='URL', required=True,
+        help='Your Vox OpenID for linking your posts and comments to you')
     parser.add_argument('-v', dest='verbosity', action='append_const', const=1,
         help='Be more verbose (stackable)', default=[2])
     parser.add_argument('-q', dest='verbosity', action='append_const', const=-1,
@@ -29,6 +32,23 @@ def main(argv=None):
     log_level = [logging.CRITICAL, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG][verbosity]
     logging.getLogger().setLevel(level=log_level)
     logging.info('Set log level to %s', logging.getLevelName(log_level))
+
+    # Rectify my OpenID first.
+    openid = args.openid
+    person = User.objects.all().order_by('id')[0].person
+    try:
+        ident = giraffe.friends.models.Identity.objects.get(openid=openid)
+    except giraffe.friends.models.Identity.DoesNotExist:
+        logging.info('Creating new identity mapping to %s for %s', person.display_name, openid)
+        ident = giraffe.friends.models.Identity(openid=openid, person=person)
+        ident.save()
+    else:
+        if ident.person.pk == person.pk:
+            logging.debug('Identity %s is already yours, yay', openid)
+        else:
+            logging.info('Merging existing person %s for identity %s into person %s',
+                ident.person.display_name, openid, person.display_name)
+            ident.person.merge_into(person)
 
     import_assets(sys.stdin if args.source == '-' else args.source)
 
@@ -77,6 +97,7 @@ def basic_asset_for_element(asset_el):
     author_el = asset_el.find('{http://www.w3.org/2005/Atom}author')
     author_name = author_el.findtext('{http://www.w3.org/2005/Atom}name')
     openid = author_el.findtext('{http://www.w3.org/2005/Atom}uri')
+    # Import "gone" folks' comments anonymously.
     if openid != 'http://www.vox.com/gone/':
         asset.author = person_for_openid(openid, author_name)
 
