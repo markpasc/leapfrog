@@ -111,6 +111,8 @@ def import_comment(comment_el, asset, openid_for):
     comment.imported = True
     comment.save()
 
+    comment.private_to = asset.private_to.all()
+
     for reply_el in comment_el.findall('comments/comment'):
         import_comment(reply_el, comment, openid_for)
 
