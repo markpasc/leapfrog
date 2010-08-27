@@ -1,6 +1,7 @@
 from functools import wraps
 import logging
 
+from django.contrib.auth.models import User
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -14,9 +15,16 @@ from giraffe.publisher import tasks
 
 
 def index(request, template=None, content_type=None):
+    blogger = User.objects.all().order_by('id')[0].person
+
+    assets = Asset.objects.all().order_by('-published')
+    assets = assets.filter(author=blogger)
+    assets = assets.filter(in_reply_to=None)
+    # TODO: get the assets that the user is allowed to see
+    assets = assets.filter(private_to=None)
+
     data = {
-        # TODO: get the assets that the user is allowed to see
-        'assets': Asset.objects.all().filter(private_to=None).order_by('-published')[:10],
+        'assets': assets[:10],
     }
 
     if template is None:
