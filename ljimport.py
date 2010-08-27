@@ -160,6 +160,10 @@ def import_events(source, atomid_prefix):
             defaults={'display_name': name})
         group_objs[id] = group_obj
 
+    all_friends_tag = '%sfriends' % atomid_prefix
+    all_friends_group, created = giraffe.friends.models.Group.objects.get_or_create(
+        tag=all_friends_tag, defaults={'display_name': 'Friends'})
+
     for friend in tree.findall('/friends/friend'):
         friendname = friend.findtext('username')
         openid = openid_for(friendname)
@@ -169,7 +173,7 @@ def import_events(source, atomid_prefix):
         # Update their groups.
         group_ids = tuple(int(groupnode.text) for groupnode in friend.findall('groups/group'))
         logging.debug("Setting %s's groups to %r", friendname, group_ids)
-        ident_person.groups = [group_objs[id] for id in group_ids]
+        ident_person.groups = [all_friends_group] + [group_objs[id] for id in group_ids]
 
     # Import the posts.
     for event in tree.findall('/events/event'):
@@ -228,7 +232,12 @@ def import_events(source, atomid_prefix):
 
             mask = int(event.get('allowmask'))
             logging.debug('Post %s has mask %s?', ditemid, bin(mask))
-            mask_groups = list()
+
+            if mask == 1:
+                mask_groups = [all_friends_group]
+                # Plus all the other bits are 0, so we'll add no other groups.
+            else:
+                mask_groups = list()
 
             for i in range(1, 30):
                 mask = mask >> 1
