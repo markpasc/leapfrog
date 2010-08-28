@@ -13,6 +13,8 @@ class PersonAdmin(admin.ModelAdmin):
 class GroupAdmin(admin.ModelAdmin):
 
     list_display = ('display_name', 'tag')
+    search_fields = ('display_name',)
+    filter_horizontal = ('people',)
 
 
 admin.site.register(models.Person, PersonAdmin)
