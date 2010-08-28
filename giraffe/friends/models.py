@@ -27,7 +27,7 @@ class Person(models.Model):
 class Group(models.Model):
 
     display_name = models.CharField(max_length=75)
-    tag = models.CharField(max_length=15, db_index=True, null=True)
+    tag = models.CharField(max_length=300, db_index=True, null=True)
 
     def __unicode__(self):
         return self.display_name
