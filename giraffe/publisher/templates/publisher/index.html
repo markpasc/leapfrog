@@ -2,7 +2,7 @@
 
 {% block content %}
 
-    {% for asset in assets %}
+    {% for asset in assets.object_list %}
         <div class="post" id="post-{{ asset.pk }}">
             <h2 class="post-header">
                 <a href="{% url publisher-asset slug=asset.slug %}">{{ asset.title }}</a>
@@ -17,5 +17,29 @@
             </div>
         </div>
     {% endfor %}
+
+    {% if assets.has_previous or assets.has_next %}
+    <div class="pager">
+        {% if assets.has_previous %}
+        <span class="pager-left">
+            <a href="{% url publisher-index-page page=assets.previous_page_number %}">
+                <span class="chevron">&laquo;</span>
+                <span class="pager-label">Newer</span>
+            </a>
+        </span>
+        {% endif %}
+        {% if assets.has_previous and assets.has_next %}
+        <span class="separator">|</span>
+        {% endif %}
+        {% if assets.has_next %}
+        <span class="pager-right">
+            <a href="{% url publisher-index-page page=assets.next_page_number %}">
+                <span class="pager-label">Older</span>
+                <span class="chevron">&raquo;</span>
+            </a>
+        </span>
+        {% endif %}
+    </div>
+    {% endif %}
 
 {% endblock %}

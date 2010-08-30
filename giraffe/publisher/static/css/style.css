@@ -1,3 +1,5 @@
+@import url(http://fonts.googleapis.com/css?family=Inconsolata);
+
 html { min-height: 100%; }
 
 body {
@@ -11,7 +13,18 @@ body {
     filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#eee, endColorstr=#ddd, GradientType=0);
 }
 
-#content {
+.pkg:after {
+    content: " ";
+    display: block;
+    visibility: hidden;
+    clear: both;
+    height: 0.1px;
+    font-size: 0.1em;
+    line-height: 0;
+}
+.pkg { display: inline-block; }
+
+#content, #footer {
     width: 820px;
     margin: 0 auto;
 }
@@ -59,12 +72,25 @@ body {
 .post-content { position: relative; }
 .post-content p { margin: 10px 0; }
 
-.post-content a:link, .post-content a:hover, .post-content a:visited, .post-content a:active, .post-content a:focus {
+.post-content a:link, .post-content a:hover, .post-content a:visited, .post-content a:active, .post-content a:focus,
+.pager .pager-label,
+.footer-list-item a:link, .footer-list-item a:hover, .footer-list-item a:visited, .footer-list-item a:active, .footer-list-item a:focus {
     background-color: #d3ff99;
     border: 1px solid #d3ff99;
     color: inherit;
     text-decoration: none;
 }
+
+.pager a:link, .pager a:hover, .pager a:visited, .pager a:active, .pager a:focus,
+.bbpTweet a:link, .bbpTweet a:hover, .bbpTweet a:visited, .bbpTweet a:active, .bbpTweet a:focus
+{
+    background-color: transparent;
+    border-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+
 .post-content a:hover, .post-content a:active {
     text-decoration: underline;
 }
@@ -77,6 +103,13 @@ body {
     font-size: 0.9em;
     line-height: 1.5em;
     margin: 1em 0;
+}
+.post-content blockquote+p small {
+    margin-left: 40px;
+    font-style: oblique;
+    color: #666;
+    font-size: 0.8em;
+    line-height: 1.5em;
 }
 
 .post-content blockquote:before, .post-content div.highlight:before,
@@ -97,3 +130,162 @@ body {
     content: "”";
     margin-top: -20px;
 }
+
+.post-content h4.highlight-label + div.highlight pre {
+    margin-top: 0;
+}
+
+.post-content div.highlight {
+    margin-left: 40px;
+}
+.post-content div.highlight:before {
+    content: "«";
+    margin-top: 5px;
+}
+.post-content div.highlight:after {
+    content: "»";
+    margin-top: -40px;
+}
+
+.pager {  /* also a .content-nav */
+    position: relative;
+    visibility: visible;
+    margin: 40px 0 0 0;
+    text-align: center;
+}
+.pager .separator {
+    display: inline-block;
+    visibility: hidden;
+    width: 4em;
+}
+.pager .chevron {
+    font-size: 1.5em;
+}
+
+#footer {
+    margin-top: 20px;
+}
+ul.footer-list {
+    list-style: none;
+    border-top: 1px solid #e7e7e7;
+    padding: 0;
+    margin: 0;
+}
+li.footer-list-item {
+    display: block;
+    float: left;
+    padding: 10px 15px;
+    margin: 0;
+}
+li.footer-list-item + li.footer-list-item {
+    border-left: 1px solid #e7e7e7;
+}
+
+p.bbpTweet span.timestamp a:link,p.bbpTweet span.timestamp a:hover,p.bbpTweet span.timestamp a:visited,p.bbpTweet span.timestamp a:active {
+    color:inherit;
+    font-weight:400;
+}
+p.bbpTweet a:link,p.bbpTweet a:hover,p.bbpTweet a:visited,p.bbpTweet a:active {
+    text-decoration:none;
+}
+p.bbpTweet a:hover {
+    text-decoration:underline;
+}
+p.bbpTweet span.timestamp {
+    color:#999;
+    font-family:sans-serif;
+    font-size:12px;
+    display:block;
+}
+
+.netflix-box {
+    width: 175px;
+    text-align: center;
+}
+.netflix-box-right {
+    float: right;
+}
+.netflix-box-left {
+    float: left;
+}
+.netflix-box-center {
+    margin: 0 auto;
+}
+.netflix-box img.boxshot {
+    margin: 0 auto 1ex;
+}
+.netflix-box .apiBoxLarge {
+    margin: 0 auto;
+}
+
+.no { color: #993300; }
+.yes { color: #009933; }
+td.no, td.yes { text-align: center }
+
+pre, code, tt {
+    font-family: Inconsolata, monospace;
+}
+pre { white-space: pre-wrap; overflow: auto; }
+pre.wide { white-space: pre; }
+
+.highlight .hll { background-color: #ffffcc }
+.highlight .c { color: #408080; font-style: italic } /* Comment */
+.highlight .err { border: 1px solid #FF0000 } /* Error */
+.highlight .k { color: #008000; font-weight: 550 } /* Keyword */
+.highlight .o { color: #666666 } /* Operator */
+.highlight .cm { color: #408080; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #BC7A00 } /* Comment.Preproc */
+.highlight .c1 { color: #408080; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #408080; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #A00000 } /* Generic.Deleted */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #FF0000 } /* Generic.Error */
+.highlight .gh { color: #000080; font-weight: 550 } /* Generic.Heading */
+.highlight .gi { color: #00A000 } /* Generic.Inserted */
+.highlight .go { color: #808080 } /* Generic.Output */
+.highlight .gp { color: #000080; font-weight: 550 } /* Generic.Prompt */
+.highlight .gs { font-weight: 550 } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: 550 } /* Generic.Subheading */
+.highlight .gt { color: #0040D0 } /* Generic.Traceback */
+.highlight .kc { color: #008000; font-weight: 550 } /* Keyword.Constant */
+.highlight .kd { color: #008000; font-weight: 550 } /* Keyword.Declaration */
+.highlight .kn { color: #008000; font-weight: 550 } /* Keyword.Namespace */
+.highlight .kp { color: #008000 } /* Keyword.Pseudo */
+.highlight .kr { color: #008000; font-weight: 550 } /* Keyword.Reserved */
+.highlight .kt { color: #B00040 } /* Keyword.Type */
+.highlight .m { color: #666666 } /* Literal.Number */
+.highlight .s { color: #BA2121 } /* Literal.String */
+.highlight .na { color: #7D9029 } /* Name.Attribute */
+.highlight .nb { color: #008000 } /* Name.Builtin */
+.highlight .nc { color: #0000FF; font-weight: 550 } /* Name.Class */
+.highlight .no { color: #880000 } /* Name.Constant */
+.highlight .nd { color: #AA22FF } /* Name.Decorator */
+.highlight .ni { color: #999999; font-weight: 550 } /* Name.Entity */
+.highlight .ne { color: #D2413A; font-weight: 550 } /* Name.Exception */
+.highlight .nf { color: #0000FF } /* Name.Function */
+.highlight .nl { color: #A0A000 } /* Name.Label */
+.highlight .nn { color: #0000FF; font-weight: 550 } /* Name.Namespace */
+.highlight .nt { color: #008000; font-weight: 550 } /* Name.Tag */
+.highlight .nv { color: #19177C } /* Name.Variable */
+.highlight .ow { color: #AA22FF; font-weight: 550 } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #666666 } /* Literal.Number.Float */
+.highlight .mh { color: #666666 } /* Literal.Number.Hex */
+.highlight .mi { color: #666666 } /* Literal.Number.Integer */
+.highlight .mo { color: #666666 } /* Literal.Number.Oct */
+.highlight .sb { color: #BA2121 } /* Literal.String.Backtick */
+.highlight .sc { color: #BA2121 } /* Literal.String.Char */
+.highlight .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
+.highlight .s2 { color: #BA2121 } /* Literal.String.Double */
+.highlight .se { color: #BB6622; font-weight: 550 } /* Literal.String.Escape */
+.highlight .sh { color: #BA2121 } /* Literal.String.Heredoc */
+.highlight .si { color: #BB6688; font-weight: 550 } /* Literal.String.Interpol */
+.highlight .sx { color: #008000 } /* Literal.String.Other */
+.highlight .sr { color: #BB6688 } /* Literal.String.Regex */
+.highlight .s1 { color: #BA2121 } /* Literal.String.Single */
+.highlight .ss { color: #19177C } /* Literal.String.Symbol */
+.highlight .bp { color: #008000 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #19177C } /* Name.Variable.Class */
+.highlight .vg { color: #19177C } /* Name.Variable.Global */
+.highlight .vi { color: #19177C } /* Name.Variable.Instance */
+.highlight .il { color: #666666 } /* Literal.Number.Integer.Long */
