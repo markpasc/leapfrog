@@ -8,6 +8,6 @@
     </div>
 
     <div class="post-footer">
-        {{ asset.published }}
+        {{ asset.published|date:"g:i" }} <small>{{ asset.published|date:"A" }}</small> {{ asset.published|date:"j M Y" }}
     </div>
 </div>

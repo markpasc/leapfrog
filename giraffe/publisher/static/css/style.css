@@ -13,6 +13,11 @@ body {
     filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#eee, endColorstr=#ddd, GradientType=0);
 }
 
+small {
+    font-size: 85%;
+    line-height: 1em;
+}
+
 .pkg:after {
     content: " ";
     display: block;
@@ -108,8 +113,6 @@ body {
     margin-left: 40px;
     font-style: oblique;
     color: #666;
-    font-size: 0.8em;
-    line-height: 1.5em;
 }
 
 .post-content blockquote:before, .post-content div.highlight:before,
