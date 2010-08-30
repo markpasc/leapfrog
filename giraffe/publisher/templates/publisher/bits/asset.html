@@ -8,6 +8,26 @@
     </div>
 
     <div class="post-footer">
-        {{ asset.published|date:"g:i" }} <small>{{ asset.published|date:"A" }}</small> {{ asset.published|date:"j M Y" }}
+        <span class="post-timestamp">
+            {{ asset.published|date:"g:i" }}
+            <small>{{ asset.published|date:"A" }}</small>
+            {{ asset.published|date:"j M Y" }}
+        </span>
+        <span class="separator">|</span>
+        <span class="post-permalink">
+            <a href="{% url publisher-asset slug=asset.slug %}">Permalink</a>
+        </span>
+        {% if asset.can_have_comments %}
+        <span class="separator">|</span>
+        <span class="post-comments">
+            <a href="{% url publisher-asset slug=asset.slug %}">
+                {% if asset.comment_count %}
+                    Comments ({{ asset.comment_count }})
+                {% else %}
+                    Leave a comment
+                {% endif %}
+            </a>
+        </span>
+        {% endif %}
     </div>
 </div>

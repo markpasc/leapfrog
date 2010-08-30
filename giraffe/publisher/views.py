@@ -3,6 +3,7 @@ import logging
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.db.models import Count
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -24,6 +25,8 @@ def index(request, page=1, template=None, content_type=None):
     # TODO: get the assets that the user is allowed to see
     assets = assets.filter(private_to=None)
 
+    assets = assets.annotate(comment_count=Count('replies'))
+
     pager = Paginator(assets, 10)
     try:
         assets_page = pager.page(page)
@@ -42,7 +45,7 @@ def index(request, page=1, template=None, content_type=None):
 
 def asset(request, slug, template=None):
     try:
-        asset = Asset.objects.get(slug=slug)
+        asset = Asset.objects.annotate(comment_count=Count('replies')).get(slug=slug)
     except Asset.DoesNotExist:
         raise Http404
 

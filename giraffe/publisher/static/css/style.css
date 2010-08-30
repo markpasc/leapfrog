@@ -150,19 +150,23 @@ small {
     margin-top: -40px;
 }
 
+.separator {
+    display: inline-block;
+    visibility: hidden;
+    width: 2em;
+}
+
 .pager {  /* also a .content-nav */
     position: relative;
     visibility: visible;
     margin: 40px 0 0 0;
     text-align: center;
 }
-.pager .separator {
-    display: inline-block;
-    visibility: hidden;
-    width: 4em;
-}
 .pager .chevron {
     font-size: 1.5em;
+}
+.pager .separator {
+    width: 4em;
 }
 
 #footer {
