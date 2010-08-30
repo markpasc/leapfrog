@@ -3,16 +3,16 @@
 {% block content %}
 
     {% for asset in assets %}
-        <div class="asset" id="asset-{{ asset.pk }}">
-            <h2 class="asset-header">
+        <div class="post" id="post-{{ asset.pk }}">
+            <h2 class="post-header">
                 <a href="{% url publisher-asset slug=asset.slug %}">{{ asset.title }}</a>
             </h2>
 
-            <div class="asset-content">
+            <div class="post-content">
                 {% autoescape off %}{{ asset.content }}{% endautoescape %}
             </div>
 
-            <div class="asset-footer">
+            <div class="post-footer">
                 {{ asset.published }}
             </div>
         </div>
