@@ -34,7 +34,7 @@ small {
     margin: 0 auto;
 }
 
-.post {
+.post, #comments {
     background-color: white;
     position: relative;
     margin: 0;
@@ -154,6 +154,33 @@ small {
     display: inline-block;
     visibility: hidden;
     width: 2em;
+}
+
+.comment {
+    position: relative;
+    padding-left: 80px;
+    margin: 0 0 30px;
+}
+.comment .separator {
+    width: 12px;
+}
+.comment-header {
+    margin: 0;
+    font-size: 19px;
+}
+.comment-header .comment-byline {
+    font-size: 16px;
+}
+.comment-header .comment-timestamp {
+    font-weight: normal;
+    font-size: 12px;
+}
+.comment-userpic {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: 75px;
+    height: auto;
 }
 
 .pager {  /* also a .content-nav */

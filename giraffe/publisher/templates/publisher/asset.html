@@ -13,7 +13,7 @@
 
     {% for comment in asset.display_replies %}
         {% if forloop.first %}
-        <div class="comments">
+        <div id="comments" class="comments">
             <h3 class="comments-header">Comments</h3>
         {% endif %}
 
@@ -27,6 +27,7 @@
             <h4 class="comment-header">
                 {% if comment.title %}
                 <span class="comment-title">{{ comment.title }}</span>
+                {% if comment.author %}<span class="separator">|</span>{% endif %}
                 {% endif %}
                 {% if comment.author %}
                 <span class="comment-byline">
@@ -36,7 +37,13 @@
                         {{ comment.author.display_name }}
                     {% endif %}
                 </span>
+                <span class="separator">|</span>
                 {% endif %}
+                <span class="comment-timestamp">
+                    {{ comment.published|date:"g:i" }}
+                    <small>{{ comment.published|date:"A" }}</small>
+                    {{ comment.published|date:"j M Y" }}
+                </span>
             </h4>
 
             {% autoescape off %}{{ comment.content }}{% endautoescape %}
