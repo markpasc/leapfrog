@@ -17,39 +17,7 @@
             <h3 class="comments-header">Comments</h3>
         {% endif %}
 
-        <div class="comment" id="comment-{{ comment.pk }}">
-            {% if comment.author.userpic_url %}{% spaceless %}
-                {% if comment.author.profile_url %}<a href="{{ comment.author.profile_url }}">{% endif %}
-                <img class="comment-userpic" src="{{ comment.author.userpic_url }}" alt="{{ comment.author.display_name }}">
-                {% if comment.author.profile_url %}</a>{% endif %}
-            {% endspaceless %}{% endif %}
-
-            <h4 class="comment-header">
-                {% if comment.title %}
-                <span class="comment-title">{{ comment.title }}</span>
-                {% if comment.author %}<span class="separator">|</span>{% endif %}
-                {% endif %}
-                {% if comment.author %}
-                <span class="comment-byline">
-                    {% if comment.author.profile_url %}
-                        <a href="{{ comment.author.profile_url }}">{{ comment.author.display_name }}</a>
-                    {% else %}
-                        {{ comment.author.display_name }}
-                    {% endif %}
-                </span>
-                <span class="separator">|</span>
-                {% endif %}
-                <span class="comment-timestamp">
-                    {{ comment.published|date:"g:i" }}
-                    <small>{{ comment.published|date:"A" }}</small>
-                    {{ comment.published|date:"j M Y" }}
-                </span>
-            </h4>
-
-            {% autoescape off %}{{ comment.content }}{% endautoescape %}
-
-            <!-- TODO: show all the replies to this comment -->
-        </div>
+        {% include "publisher/bits/comment.html" %}
 
         {% if forloop.last %}
         </div>
