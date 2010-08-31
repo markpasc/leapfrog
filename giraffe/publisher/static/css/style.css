@@ -182,6 +182,10 @@ small {
     max-width: 75px;
     height: auto;
 }
+.comment > .comments {
+    margin-left: -50px;
+    margin-top: 30px;
+}
 
 .pager {  /* also a .content-nav */
     position: relative;

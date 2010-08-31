@@ -29,5 +29,11 @@
 
     {% autoescape off %}{{ comment.content }}{% endautoescape %}
 
-    <!-- TODO: show all the replies to this comment -->
+    {% for comment in comment.display_replies %}
+        {% if forloop.first %}<div class="comments">{% endif %}
+            {% with "publisher/bits/comment.html" as templatename %}
+                {% include templatename %}
+            {% endwith %}
+        {% if forloop.last %}</div>{% endif %}
+    {% endfor %}
 </div>
