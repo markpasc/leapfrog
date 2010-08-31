@@ -34,6 +34,10 @@ class Asset(models.Model):
     can_have_comments = True
 
     @property
+    def display_replies(self):
+        return self.replies.all().order_by('published')
+
+    @property
     def preview(self):
         text = self.summary or self.content
         return truncatewords(text, 10)

@@ -11,4 +11,31 @@
 
     {% include "publisher/bits/asset.html" %}
 
+    {% for comment in asset.display_replies %}
+        {% if forloop.first %}
+        <div class="comments">
+            <h3 class="comments-header">Comments</h3>
+        {% endif %}
+
+        <div class="comment" id="comment-{{ comment.pk }}">
+            <h4 class="comment-header">
+                {% if comment.title %}
+                <span class="comment-title">{{ comment.title }}</span>
+                {% endif %}
+                {% if comment.author %}
+                <!-- TODO: link to the author's identity or profile or whatever -->
+                <span class="comment-byline">{{ comment.author.display_name }}</span>
+                {% endif %}
+            </h4>
+
+            {% autoescape off %}{{ comment.content }}{% endautoescape %}
+
+            <!-- TODO: show all the replies to this comment -->
+        </div>
+
+        {% if forloop.last %}
+        </div>
+        {% endif %}
+    {% endfor %}
+
 {% endblock %}

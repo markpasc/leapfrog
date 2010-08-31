@@ -25,7 +25,7 @@ def index(request, page=1, template=None, content_type=None):
     # TODO: get the assets that the user is allowed to see
     assets = assets.filter(private_to=None)
 
-    assets = assets.annotate(comment_count=Count('replies'))
+    assets = assets.annotate(comment_count=Count('replies_in_thread'))
 
     pager = Paginator(assets, 10)
     try:
@@ -45,7 +45,7 @@ def index(request, page=1, template=None, content_type=None):
 
 def asset(request, slug, template=None):
     try:
-        asset = Asset.objects.annotate(comment_count=Count('replies')).get(slug=slug)
+        asset = Asset.objects.annotate(comment_count=Count('replies_in_thread')).get(slug=slug)
     except Asset.DoesNotExist:
         raise Http404
 
