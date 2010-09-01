@@ -67,19 +67,29 @@ def import_me():
             ident.person.merge_into(person)
 
 
-def person_for_openid(openid, display_name):
+def person_for_openid(openid, display_name, userpic_url):
     try:
         ident_obj = giraffe.friends.models.Identity.objects.get(openid=openid)
     except giraffe.friends.models.Identity.DoesNotExist:
         # Who? I guess we need to make a Person too.
-        person = giraffe.friends.models.Person()
-        person.display_name = display_name
+        person = giraffe.friends.models.Person(
+            display_name=display_name,
+            profile_url=openid,
+            userpic_url=userpic_url,
+        )
         person.save()
-        ident_obj = giraffe.friends.models.Identity(openid=openid)
-        ident_obj.person = person
+        ident_obj = giraffe.friends.models.Identity(openid=openid, person=person)
         ident_obj.save()
+    else:
+        person = ident_obj.person
+        if not person.profile_url or not person.userpic_url:
+            if not person.profile_url:
+                person.profile_url = openid
+            if not person.userpic_url:
+                person.userpic_url = userpic_url
+            person.save()
 
-    return ident_obj.person
+    return person
 
 
 def format_soup(content_root):
@@ -99,8 +109,11 @@ def import_assets(assets):
         asset.imported = True
 
         if tpasset.author and tpasset.author.url_id != '6p0000000000000014':
+            av = tpasset.author.avatar_link
+            userpic_url = av.url_template.replace('{spec}', '50si') if av.url_template else av.url
             asset.author = person_for_openid(tpasset.author.profile_page_url,
-                tpasset.author.display_name or tpasset.author.preferred_username)
+                tpasset.author.display_name or tpasset.author.preferred_username,
+                userpic_url)
         else:
             asset.author = None
 
