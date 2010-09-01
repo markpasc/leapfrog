@@ -78,6 +78,7 @@ small {
 .post-content p { margin: 10px 0; }
 
 .post-content a:link, .post-content a:hover, .post-content a:visited, .post-content a:active, .post-content a:focus,
+.post-footer a:link, .post-footer a:hover, .post-footer a:visited, .post-footer a:active, .post-footer a:focus,
 .pager .pager-label,
 .footer-list-item a:link, .footer-list-item a:hover, .footer-list-item a:visited, .footer-list-item a:active, .footer-list-item a:focus {
     background-color: #d3ff99;
@@ -124,17 +125,26 @@ small {
     color: #eee;
 }
 .post-content blockquote:before, .post-content div.highlight:before {
+    font-family: helvetica, arial, hirakakupro-w3, osaka, 'ms pgothic', sans-serif;
     left: -5px;
     content: "“";
     margin: 20px 0 0 0;
 }
 .post-content blockquote:after, .post-content div.highlight:after {
+    font-family: helvetica, arial, hirakakupro-w3, osaka, 'ms pgothic', sans-serif;
     right: 0;
     content: "”";
     margin-top: -20px;
 }
 
-.post-content h4.highlight-label + div.highlight pre {
+.post-content h4.highlight-label {
+    margin: 20px 0 0 40px;
+    font-weight: normal;
+    font-style: oblique;
+    font-size: 16px;
+    line-height: 1em;
+}
+.post-content h4.highlight-label + div.highlight {
     margin-top: 0;
 }
 
