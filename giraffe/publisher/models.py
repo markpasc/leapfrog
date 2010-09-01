@@ -31,6 +31,12 @@ class Asset(models.Model):
     in_reply_to = models.ForeignKey('Asset', null=True, blank=True, related_name='replies')
     in_thread_of = models.ForeignKey('Asset', null=True, blank=True, related_name='replies_in_thread')
 
+    can_have_comments = True
+
+    @property
+    def display_replies(self):
+        return self.replies.all().order_by('published')
+
     @property
     def preview(self):
         text = self.summary or self.content

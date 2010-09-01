@@ -16,12 +16,17 @@ import giraffe.friends.models
 from giraffe.publisher.models import Asset
 
 
+foaf_names = dict()
+foaf_pics = dict()
+
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
     parser = argparse.ArgumentParser(description='Import posts from a livejournal XML export.')
     parser.add_argument('source', metavar='FILE', help='The filename of the XML export (or - for stdin)')
+    parser.add_argument('--foaf', metavar='FILE', help='The filename of the FOAF document from which to pull friend names and userpic URLs')
     parser.add_argument('--atomid', help='The prefix of the Atom ID to store', default=None)
     parser.add_argument('-v', dest='verbosity', action='append_const', const=1,
         help='Be more verbose (stackable)', default=[2])
@@ -37,7 +42,7 @@ def main(argv=None):
     logging.info('Set log level to %s', logging.getLevelName(log_level))
 
     import_events(sys.stdin if args.source == '-' else args.source,
-        args.atomid)
+        args.atomid, args.foaf)
 
     return 0
 
@@ -49,19 +54,49 @@ def generate_openid(server_domain, username):
     return 'http://%s.%s/' % (username, server_domain)
 
 
-def person_for_openid(openid, display_name):
+def import_foaf(source, server_domain):
+    tree = ElementTree.parse(source)
+    logging.debug('Yay processing a FOAF document!')
+
+    for person in tree.findall('//{http://xmlns.com/foaf/0.1/}Person'):
+        nick = person.findtext('{http://xmlns.com/foaf/0.1/}nick')
+        logging.debug('Processing FOAF sack for %s', nick)
+        name = person.findtext('{http://xmlns.com/foaf/0.1/}member_name') or ''
+        pic = person.findtext('{http://xmlns.com/foaf/0.1/}image') or ''
+
+        openid = generate_openid(server_domain, nick)
+        foaf_names[openid] = name
+        foaf_pics[openid] = pic
+
+
+def person_for_openid(openid, display_name=None, userpic_url=None):
+    if display_name is None:
+        display_name = foaf_names.get(openid, '')
+    if userpic_url is None:
+        userpic_url = foaf_pics.get(openid, '')
+
     try:
         ident_obj = giraffe.friends.models.Identity.objects.get(openid=openid)
     except giraffe.friends.models.Identity.DoesNotExist:
         # Who? I guess we need to make a Person too.
-        person = giraffe.friends.models.Person()
-        person.display_name = display_name
+        person = giraffe.friends.models.Person(
+            display_name=display_name,
+            profile_url=openid,
+            userpic_url=userpic_url,
+        )
         person.save()
-        ident_obj = giraffe.friends.models.Identity(openid=openid)
-        ident_obj.person = person
+        ident_obj = giraffe.friends.models.Identity(openid=openid, person=person)
         ident_obj.save()
+    else:
+        person = ident_obj.person
+        if not person.profile_url or not person.userpic_url:
+            if not person.profile_url:
+                person.profile_url = openid
+            if not person.userpic_url:
+                person.userpic_url = userpic_url
+            person.save()
 
-    return ident_obj.person
+    return person
 
 
 def make_my_openid(openid):
@@ -124,7 +159,7 @@ def import_comment(comment_el, asset, openid_for):
     if poster:
         openid = openid_for(poster)
         logging.debug("    Saving %s as comment author", openid)
-        comment.author = person_for_openid(openid, poster)
+        comment.author = person_for_openid(openid)
     else:
         logging.debug("    Oh huh this comment was anonymous, fancy that")
 
@@ -137,7 +172,7 @@ def import_comment(comment_el, asset, openid_for):
         import_comment(reply_el, comment, openid_for)
 
 
-def import_events(source, atomid_prefix):
+def import_events(source, atomid_prefix, foafsource):
     tree = ElementTree.parse(source)
 
     username = tree.getroot().get('username')
@@ -149,7 +184,11 @@ def import_events(source, atomid_prefix):
 
     post_author = make_my_openid(openid_for(username))
 
-    # First, update groups and friends, so we can knit the posts together right.
+    # First, if there's a FOAF, learn all my friends' names and faces.
+    if foafsource:
+        import_foaf(foafsource, server_domain)
+
+    # Now update groups and friends, so we can knit the posts together right.
     group_objs = dict()
     for group in tree.findall('/friends/group'):
         id = int(group.findtext('id'))

@@ -2,6 +2,8 @@ from functools import wraps
 import logging
 
 from django.contrib.auth.models import User
+from django.core.paginator import Paginator, InvalidPage, EmptyPage
+from django.db.models import Count
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -14,7 +16,7 @@ from giraffe.publisher.models import Subscription, Asset
 from giraffe.publisher import tasks
 
 
-def index(request, template=None, content_type=None):
+def index(request, page=1, template=None, content_type=None):
     blogger = User.objects.all().order_by('id')[0].person
 
     assets = Asset.objects.all().order_by('-published')
@@ -23,8 +25,16 @@ def index(request, template=None, content_type=None):
     # TODO: get the assets that the user is allowed to see
     assets = assets.filter(private_to=None)
 
+    assets = assets.annotate(comment_count=Count('replies_in_thread'))
+
+    pager = Paginator(assets, 10)
+    try:
+        assets_page = pager.page(page)
+    except (EmptyPage, InvalidPage):
+        raise Http404
+
     data = {
-        'assets': assets[:10],
+        'assets': assets_page,
     }
 
     if template is None:
@@ -35,7 +45,7 @@ def index(request, template=None, content_type=None):
 
 def asset(request, slug, template=None):
     try:
-        asset = Asset.objects.get(slug=slug)
+        asset = Asset.objects.annotate(comment_count=Count('replies_in_thread')).get(slug=slug)
     except Asset.DoesNotExist:
         raise Http404
 

@@ -2,20 +2,32 @@
 
 {% block content %}
 
-    {% for asset in assets %}
-        <div class="asset" id="asset-{{ asset.pk }}">
-            <h2 class="asset-header">
-                <a href="{% url publisher-asset slug=asset.slug %}">{{ asset.title }}</a>
-            </h2>
-
-            <div class="asset-content">
-                {% autoescape off %}{{ asset.content }}{% endautoescape %}
-            </div>
-
-            <div class="asset-footer">
-                {{ asset.published }}
-            </div>
-        </div>
+    {% for asset in assets.object_list %}
+        {% include "publisher/bits/asset.html" %}
     {% endfor %}
+
+    {% if assets.has_previous or assets.has_next %}
+    <div class="pager">
+        {% if assets.has_previous %}
+        <span class="pager-left">
+            <a href="{% url publisher-index-page page=assets.previous_page_number %}">
+                <span class="chevron">&laquo;</span>
+                <span class="pager-label">Newer</span>
+            </a>
+        </span>
+        {% endif %}
+        {% if assets.has_previous and assets.has_next %}
+        <span class="separator">|</span>
+        {% endif %}
+        {% if assets.has_next %}
+        <span class="pager-right">
+            <a href="{% url publisher-index-page page=assets.next_page_number %}">
+                <span class="pager-label">Older</span>
+                <span class="chevron">&raquo;</span>
+            </a>
+        </span>
+        {% endif %}
+    </div>
+    {% endif %}
 
 {% endblock %}

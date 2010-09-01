@@ -9,18 +9,19 @@
 
 {% block content %}
 
-    <div class="asset" id="asset-{{ asset.pk }}">
-        <h2 class="asset-header">
-            <a href="{% url publisher-asset slug=asset.slug %}">{{ asset.title }}</a>
-        </h2>
+    {% include "publisher/bits/asset.html" %}
 
-        <div class="asset-content">
-            {% autoescape off %}{{ asset.content }}{% endautoescape %}
-        </div>
+    {% for comment in asset.display_replies %}
+        {% if forloop.first %}
+        <div id="comments" class="comments">
+            <h3 class="comments-header">Comments</h3>
+        {% endif %}
 
-        <div class="asset-footer">
-            {{ asset.published }}
+        {% include "publisher/bits/comment.html" %}
+
+        {% if forloop.last %}
         </div>
-    </div>
+        {% endif %}
+    {% endfor %}
 
 {% endblock %}

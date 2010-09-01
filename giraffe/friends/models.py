@@ -10,6 +10,8 @@ class Person(models.Model):
     display_name = models.CharField(max_length=75)
     user = models.OneToOneField('auth.User', null=True, blank=True)
     groups = models.ManyToManyField('Group', related_name='_people', blank=True)
+    userpic_url = models.CharField(max_length=300, blank=True)
+    profile_url = models.CharField(max_length=300, blank=True)
 
     def __unicode__(self):
         return self.display_name
