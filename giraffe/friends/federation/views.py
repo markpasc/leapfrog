@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.importlib import import_module
 from django.core.urlresolvers import reverse
 
-from giraffe.friends.federation.util import validate_domain, discover_associate_endpoint, verify_association_request
+from giraffe.friends.federation.util import validate_domain, discover_associate_endpoint, verify_association_request, make_verifier
 
 
 def federation_document(request):
@@ -59,6 +59,25 @@ def handle_associate(request):
                 return HttpResponse("no association storage backend is available", status=500)
         else:
             return HttpResponse("association request could not be verified", status=409)
+    else:
+        return HttpResponse("domain and verifier are both required", status=400)
+
+
+def handle_verify(request):
+    if "domain" in request.POST and "verifier" in request.POST:
+        domain   = request.POST["domain"]
+        verifier = request.POST["verifier"]
+
+        expected_verifier = make_verifier(domain)
+
+        # FIXME: Should use constant time string compare for this
+        if verifier == expected_verifier:
+            return HttpResponse("Yes!", status=200)
+        else:
+            return HttpResponse("No!", status=409)
+
+    else:
+        return HttpResponse("domain and verifier are both required", status=400)
 
 
 # This is a debugging view which will echo back the domain used to request it.
@@ -73,7 +92,4 @@ def echo_domain(request):
     else:
         return HttpResponse("no session available", status=500)
 
-
-def handle_verify(request):
-    return HttpResponse("verify?")
 
