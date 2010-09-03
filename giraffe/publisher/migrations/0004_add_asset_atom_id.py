@@ -12,10 +12,11 @@ class Migration(SchemaMigration):
             self.gf('django.db.models.fields.CharField')(max_length=200, null=True, blank=True),
             keep_default=False)
 
-        site = Site.objects.get_current()
-        for asset in orm.Asset.objects.all():
-            asset.atom_id = 'tag:%s,2010:%s' % (site.domain, asset.slug)
-            asset.save()
+        if not db.dry_run:
+            site = Site.objects.get_current()
+            for asset in orm.Asset.objects.all():
+                asset.atom_id = 'tag:%s,2010:%s' % (site.domain, asset.slug)
+                asset.save()
 
         db.alter_column('publisher_asset', 'atom_id',
             self.gf('django.db.models.fields.CharField')(
