@@ -16,6 +16,18 @@ from giraffe.publisher.models import Subscription, Asset
 from giraffe.publisher import tasks
 
 
+def test_mq(request):
+    try:
+        publ = tasks.ping.get_publisher(connect_timeout=10)
+        res = tasks.ping.apply_async(args=(), publisher=publ)
+        pong = res.get()
+    except Exception, exc:
+        return HttpResponse('%s: %s' % (type(exc).__name__, str(exc)),
+            content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
 def index(request, page=1, template=None, content_type=None):
     blogger = User.objects.all().order_by('id')[0].person
 
