@@ -40,7 +40,7 @@ class Group(models.Model):
 class Identity(models.Model):
 
     person = models.ForeignKey(Person)
-    openid = models.CharField(max_length=300, unique=True)
+    openid = models.CharField(max_length=255, unique=True)
 
     def __unicode__(self):
         return self.openid
