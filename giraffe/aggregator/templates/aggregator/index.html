@@ -23,7 +23,11 @@
                             {% ifequal activity.verb "favorite" %}
                                 Added as a favorite by
                             {% else %}
-                                From
+                                {% ifequal activity.verb "follow" %}
+                                    Now followed by
+                                {% else %}
+                                    From
+                                {% endifequal %}
                             {% endifequal %}
                         {% endifequal %}
                     {% endifequal %}
