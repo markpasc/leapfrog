@@ -11,7 +11,7 @@
                     {% endif %}
                 {% endif %}
                 <div class="activity-content">
-                <h2><a href="{{ activity.object.permalink_url }}">{{ activity.object.name }}</a></h2>
+                <h2><a href="{{ activity.object.permalink_url|default_if_none:"about:blank" }}">{% if activity.object.name %}{{ activity.object.name }}{% else %}(no name){% endif %}</a></h2>
                 <p class="byline">
                   {% if activity.actor %}
                     {% ifequal activity.verb "post" %}
@@ -42,7 +42,7 @@
                     <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
                 {% endif %}
 
-                <p class="summary">{{ activity.object.summary|striptags }}</p>
+                {% if activity.object.summary %}<p class="summary">{{ activity.object.summary|striptags }}</p>{% endif %}
                 </div>
             </div>
         {% endif %}
