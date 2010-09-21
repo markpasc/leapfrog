@@ -2,50 +2,59 @@
 
 {% block content %}
 
-    {% for activity in activities %}
-        {% if activity.object %}
-            <div class="activity" id="activity-{{ asset.uniq_hash }}">
+    {% for activity in activities %}{% if activity.object %}
+        <div id="activity-{{ activity.object.uniq_hash }}" class="activity">
+
+            <div class="activity-content">
+
                 {% if activity.actor %}
                     {% if activity.actor.image_url %}
-                        <div class="userpic"><img src="{{ activity.actor.image_url }}" style="max-width: 50px; max-height: 50px;"></div>
+                        <a href="{{ activity.actor.permalink_url }}"><img
+                            src="{{ activity.actor.image_url }}"
+                            class="activity-actor"
+                            style="-webkit-transform: rotate({{ rot.next() }}deg); -moz-transform: rotate({{ rot.next() }}deg); transform: rotate({{ rot.next() }}deg);"
+                            ></a>
                     {% endif %}
                 {% endif %}
-                <div class="activity-content">
-                <h2><a href="{{ activity.object.permalink_url|default_if_none:"about:blank" }}">{% if activity.object.name %}{{ activity.object.name }}{% else %}(no name){% endif %}</a></h2>
-                <p class="byline">
-                  {% if activity.actor %}
-                    {% ifequal activity.verb "post" %}
-                        By
-                    {% else %}
-                        {% ifequal activity.verb "share" %}
-                            Shared by
-                        {% else %}
-                            {% ifequal activity.verb "favorite" %}
-                                Added as a favorite by
-                            {% else %}
-                                {% ifequal activity.verb "follow" %}
-                                    Now followed by
-                                {% else %}
-                                    From
-                                {% endifequal %}
-                            {% endifequal %}
-                        {% endifequal %}
-                    {% endifequal %}
-                      <a href="{{ activity.actor.permalink_url }}">{{ activity.actor.name }}</a>
-                  {% endif %}
-                  {% if activity.target %}
-                      in <a href="{{ activity.target.permalink_url }}">{{ activity.target.name }}</a>
-                  {% endif %}
-                </p>
 
-                {% if activity.object.image_url %}
-                    <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
+                {% if activity.object.name %}
+                    <h1 class="activity-name">
+                        {% if activity.object.permalink_url %}
+                            <a href="{{ activity.object.permalink_url }}">{{ activity.object.name }}</a>
+                        {% else %}
+                            {{ activity.object.name }}
+                        {% endif %}
+                    </h1>
                 {% endif %}
 
-                {% if activity.object.summary %}<p class="summary">{{ activity.object.summary|striptags }}</p>{% endif %}
-                </div>
+
+            <p class="byline">
+              {% if activity.actor %}
+                {% if activity.verb == "post" %}
+                    By
+                {% elif activity.verb == "share" %}
+                    Shared by
+                {% elif activity.verb == "favorite" %}
+                    Added as a favorite by
+                {% elif activity.verb == "follow" %}
+                    Now followed by
+                {% else %}
+                    From
+                {% endif %}
+                  <a href="{{ activity.actor.permalink_url }}">{{ activity.actor.name }}</a>
+              {% endif %}
+              {% if activity.target %}
+                  in <a href="{{ activity.target.permalink_url }}">{{ activity.target.name }}</a>
+              {% endif %}
+            </p>
+
+            {% if activity.object.image_url %}
+                <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
+            {% endif %}
+
+            {% if activity.object.summary %}<p class="summary">{{ activity.object.summary|striptags }}</p>{% endif %}
             </div>
-        {% endif %}
-    {% endfor %}
+        </div>
+    {% endif %}{% endfor %}
 
 {% endblock %}

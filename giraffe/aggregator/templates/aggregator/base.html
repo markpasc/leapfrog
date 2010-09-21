@@ -2,7 +2,11 @@
 <html><head>
     <meta charset="utf-8">
     <title>{{ page_title }}</title>
-    <link rel="stylesheet" type="text/css" href="{% url giraffe-static path="css/style.css" %}">
+    {% block htmlhead %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/reset.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/text.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/style.css"}) }}">
+    {% endblock %}
 </head><body>
 
 {% block content %}{% endblock %}
