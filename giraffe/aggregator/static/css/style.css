@@ -55,11 +55,35 @@ body {
     padding: 0;
 }
 
+.activity .title {
+    font-weight: normal;
+    margin: 0;
+}
+
+.activity .title a:link,
+.activity .title a:hover,
+.activity .title a:visited,
+.activity .title a:focus,
+.activity .title a:active {
+    color: inherit;
+    text-decoration: none;
+}
+.activity .title a:hover,
+.activity .title a:focus,
+.activity .title a:active {
+    text-decoration: underline;
+}
+
 .activity .whyline a:link,
 .activity .whyline a:hover,
 .activity .whyline a:visited,
 .activity .whyline a:focus,
-.activity .whyline a:active {
+.activity .whyline a:active,
+.activity .footer a:link,
+.activity .footer a:hover,
+.activity .footer a:visited,
+.activity .footer a:focus,
+.activity .footer a:active {
     color: inherit;
 }
 
@@ -82,6 +106,11 @@ body {
 
 .activity .activity-content {
     padding: 16px;
+}
+
+.activity .footer {
+    font-size: 0.8em;
+    color: #999;
 }
 
 .activity h2 {

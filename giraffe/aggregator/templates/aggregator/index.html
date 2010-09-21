@@ -43,7 +43,7 @@
                 {% endif %}
 
                 {% if activity.object.name %}
-                    <h1 class="activity-name">
+                    <h1 class="title">
                         {% if activity.object.permalink_url %}
                             <a href="{{ activity.object.permalink_url }}">{{ activity.object.name }}</a>
                         {% else %}
@@ -52,11 +52,21 @@
                     </h1>
                 {% endif %}
 
-            {% if activity.object.image_url %}
-                <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
-            {% endif %}
+                {% if activity.object.image_url %}
+                    <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
+                {% endif %}
 
-            {% if activity.object.summary %}<p class="summary">{{ activity.object.summary|striptags }}</p>{% endif %}
+                {% if activity.object.summary %}
+                    <p class="summary">{{ activity.object.summary|striptags }}</p>
+                {% endif %}
+
+                <div class="footer">
+                    <a href="{{ activity.object.permalink_url }}" class="relativedatestamp" title="{{ activity.object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ activity.object.time.strftime("%d %b %Y %H:%M") }}</a>
+                    {% if activity.verb == 'post' %}
+                    by
+                    <a href="{{ activity.actor.permalink_url }}">{{ activity.actor.name }}</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     {% endif %}{% endfor %}
