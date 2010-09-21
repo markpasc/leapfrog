@@ -9,7 +9,7 @@ class Subscription(models.Model):
 
     display_name = models.CharField(max_length=75, null=True, blank=True)
     topic_url = models.CharField(max_length=255)
-    topic_url_hash = models.CharField(max_length=40, db_index=True, unique=True)
+    topic_url_hash = models.CharField(max_length=40, db_index=True, blank=True, unique=True)
     user = models.ForeignKey('auth.User', null=True, blank=True, related_name="aggregator_subscriptions")
     mode = models.CharField(max_length=20, choices=(
         ('poll', 'Poll'),
