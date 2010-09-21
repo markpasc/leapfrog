@@ -1,27 +1,76 @@
+html {
+    min-height: 100%;
+}
 
 body {
     color: #000000;
     background: #eeeeee;
     font-family: "Arial", "Helvetica", sans-serif;
+
+    font-size: 1em;
+    line-height: 1.5em;
+    min-height: 100%;
 }
 
+#content {
+    width: 700px;
+    margin: 16px auto;
+}
+
+.pkg:after {
+    content: " ";
+    display: block;
+    visibility: hidden;
+    clear: both;
+    height: 0.1px;
+    font-size: 0.1em;
+    line-height: 0;
+}
+.pkg { display: inline-block; }
 
 .activity {
     position: relative;
 
     background: #ffffff;
     color: #000000;
-
-    padding: 16px;
-    width: 700px;
-    margin: 16px auto;
+    margin: 2em 0;
+    min-height: 82px;
 
     -webkit-box-shadow: -5px 5px 20px #ccc;
     -moz-box-shadow: -5px 5px 20px #ccc;
     box-shadow: -5px 5px 20px #ccc;
 }
 
-.activity-actor {
+.activity .whyline {
+    background: #fffb95;
+    padding: 10px 20px;
+    border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+
+    font-size: 0.8em;
+}
+
+.activity .whyline p {
+    margin: 0;
+    padding: 0;
+}
+
+.activity .whyline a:link,
+.activity .whyline a:hover,
+.activity .whyline a:visited,
+.activity .whyline a:focus,
+.activity .whyline a:active {
+    color: inherit;
+}
+
+.activity .whyline img {
+    width: 20px;
+    height: auto;
+    vertical-align: middle;
+    border-radius: 3px;
+}
+
+.activity .activity-actor {
     width: 50px;
     height: auto;
     border-radius: 5px;
@@ -29,6 +78,10 @@ body {
 
     position: absolute;
     left: -40px;
+}
+
+.activity .activity-content {
+    padding: 16px;
 }
 
 .activity h2 {
