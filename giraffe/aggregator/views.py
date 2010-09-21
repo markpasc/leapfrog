@@ -13,7 +13,7 @@ import giraffe.aggregator.activitystreams.atom as as_atom
 
 
 def activity_stream(request):
-    activities = models.Activity.objects.order_by("time")[:50]
+    activities = models.Activity.objects.order_by('-time')[:50]
 
     data = {
         'activities': activities,
