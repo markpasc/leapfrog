@@ -33,7 +33,7 @@
             {% endif %}
 
 
-            <div class="activity-content">
+            <div class="item-content">
 
                 {% if object.title %}
                     <h1 class="title">

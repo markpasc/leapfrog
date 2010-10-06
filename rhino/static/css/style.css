@@ -28,7 +28,7 @@ body {
 }
 .pkg { display: inline-block; }
 
-.activity {
+.item {
     position: relative;
 
     background: #ffffff;
@@ -41,7 +41,7 @@ body {
     box-shadow: -5px 5px 20px #ccc;
 }
 
-.activity .whyline {
+.item .whyline {
     background: #fffb95;
     padding: 10px 20px;
     border-radius: 5px 5px 0 0;
@@ -50,51 +50,51 @@ body {
     font-size: 0.8em;
 }
 
-.activity .whyline p {
+.item .whyline p {
     margin: 0;
     padding: 0;
 }
 
-.activity .title {
+.item .title {
     font-weight: normal;
     margin: 0;
 }
 
-.activity .title a:link,
-.activity .title a:hover,
-.activity .title a:visited,
-.activity .title a:focus,
-.activity .title a:active {
+.item .title a:link,
+.item .title a:hover,
+.item .title a:visited,
+.item .title a:focus,
+.item .title a:active {
     color: inherit;
     text-decoration: none;
 }
-.activity .title a:hover,
-.activity .title a:focus,
-.activity .title a:active {
+.item .title a:hover,
+.item .title a:focus,
+.item .title a:active {
     text-decoration: underline;
 }
 
-.activity .whyline a:link,
-.activity .whyline a:hover,
-.activity .whyline a:visited,
-.activity .whyline a:focus,
-.activity .whyline a:active,
-.activity .footer a:link,
-.activity .footer a:hover,
-.activity .footer a:visited,
-.activity .footer a:focus,
-.activity .footer a:active {
+.item .whyline a:link,
+.item .whyline a:hover,
+.item .whyline a:visited,
+.item .whyline a:focus,
+.item .whyline a:active,
+.item .footer a:link,
+.item .footer a:hover,
+.item .footer a:visited,
+.item .footer a:focus,
+.item .footer a:active {
     color: inherit;
 }
 
-.activity .whyline img {
+.item .whyline img {
     width: 20px;
     height: auto;
     vertical-align: middle;
     border-radius: 3px;
 }
 
-.activity .activity-actor {
+.item .item-actor {
     width: 50px;
     height: auto;
     border-radius: 5px;
@@ -104,21 +104,21 @@ body {
     left: -40px;
 }
 
-.activity .activity-content {
+.item .item-content {
     padding: 16px;
 }
 
-.activity .footer {
+.item .footer {
     font-size: 0.8em;
     color: #999;
 }
 
-.activity h2 {
+.item h2 {
     font-size: 1.2em;
     font-weight: bold;
     margin: 0;
 }
-.activity .byline {
+.item .byline {
     margin: 0;
     font-size: 0.9em;
     color: #222222;
