@@ -11,6 +11,7 @@ class Account(models.Model):
     display_name = models.CharField(max_length=100)
     who = models.ForeignKey(User)
     last_updated = models.DateTimeField(default=datetime.now)
+    authinfo = models.CharField(max_length=600, blank=True)
 
     def __unicode__(self):
         return u'%s at %s' % (self.display_name, self.service)
