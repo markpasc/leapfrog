@@ -1,4 +1,4 @@
-{% extends "aggregator/base.html" %}
+{% extends "aggregator/base.jj" %}
 
 {% block content %}
 
