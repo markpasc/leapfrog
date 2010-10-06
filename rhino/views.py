@@ -5,6 +5,6 @@ from django.template import RequestContext
 def home(request):
     data = {}
 
-    template = 'aggregator/index.jj'
+    template = 'rhino/index.jj'
     return render_to_response(template, data,
         context_instance=RequestContext(request))

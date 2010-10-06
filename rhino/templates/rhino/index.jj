@@ -1,4 +1,4 @@
-{% extends "aggregator/base.jj" %}
+{% extends "rhino/base.jj" %}
 
 {% block content %}
 
