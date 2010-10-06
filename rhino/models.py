@@ -45,8 +45,7 @@ class Object(models.Model):
     foreign_id = models.CharField(max_length=255, blank=True)
 
     title = models.CharField(max_length=255, blank=True, null=True)
-    body = models.CharField(max_length=255, blank=True, null=True)
-    content = models.TextField(blank=True)
+    body = models.TextField(blank=True)
     image = models.ForeignKey(Media, null=True, blank=True, related_name="represented_objects")
     author = models.ForeignKey(Account, null=True, blank=True, related_name="authored_objects")
 
