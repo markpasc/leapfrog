@@ -35,3 +35,11 @@ def fetch_federation_document(domain):
     except ValueError:
         return {}
 
+
+def make_verifier(domain):
+    from django.conf import settings
+    import hashlib
+    secret = settings.SECRET_KEY
+    return hashlib.sha256("\n".join((domain, secret))).hexdigest()
+
+
