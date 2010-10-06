@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 
 from django.conf import settings
@@ -47,6 +48,7 @@ def poll_twitter(account):
                 foreign_id=str(tweetdata['id']),
                 render_mode='status',
                 body=tweetdata['text'],
+                time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
                 permalink_url='http://twitter.com/%s/status/%d'
                     % (tweetdata['user']['screen_name'], tweetdata['id']),
                 author=author,
