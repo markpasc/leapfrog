@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 class Person(models.Model):
 
     display_name = models.CharField(max_length=100)
+    user = models.ForeignKey(User, blank=True, null=True)
 
 
 class Account(models.Model):
@@ -14,7 +15,6 @@ class Account(models.Model):
     service = models.CharField(max_length=20)
     ident = models.CharField(max_length=100)
     display_name = models.CharField(max_length=100)
-    user = models.ForeignKey(User)
     last_updated = models.DateTimeField(default=datetime.now)
     authinfo = models.CharField(max_length=600, blank=True)
     person = models.ForeignKey(Person, related_name='accounts')
