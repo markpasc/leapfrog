@@ -7,7 +7,8 @@ from django.contrib.auth.models import User
 class Account(models.Model):
 
     service = models.CharField(max_length=20)
-    name = models.CharField(max_length=100)
+    ident = models.CharField(max_length=100)
+    display_name = models.CharField(max_length=100)
     who = models.ForeignKey(User)
     last_updated = models.DateTimeField(default=datetime.now)
 
