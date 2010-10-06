@@ -23,7 +23,15 @@ def poll_twitter(account):
 
     tl = json.loads(content)
 
-    for tweetdata in tl:
+    for orig_tweetdata in tl:
+        try:
+            tweetdata = orig_tweetdata['retweeted_status']
+        except KeyError:
+            tweetdata = orig_tweetdata
+            retweet = False
+        else:
+            retweet = True
+
         # Who is the author?
         try:
             author = Account.objects.get(service='twitter.com', ident=str(tweetdata['user']['id']))
@@ -43,6 +51,7 @@ def poll_twitter(account):
         try:
             tweet = Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
         except Object.DoesNotExist:
+            # TODO: twitpics etc are photos
             tweet = Object(
                 service='twitter.com',
                 foreign_id=str(tweetdata['id']),
@@ -55,8 +64,28 @@ def poll_twitter(account):
             )
             tweet.save()
 
-        # TODO: replies are replies
-        # TODO: twitpics etc are photos
+        if UserStream.objects.filter(user=user, obj=tweet).exists():
+            continue
 
-        UserStream.objects.get_or_create(user=user, obj=tweet,
-            defaults={'why_account': author, 'why_verb': 'post'})
+        if not retweet:
+            UserStream.objects.create(user=user, obj=tweet,
+                why_account=author, why_verb='post')
+            continue
+
+        try:
+            retweeter = Account.objects.get(service='twitter.com', ident=str(orig_tweetdata['user']['id']))
+        except Account.DoesNotExist:
+            person = Person(
+                display_name=orig_tweetdata['user']['name'],
+            )
+            person.save()
+            retweeter = Account(
+                service='twitter.com',
+                ident=str(orig_tweetdata['user']['id']),
+                display_name=orig_tweetdata['user']['id'],
+                person=person,
+            )
+            retweeter.save()
+
+        UserStream.objects.create(user=user, obj=tweet,
+            why_account=retweeter, why_verb='share')
