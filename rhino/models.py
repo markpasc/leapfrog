@@ -17,21 +17,27 @@ class Account(models.Model):
         return u'%s at %s' % (self.display_name, self.service)
 
 
+class Media(models.Model):
+
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    # TODO: change this when we store images locally
+    image_url = models.CharField(max_length=255, blank=True)
+    embed_code = models.TextField()
+
+
 class Object(models.Model):
 
-    foreign_id = models.CharField(max_length=255, null=True)
-    foreign_id_hash = models.CharField(max_length=40, db_index=True, unique=True, null=True)
+    service = models.CharField(max_length=20, blank=True)
+    foreign_id = models.CharField(max_length=255, blank=True)
+
     name = models.CharField(max_length=255, blank=True, null=True)
     summary = models.CharField(max_length=255, blank=True, null=True)
+    content = models.TextField(blank=True)
     permalink_url = models.CharField(max_length=255, blank=True, null=True)
     time = models.DateTimeField(db_index=True)
 
-    content = models.TextField(blank=True)
-
-    # ?
-    image_url = models.CharField(max_length=255, null=True, blank=True)
-    image_width = models.IntegerField(null=True, blank=True)
-    image_height = models.IntegerField(null=True, blank=True)
+    media = models.ForeignKey(Media, null=True)
 
     author = models.ForeignKey('Object', related_name='authored', null=True, blank=True)
     in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
@@ -41,9 +47,17 @@ class Object(models.Model):
 
 class UserStream(models.Model):
 
+    VERB_CHOICES = (
+        ('post', 'post'),
+        ('share', 'share'),
+        ('like', 'like'),
+    )
+
     obj = models.ForeignKey(Object, related_name='stream_items')
-    who = models.ForeignKey(User, related_name='stream_items')
+    author = models.ForeignKey(User, related_name='stream_items')
     when = models.DateTimeField(auto_now_add=True)
+    why_who = models.ForeignKey(User, related_name='stream_items_caused')
+    why_verb = models.CharField(max_length=20, choices=VERB_CHOICES)
 
 
 class UserReplyStream(models.Model):
