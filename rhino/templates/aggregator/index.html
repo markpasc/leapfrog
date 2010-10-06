@@ -1,0 +1,74 @@
+{% extends "aggregator/base.html" %}
+
+{% block content %}
+
+    {% for activity in activities %}{% if activity.object %}
+        <div id="activity-{{ activity.object.uniq_hash }}" class="activity">
+
+            {% if activity.verb != 'post' %}
+                {% set actor = activity.actor %}
+                <div class="whyline">
+                    <p>
+                    {% if actor.image_url %}
+                        <a href="{{ actor.permalink_url }}" title="{{ actor.name }}"><img src="{{ actor.image_url }}" alt="{{ actor.name }}"></a>
+                    {% endif %}
+                    <a href="{{ actor.permalink_url }}">{{ actor.name }}</a>
+
+                    {% if activity.verb == "share" %}
+                        shared this
+                    {% elif activity.verb == "favorite" %}
+                        added this as a favorite
+                    {% elif activity.verb == "follow" %}
+                        followed this person
+                    {% else %}
+                        <samp>{{ activity.verb }}</samp>ed this
+                    {% endif %}
+
+                    <span title="{{ activity.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}" class="relativedatestamp">{{ activity.time.strftime("%d %b %Y %H:%M") }}</span>
+
+                    {% if activity.target %}
+                        in <a href="{{ activity.target.permalink_url }}">{{ activity.target.name }}</a>
+                    {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+
+            <div class="activity-content">
+                {% if activity.verb == 'post' and activity.actor and activity.actor.image_url %}
+                    <a href="{{ activity.actor.permalink_url }}"><img
+                        src="{{ activity.actor.image_url }}"
+                        class="activity-actor"
+                        style="-webkit-transform: rotate({{ rot.next() }}deg); -moz-transform: rotate({{ rot.next() }}deg); transform: rotate({{ rot.next() }}deg);"
+                        ></a>
+                {% endif %}
+
+                {% if activity.object.name %}
+                    <h1 class="title">
+                        {% if activity.object.permalink_url %}
+                            <a href="{{ activity.object.permalink_url }}">{{ activity.object.name }}</a>
+                        {% else %}
+                            {{ activity.object.name }}
+                        {% endif %}
+                    </h1>
+                {% endif %}
+
+                {% if activity.object.image_url %}
+                    <p class="image"><img src="{{ activity.object.image_url }}" style="max-width: 500px; max-height: 300px;"></p>
+                {% endif %}
+
+                {% if activity.object.summary %}
+                    <p class="summary">{{ activity.object.summary|striptags }}</p>
+                {% endif %}
+
+                <div class="footer">
+                    <a href="{{ activity.object.permalink_url }}" class="relativedatestamp" title="{{ activity.object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ activity.object.time.strftime("%d %b %Y %H:%M") }}</a>
+                    {% if activity.verb == 'post' %}
+                    by
+                    <a href="{{ activity.actor.permalink_url }}">{{ activity.actor.name }}</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}{% endfor %}
+
+{% endblock %}
