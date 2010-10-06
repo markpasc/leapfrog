@@ -32,7 +32,7 @@ class Media(models.Model):
     height = models.IntegerField(null=True, blank=True)
     # TODO: change this when we store images locally
     image_url = models.CharField(max_length=255, blank=True)
-    embed_code = models.TextField()
+    embed_code = models.TextField(blank=True)
 
 
 class Object(models.Model):
