@@ -35,4 +35,4 @@ class UserStream(models.Model):
 
     obj = models.ForeignKey(Object)
     who = models.ForeignKey(User)
-    when = models.DatetimeField(auto_now_add=True)
+    when = models.DateTimeField(auto_now_add=True)
