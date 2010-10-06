@@ -20,7 +20,13 @@ class ObjectAdmin(admin.ModelAdmin):
 admin.site.register(models.Object, ObjectAdmin)
 
 
+class UserStreamAdmin(admin.ModelAdmin):
+    list_display = ('obj', 'user', 'time')
+    readonly_fields = ('time',)
+
+admin.site.register(models.UserStream, UserStreamAdmin)
+
+
 admin.site.register(models.Person)
 admin.site.register(models.Media)
-admin.site.register(models.UserStream)
 admin.site.register(models.UserReplyStream)

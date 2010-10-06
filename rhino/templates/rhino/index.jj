@@ -3,15 +3,41 @@
 {% block content %}
 
     {% for item in stream_items %}
-       {% set object = item.main_object %}
+        {% set object = item.obj %}
+        <div class="item">
 
-       <div class="activity">
-            <div class="whyline"><p>Why?</p></div>
-            <div class="activity-content">
+            {% if item.why_verb != 'post' %}
+                {% set actor = item.why_account.person %}
+                <div class="whyline">
+                    <p>
+                    {% if actor.image_url %}
+                        <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.image_url }}" alt="{{ actor.display_name }}"></a>
+                    {% endif %}
+                    <a href="{{ actor.permalink_url }}">{{ actor.display_name }}</a>
+
+                    {% if item.why_verb == 'share' %}
+                        shared this
+                    {% elif item.why_verb == 'like' %}
+                        liked this
+                    {% elif item.why_verb == 'reply' %}
+                        replied to this
+                    {% else %}
+                        <samp>{{ item.why_verb }}</samp>ed this
+                    {% endif %}
+
+                    <span title="{{ item.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}" class="relativedatestamp">{{ item.time.strftime("%d %b %Y %H:%M") }}</span>
+
+                    <!-- target? -->
+                    </p>
+                </div>
+            {% endif %}
+
+
+            <div class="item-content">
 
                 {% if object.title %}
                     <h1 class="title">
-                        {{ object.title }}
+                        <a href="{{ object.permalink_url }}">{{ object.title }}</a>
                     </h1>
                 {% endif %}
 
