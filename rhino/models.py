@@ -60,7 +60,9 @@ class Object(models.Model):
     in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
 
     def __unicode__(self):
-        return u'%s:%s (%s)' % (self.service, self.foreign_id, self.title if self.title else ("untitled %s from %s" % (self.render_mode, self.author.display_name if self.author else "anonymous user")))
+        if self.title:
+            return self.title
+        return u'%s by %s' % (self.render_mode, unicode(self.author))
 
 
 class UserStream(models.Model):
