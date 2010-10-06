@@ -12,6 +12,9 @@ class Account(models.Model):
     who = models.ForeignKey(User)
     last_updated = models.DateTimeField(default=datetime.now)
 
+    def __unicode__(self):
+        return u'%s at %s' % (self.display_name, self.service)
+
 
 class Object(models.Model):
 
