@@ -28,21 +28,27 @@ class Media(models.Model):
 
 class Object(models.Model):
 
+    RENDER_MODE_CHOICES = (
+        ('mixed', 'mixed'),
+        ('status', 'status'),
+        ('image', 'image'),
+        ('link', 'link'),
+    )
+
     service = models.CharField(max_length=20, blank=True)
     foreign_id = models.CharField(max_length=255, blank=True)
 
-    name = models.CharField(max_length=255, blank=True, null=True)
-    summary = models.CharField(max_length=255, blank=True, null=True)
+    title = models.CharField(max_length=255, blank=True, null=True)
+    body = models.CharField(max_length=255, blank=True, null=True)
     content = models.TextField(blank=True)
-    permalink_url = models.CharField(max_length=255, blank=True, null=True)
+    image = models.ForeignKey(Media, null=True, blank=True)
+
+    render_mode = models.CharField(max_length=15, blank=True, default='', choices=RENDER_MODE_CHOICES)
+
     time = models.DateTimeField(db_index=True)
+    permalink_url = models.CharField(max_length=255, blank=True, null=True)
 
-    media = models.ForeignKey(Media, null=True)
-
-    author = models.ForeignKey('Object', related_name='authored', null=True, blank=True)
     in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
-    attachments = models.ManyToManyField("Object", related_name="attached_to", blank=True)
-    object_type = models.CharField(max_length=15, blank=True, default='')
 
 
 class UserStream(models.Model):
