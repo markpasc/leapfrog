@@ -4,14 +4,20 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Person(models.Model):
+
+    display_name = models.CharField(max_length=100)
+
+
 class Account(models.Model):
 
     service = models.CharField(max_length=20)
     ident = models.CharField(max_length=100)
     display_name = models.CharField(max_length=100)
-    who = models.ForeignKey(User)
+    user = models.ForeignKey(User)
     last_updated = models.DateTimeField(default=datetime.now)
     authinfo = models.CharField(max_length=600, blank=True)
+    person = models.ForeignKey(Person, related_name='accounts')
 
     def __unicode__(self):
         return u'%s at %s' % (self.display_name, self.service)
@@ -41,7 +47,8 @@ class Object(models.Model):
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.CharField(max_length=255, blank=True, null=True)
     content = models.TextField(blank=True)
-    image = models.ForeignKey(Media, null=True, blank=True)
+    image = models.ForeignKey(Media, null=True, blank=True, related_name="represented_objects")
+    author = models.ForeignKey(Account, null=True, blank=True, related_name="authored_objects")
 
     render_mode = models.CharField(max_length=15, blank=True, default='', choices=RENDER_MODE_CHOICES)
 
@@ -60,18 +67,19 @@ class UserStream(models.Model):
     )
 
     obj = models.ForeignKey(Object, related_name='stream_items')
-    author = models.ForeignKey(User, related_name='stream_items')
-    when = models.DateTimeField(auto_now_add=True)
-    why_who = models.ForeignKey(User, related_name='stream_items_caused')
+    user = models.ForeignKey(User, related_name='stream_items')
+    time = models.DateTimeField(auto_now_add=True)
+    why_account = models.ForeignKey(Account, related_name='stream_items_caused')
     why_verb = models.CharField(max_length=20, choices=VERB_CHOICES)
 
+    # index: (user, when) so we can query WHERE user ORDER BY when
 
 class UserReplyStream(models.Model):
 
-    who = models.ForeignKey(User, related_name='reply_stream_items')
+    user = models.ForeignKey(User, related_name='reply_stream_items')
     root = models.ForeignKey(Object, related_name='reply_reply_stream_items')
-    root_when = models.DateTimeField()
+    root_time = models.DateTimeField()
     reply = models.ForeignKey(Object, related_name='reply_stream_items')
-    reply_when = models.DateTimeField()
+    reply_time = models.DateTimeField()
 
-    # index: (who, root_when, reply_when)
+    # index: (user, root_when, reply_when) so we can query WHERE user, root_when <> ORDER BY reply_when
