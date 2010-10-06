@@ -1,34 +1,28 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
-from django.contrib.sites.models import Site
+from django.db.utils import IntegrityError
 
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        db.add_column('publisher_asset', 'atom_id',
-            self.gf('django.db.models.fields.CharField')(max_length=200, null=True, blank=True),
-            keep_default=False)
-
-        if not db.dry_run:
-            site = Site.objects.get_current()
-            for asset in orm.Asset.objects.all():
-                asset.atom_id = 'tag:%s,2010:%s' % (site.domain, asset.slug)
-                asset.save()
-
-        db.alter_column('publisher_asset', 'atom_id',
-            self.gf('django.db.models.fields.CharField')(
-                max_length=200,
-                blank=True,
-                unique=True,
-                default='')
-        )
+        user = orm['auth.User'].objects.all().order_by('id')[0]  # whoever's first
+        try:
+            person = orm['friends.Person'].objects.create(user=user,
+                display_name=user.first_name or user.username,
+                profile_url='',
+                userpic_url='',
+            )
+        except IntegrityError:
+            # We may have already created this Person (such as by having backed past this migration already).
+            pass
 
 
     def backwards(self, orm):
-        db.delete_column('publisher_asset', 'atom_id')
+        # Don't delete data that depends on this Person.
+        pass
 
 
     models = {
@@ -68,25 +62,28 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'publisher.asset': {
-            'Meta': {'object_name': 'Asset'},
-            'atom_id': ('django.db.models.fields.CharField', [], {'default': "u'tag:example.com,2010:4728307207933277751'", 'unique': 'True', 'max_length': '200', 'blank': 'True'}),
-            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+        'friends.group': {
+            'Meta': {'object_name': 'Group'},
+            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'slug': ('django.db.models.fields.SlugField', [], {'unique': 'True', 'max_length': '50', 'db_index': 'True'}),
-            'summary': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'title': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'})
+            'people': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'_groups'", 'blank': 'True', 'to': "orm['friends.Person']"}),
+            'tag': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'db_index': 'True'})
         },
-        'publisher.subscription': {
-            'Meta': {'unique_together': "(('callback', 'topic'),)", 'object_name': 'Subscription'},
-            'callback': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+        'friends.identity': {
+            'Meta': {'object_name': 'Identity'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'lease_until': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'secret': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'topic': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True', 'blank': 'True'})
+            'openid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
+            'person': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['friends.Person']"})
+        },
+        'friends.person': {
+            'Meta': {'object_name': 'Person'},
+            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '75'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'_people'", 'blank': 'True', 'to': "orm['friends.Group']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'profile_url': ('django.db.models.fields.CharField', [], {'max_length': '300', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            'userpic_url': ('django.db.models.fields.CharField', [], {'max_length': '300', 'blank': 'True'})
         }
     }
 
-    complete_apps = ['publisher']
+    complete_apps = ['friends']

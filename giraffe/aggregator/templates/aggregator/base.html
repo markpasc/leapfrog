@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html><head>
     <meta charset="utf-8">
-    <title>Aggregator</title>
+    <title>{{ page_title }}</title>
+    {% block htmlhead %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/reset.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/text.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('giraffe-static', kwargs={'path': "css/style.css"}) }}">
+    {% endblock %}
 </head><body>
 
-{% block content %}{% endblock %}
+    <div id="content">
+        {% block content %}{% endblock %}
+    </div>
 
 </body></html>

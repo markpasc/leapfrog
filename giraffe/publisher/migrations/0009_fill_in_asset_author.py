@@ -8,8 +8,10 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         user = orm['auth.User'].objects.all().order_by('id')[0]  # whoever's first
-        person, created = orm['friends.Person'].objects.get_or_create(user=user,
-            defaults={'display_name': user.first_name or user.username})
+        try:
+            person = orm['friends.Person'].objects.get(user=user)
+        except orm['friends.Person'].DoesNotExist:
+            raise ValueError('No such Person for the superuser; did you run all the giraffe.friends migrations yet?')
         orm.Asset.objects.filter(author=None).update(author=person)
 
 

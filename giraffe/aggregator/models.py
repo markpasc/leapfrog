@@ -9,7 +9,7 @@ class Subscription(models.Model):
 
     display_name = models.CharField(max_length=75, null=True, blank=True)
     topic_url = models.CharField(max_length=255)
-    topic_url_hash = models.CharField(max_length=40, db_index=True, unique=True)
+    topic_url_hash = models.CharField(max_length=40, db_index=True, blank=True, unique=True)
     user = models.ForeignKey('auth.User', null=True, blank=True, related_name="aggregator_subscriptions")
     mode = models.CharField(max_length=20, choices=(
         ('poll', 'Poll'),
@@ -45,15 +45,15 @@ class Object(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     summary = models.CharField(max_length=255, blank=True, null=True)
     permalink_url = models.CharField(max_length=255, blank=True, null=True)
+    time = models.DateTimeField(db_index=True)
 
     image_url = models.CharField(max_length=255, null=True, blank=True)
     image_width = models.IntegerField(null=True, blank=True)
     image_height = models.IntegerField(null=True, blank=True)
 
-    in_reply_to = models.ForeignKey("Object", null=True, blank=True)
-
+    author = models.ForeignKey('Object', related_name='authored', null=True, blank=True)
+    in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
     attachments = models.ManyToManyField("Object", related_name="attached_to", blank=True)
-
     object_type = models.CharField(max_length=15, blank=True, default='')
 
     @classmethod
@@ -66,6 +66,8 @@ class Object(models.Model):
             self.foreign_id_hash = sha1_hex(self.foreign_id)
         else:
             self.foreign_id_hash = None
+        if self.time is None:
+            self.time = datetime.now()
         super(Object, self).save()
 
     def __unicode__(self):

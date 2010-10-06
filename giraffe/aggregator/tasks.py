@@ -29,7 +29,7 @@ def subscribe(feed_url, sub_pk):
         hub_url = hubs[0].attrib['href']
     except Exception, exc:
         log.warning('%s trying to find hub in feed %s: %s', type(exc).__name__, feed_url, str(exc))
-        return
+        hub_url = "http://pubsubhubbub.appspot.com/"
 
     # Try to subscribe.
     callback_root = 'http://%s/' % Site.objects.get_current().domain

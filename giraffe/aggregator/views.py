@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as etree
 
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -12,9 +13,9 @@ from giraffe.aggregator import models
 import giraffe.aggregator.activitystreams.atom as as_atom
 
 
+@login_required
 def activity_stream(request):
-
-    activities = models.Activity.objects.order_by("time")[:50]
+    activities = models.Activity.objects.order_by('-time')[:50]
 
     data = {
         'activities': activities,
