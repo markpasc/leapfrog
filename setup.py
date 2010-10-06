@@ -1,11 +1,12 @@
 from setuptools import setup
 
 setup(
-    name='giraffe',
+    name='rhino',
     version='1.0',
-    packages=['giraffe'],
+    packages=['rhino'],
     include_package_data=True,
 
-    requires=['Django', 'south', 'celery', 'django_celery', 'httplib2', 'passogva', 'BeautifulSoup(<3.1)', 'jinja2'],
-    install_requires=['Django', 'south', 'celery', 'django_celery', 'httplib2', 'passogva', 'BeautifulSoup<3.1', 'jinja2'],
+    #requires=['Django', 'south', 'celery', 'django_celery', 'httplib2', 'passogva', 'BeautifulSoup(<3.1)', 'jinja2'],
+    #install_requires=['Django', 'south', 'celery', 'django_celery', 'httplib2', 'passogva', 'BeautifulSoup<3.1', 'jinja2'],
+    requires=['Django', 'south', 'jinja2'],
 )
