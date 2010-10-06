@@ -1,4 +1,4 @@
 *.pyc
 .env
 website
-giraffe.egg-info
+*.egg-info
