@@ -10,8 +10,8 @@
                 {% set actor = item.why_account.person %}
                 <div class="whyline">
                     <p>
-                    {% if actor.image_url %}
-                        <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.image_url }}" alt="{{ actor.display_name }}"></a>
+                    {% if actor.avatar %}
+                        <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.avatar.image_url }}" alt="{{ actor.display_name }}"></a>
                     {% endif %}
                     <a href="{{ actor.permalink_url }}">{{ actor.display_name }}</a>
 
