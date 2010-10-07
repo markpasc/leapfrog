@@ -52,7 +52,7 @@
                         >
 
                         <div class="status">
-                            <p class="summary">{{ object.body|striptags }}</p>
+                            <p class="summary">{{ object.body }}</p>
 
                             <div class="footer">
                                 <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>

@@ -38,6 +38,31 @@ def account_for_twitter_user(userdata):
     return account
 
 
+def tweet_html(tweetdata):
+    tweet = tweetdata['text']
+    mutations = list()
+    for urldata in tweetdata['entities']['urls']:
+        url = urldata['expanded_url'] or urldata['url']
+        mutations.append({
+            'indices': urldata['indices'],
+            'html': """<a href="%s">%s</a>""" % (url, url),
+        })
+    for mentiondata in tweetdata['entities']['user_mentions']:
+        mutations.append({
+            'indices': mentiondata['indices'],
+            'html': """@<a href="http://twitter.com/%(screen_name)s" title="%(name)s">%(screen_name)s</a>""" % mentiondata,
+        })
+    for tagdata in tweetdata['entities']['hashtags']:
+        mutations.append({
+            'indices': tagdata['indices'],
+            'html': """<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
+        })
+    for mutation in sorted(mutations, key=lambda x:x['indices'][0], reverse=True):
+        indices = mutation['indices']
+        tweet = tweet[:indices[0]] + mutation['html'] + tweet[indices[1]:]
+    return tweet
+
+
 def poll_twitter(account):
     user = account.person.user
     if user is None:
@@ -76,7 +101,7 @@ def poll_twitter(account):
                 service='twitter.com',
                 foreign_id=str(tweetdata['id']),
                 render_mode='status',
-                body=tweetdata['text'],
+                body=tweet_html(tweetdata),
                 time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
                 permalink_url='http://twitter.com/%s/status/%d'
                     % (tweetdata['user']['screen_name'], tweetdata['id']),
