@@ -164,6 +164,17 @@ body {
 
 /* item styles */
 
+.item .item-content-status {
+    padding: 0;
+}
+
+.item-content .status-shade {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
 .item-content .status {
     background: white;
     padding: 10px;
@@ -175,4 +186,6 @@ body {
 .item-content .status .summary {
     margin: 0;
     padding: 0;
+    font-size: 1.5em;
+    line-height: 1.2em;
 }
