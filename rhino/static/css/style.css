@@ -140,6 +140,11 @@ body {
     -moz-border-radius: 5px;
 }
 
+.item-has-whyline .item-content {
+    border-radius: 0 0 5px 5px;
+    -moz-border-radius: 0 0 5px 5px;
+}
+
 .item .footer {
     font-size: 0.8em;
     color: #999;

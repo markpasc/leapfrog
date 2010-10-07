@@ -4,7 +4,7 @@
 
     {% for item in stream_items %}
         {% set object = item.obj %}
-        <div class="item">
+        <div class="item{% if item.why_verb != 'post' %} item-has-whyline{% endif %}">
 
             {% if item.why_verb != 'post' %}
                 {% set actor = item.why_account.person %}
