@@ -114,9 +114,11 @@ def poll_twitter(account):
 
         if not retweet:
             UserStream.objects.create(user=user, obj=tweet,
+                time=tweet.time,
                 why_account=author, why_verb='post')
             continue
 
         retweeter = account_for_twitter_user(orig_tweetdata['user'])
         UserStream.objects.create(user=user, obj=tweet,
+            time=tweet.time,
             why_account=retweeter, why_verb='share')

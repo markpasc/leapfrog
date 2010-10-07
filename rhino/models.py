@@ -80,7 +80,7 @@ class UserStream(models.Model):
 
     obj = models.ForeignKey(Object, related_name='stream_items')
     user = models.ForeignKey(User, related_name='stream_items')
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(default=datetime.now)
     why_account = models.ForeignKey(Account, related_name='stream_items_caused')
     why_verb = models.CharField(max_length=20, choices=VERB_CHOICES)
 
