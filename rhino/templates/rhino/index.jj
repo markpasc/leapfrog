@@ -35,6 +35,18 @@
 
             <div class="item-content">
 
+                {% set author = object.author.person %}
+                {% if author.avatar %}
+                    {% set poster_rot = rot.next() %}
+                    <a class="author" href="{{ author.permalink_url }}"
+                        style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
+                        ><span></span><img
+                            src="{{ author.avatar.image_url }}"
+                            width="{{ author.avatar.width }}"
+                            height="{{ author.avatar.height }}"
+                            ></a>
+                {% endif %}
+
                 {% if object.title %}
                     <h1 class="title">
                         <a href="{{ object.permalink_url }}">{{ object.title }}</a>
@@ -47,6 +59,8 @@
 
                 <div class="footer">
                     <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                    by
+                    <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
                 </div>
 
             </div>

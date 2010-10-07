@@ -1,10 +1,37 @@
 from datetime import datetime
 import json
+import logging
 
 from django.conf import settings
 import oauth2 as oauth
 
-from rhino.models import Object, Account, Person, UserStream
+from rhino.models import Object, Account, Person, UserStream, Media
+
+
+def account_for_twitter_user(userdata):
+    try:
+        account = Account.objects.get(service='twitter.com', ident=str(userdata['id']))
+    except Account.DoesNotExist:
+        avatar = Media(
+            width=48,
+            height=48,
+            image_url=userdata['profile_image_url'],
+        )
+        avatar.save()
+        person = Person(
+            display_name=userdata['name'],
+            avatar=avatar,
+        )
+        person.save()
+        account = Account(
+            service='twitter.com',
+            ident=str(userdata['id']),
+            display_name=userdata['name'],
+            person=person,
+        )
+        account.save()
+
+    return account
 
 
 def poll_twitter(account):
@@ -22,6 +49,8 @@ def poll_twitter(account):
             % (resp.status, resp.reason, account.display_name))
 
     tl = json.loads(content)
+    from pprint import pformat
+    logging.getLogger('.'.join((__name__, 'poll_twitter'))).debug(pformat(tl))
 
     for orig_tweetdata in tl:
         try:
@@ -33,20 +62,7 @@ def poll_twitter(account):
             retweet = True
 
         # Who is the author?
-        try:
-            author = Account.objects.get(service='twitter.com', ident=str(tweetdata['user']['id']))
-        except Account.DoesNotExist:
-            person = Person(
-                display_name=tweetdata['user']['name'],
-            )
-            person.save()
-            author = Account(
-                service='twitter.com',
-                ident=str(tweetdata['user']['id']),
-                display_name=tweetdata['user']['name'],
-                person=person,
-            )
-            author.save()
+        author = account_for_twitter_user(tweetdata['user'])
 
         try:
             tweet = Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
@@ -72,20 +88,6 @@ def poll_twitter(account):
                 why_account=author, why_verb='post')
             continue
 
-        try:
-            retweeter = Account.objects.get(service='twitter.com', ident=str(orig_tweetdata['user']['id']))
-        except Account.DoesNotExist:
-            person = Person(
-                display_name=orig_tweetdata['user']['name'],
-            )
-            person.save()
-            retweeter = Account(
-                service='twitter.com',
-                ident=str(orig_tweetdata['user']['id']),
-                display_name=orig_tweetdata['user']['id'],
-                person=person,
-            )
-            retweeter.save()
-
+        retweeter = account_for_twitter_user(orig_tweetdata['user'])
         UserStream.objects.create(user=user, obj=tweet,
             why_account=retweeter, why_verb='share')
