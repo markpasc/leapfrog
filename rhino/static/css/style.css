@@ -33,12 +33,11 @@ body {
 
     background: #ffffff;
     color: #000000;
-    margin: 2em 0;
+    margin: 20px 0;
     min-height: 82px;
 
-    -webkit-box-shadow: -5px 5px 20px #ccc;
-    -moz-box-shadow: -5px 5px 20px #ccc;
-    box-shadow: -5px 5px 20px #ccc;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
 }
 
 .item .whyline {
@@ -94,6 +93,10 @@ body {
     border-radius: 3px;
 }
 
+.item .item-body {
+    position: relative;
+}
+
 .item .author {
     line-height: 0;
 
@@ -106,6 +109,7 @@ body {
 
     position: absolute;
     left: -50px;
+    top: 20px;
 }
 
 .item .author img {
@@ -127,7 +131,9 @@ body {
 }
 
 .item .item-content {
-    padding: 16px;
+    padding: 20px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
 }
 
 .item .footer {
@@ -146,3 +152,18 @@ body {
     color: #222222;
 }
 
+
+/* item styles */
+
+.item-content .status {
+    background: white;
+    padding: 10px;
+
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content .status .summary {
+    margin: 0;
+    padding: 0;
+}

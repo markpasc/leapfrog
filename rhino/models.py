@@ -32,6 +32,10 @@ class Account(models.Model):
     authinfo = models.CharField(max_length=600, blank=True)
     person = models.ForeignKey(Person, related_name='accounts')
 
+    status_background_color = models.CharField(max_length=6, blank=True)
+    status_background_image_url = models.CharField(max_length=100, blank=True)
+    status_background_tile = models.BooleanField(blank=True)
+
     def __unicode__(self):
         return u'%s at %s' % (self.display_name, self.service)
 

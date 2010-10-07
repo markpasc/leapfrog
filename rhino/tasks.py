@@ -28,6 +28,10 @@ def account_for_twitter_user(userdata):
             ident=str(userdata['id']),
             display_name=userdata['name'],
             person=person,
+
+            status_background_color=userdata['profile_background_color'],
+            status_background_image_url=userdata['profile_background_image_url'],
+            status_background_tile=userdata['profile_background_tile'],
         )
         account.save()
 

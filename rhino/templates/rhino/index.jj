@@ -32,8 +32,7 @@
                 </div>
             {% endif %}
 
-
-            <div class="item-content">
+            <div class="item-body">
 
                 {% set author = object.author.person %}
                 {% if author.avatar %}
@@ -47,21 +46,45 @@
                             ></a>
                 {% endif %}
 
-                {% if object.title %}
-                    <h1 class="title">
-                        <a href="{{ object.permalink_url }}">{{ object.title }}</a>
-                    </h1>
-                {% endif %}
+                {% if object.render_mode == 'status' %}
+                    <div class="item-content"
+                        style="background: {% if object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
+                        >
 
-                {% if object.body %}
-                    <p class="summary">{{ object.body|striptags }}</p>
-                {% endif %}
+                        <div class="status">
+                            <p class="summary">{{ object.body|striptags }}</p>
 
-                <div class="footer">
-                    <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
-                    by
-                    <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
-                </div>
+                            <div class="footer">
+                                <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                                by
+                                <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                            </div>
+                        </div>
+
+                    </div>
+                {% else %}
+
+                    <div class="item-content">
+
+                        {% if object.title %}
+                            <h1 class="title">
+                                <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                            </h1>
+                        {% endif %}
+
+                        {% if object.body %}
+                            <p class="summary">{{ object.body|striptags }}</p>
+                        {% endif %}
+
+                        <div class="footer">
+                            <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                            by
+                            <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                        </div>
+
+                    </div>
+
+                {% endif %}
 
             </div>
 
