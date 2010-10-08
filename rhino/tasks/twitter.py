@@ -43,19 +43,22 @@ def account_for_twitter_user(userdata):
 
 def tweet_html(tweetdata):
     tweet = tweetdata['text']
+    if 'entities' not in tweetdata:
+        return tweet
+
     mutations = list()
-    for urldata in tweetdata['entities']['urls']:
+    for urldata in tweetdata['entities'].get('urls', ()):
         url = urldata['expanded_url'] or urldata['url']
         mutations.append({
             'indices': urldata['indices'],
             'html': """<a href="%s">%s</a>""" % (url, url),
         })
-    for mentiondata in tweetdata['entities']['user_mentions']:
+    for mentiondata in tweetdata['entities'].get('user_mentions', ()):
         mutations.append({
             'indices': mentiondata['indices'],
             'html': """@<a href="http://twitter.com/%(screen_name)s" title="%(name)s">%(screen_name)s</a>""" % mentiondata,
         })
-    for tagdata in tweetdata['entities']['hashtags']:
+    for tagdata in tweetdata['entities'].get('hashtags', ()):
         mutations.append({
             'indices': tagdata['indices'],
             'html': """<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
@@ -148,11 +151,11 @@ def poll_twitter(account):
         # tweet with a link and custom text
         # tweet with a link and the link's target page title (found how?)
 
-        # Is it really a reply?
         if why_verb == 'post' and not tweet.in_reply_to:
             UserStream.objects.get_or_create(user=user, obj=tweet,
                 defaults={'why_account': tweet.author, 'why_verb': 'post', 'time': tweet.time})
 
+        # But if it's really a reply?
         elif why_verb == 'post':
             root = tweet
             while root.in_reply_to is not None:
