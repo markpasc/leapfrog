@@ -10,6 +10,13 @@ from oembed import OEmbedConsumer, OEmbedEndpoint, OEmbedError
 log = logging.getLogger(__name__)
 
 
+class DiscoveredEndpoint(OEmbedEndpoint):
+
+    def request(self, url, **opt):
+        # We already used the url to find our endpoint URL, so don't add more query args again.
+        return self._urlApi
+
+
 class DiscoveryConsumer(OEmbedConsumer):
 
     def _endpointFor(self, url):
@@ -48,7 +55,7 @@ class DiscoveryConsumer(OEmbedConsumer):
         if oembed_node is None:
             raise OEmbedError('Could not discover against HTML target %s with no oembed tags' % url)
 
-        return OEmbedEndpoint(oembed_node['href'])
+        return DiscoveredEndpoint(oembed_node['href'])
 
 
 class EmbedError(Exception):
