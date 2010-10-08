@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import logging
+import re
 
 from django.conf import settings
 import oauth2 as oauth
@@ -69,6 +70,63 @@ def tweet_html(tweetdata):
     return tweet
 
 
+url_re = re.compile(r"""
+    (?: (?<= \A )
+      | (?<= [\s.:;?\-\]<\(] ) )
+
+    https?://
+    [-\w;/?:@&=+$.!~*'()%,#]+
+    [\w/]
+
+    (?= \Z | [\s\.,!:;?\-\[\]>\)] )
+""", re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
+
+mention_re = re.compile(r"""
+    (?: (?<= \A ) | (?<= \s ) )
+    @ (\w+)
+""", re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
+
+tag_re = re.compile(r"""
+    (?: (?<= \A ) | (?<= \s ) )  # BOT or whitespace
+    \# (\w\S*\w)      # tag
+    (?<! 's )         # but don't end with 's
+""", re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
+
+def synthesize_entities(tweetdata):
+    if 'entities' in tweetdata:
+        return
+
+    tweettext = tweetdata['text']
+    ents = {
+        'urls': [],
+        'hashtags': [],
+        'user_mentions': [],
+    }
+
+    for match in url_re.finditer(tweettext):
+        ents['urls'].append({
+            'expanded_url': None,
+            'url': match.group(0),
+            'indices': [match.start(), match.end()],
+        })
+
+    for match in mention_re.finditer(tweettext):
+        ents['user_mentions'].append({
+            'id': None,  # we would have to get this if we ever used it
+            'name': match.group(1),  # TODO: get this from the API? ugh
+            'screen_name': match.group(1),
+            'indices': [match.start(), match.end()],
+        })
+
+    for match in tag_re.finditer(tweettext):
+        ents['hashtags'].append({
+            'text': match.group(1),
+            'indices': [match.start(), match.end()],
+        })
+
+    tweetdata['entities'] = ents
+
+
 def raw_object_for_tweet(tweetdata, client):
     try:
         return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
@@ -92,6 +150,7 @@ def raw_object_for_tweet(tweetdata, client):
                     "%s's timeline" % (resp.status, resp.reason, next_tweetid, account.display_name))
 
             next_tweetdata = json.loads(content)
+            synthesize_entities(next_tweetdata)
             log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
             in_reply_to = raw_object_for_tweet(next_tweetdata, client)
 
