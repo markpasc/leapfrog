@@ -63,6 +63,28 @@ def tweet_html(tweetdata):
     return tweet
 
 
+def object_for_tweet(tweetdata):
+    try:
+        return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
+    except Object.DoesNotExist:
+        pass
+
+    # TODO: twitpics etc are photos
+    tweet = Object(
+        service='twitter.com',
+        foreign_id=str(tweetdata['id']),
+        render_mode='status',
+        body=tweet_html(tweetdata),
+        time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
+        permalink_url='http://twitter.com/%s/status/%d'
+            % (tweetdata['user']['screen_name'], tweetdata['id']),
+        author=author,
+    )
+    tweet.save()
+
+    return tweet
+
+
 def poll_twitter(account):
     user = account.person.user
     if user is None:
@@ -90,24 +112,8 @@ def poll_twitter(account):
         else:
             retweet = True
 
-        # Who is the author?
         author = account_for_twitter_user(tweetdata['user'])
-
-        try:
-            tweet = Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
-        except Object.DoesNotExist:
-            # TODO: twitpics etc are photos
-            tweet = Object(
-                service='twitter.com',
-                foreign_id=str(tweetdata['id']),
-                render_mode='status',
-                body=tweet_html(tweetdata),
-                time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
-                permalink_url='http://twitter.com/%s/status/%d'
-                    % (tweetdata['user']['screen_name'], tweetdata['id']),
-                author=author,
-            )
-            tweet.save()
+        obj = object_for_tweet(tweetdata)
 
         if UserStream.objects.filter(user=user, obj=tweet).exists():
             continue
