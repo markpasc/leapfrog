@@ -63,13 +63,12 @@ def tweet_html(tweetdata):
     return tweet
 
 
-def object_for_tweet(tweetdata):
+def raw_object_for_tweet(tweetdata):
     try:
         return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
     except Object.DoesNotExist:
         pass
 
-    # TODO: twitpics etc are photos
     tweet = Object(
         service='twitter.com',
         foreign_id=str(tweetdata['id']),
@@ -83,6 +82,33 @@ def object_for_tweet(tweetdata):
     tweet.save()
 
     return tweet
+
+
+def save_tweet(orig_tweetdata):
+    # TODO: filter based on source?
+
+    tweetdata = orig_tweetdata
+    why_verb = 'post'
+    try:
+        tweetdata = orig_tweetdata['retweeted_status']
+        why_verb = 'share'
+    except KeyError:
+        pass
+
+    while tweetdata.get('in_reply_to_status_id'):
+        # ...?
+        break
+
+    orig_actor = account_for_twitter_user(orig_tweetdata['user'])
+
+    # CASES:
+    # tweet with just a link
+    # tweet with a link and custom text
+    # tweet with a link and the link's target page title (found how?)
+    # real reply to...
+    # real retweet of...
+
+    pass
 
 
 def poll_twitter(account):
@@ -104,27 +130,4 @@ def poll_twitter(account):
     logging.getLogger('.'.join((__name__, 'poll_twitter'))).debug(pformat(tl))
 
     for orig_tweetdata in tl:
-        try:
-            tweetdata = orig_tweetdata['retweeted_status']
-        except KeyError:
-            tweetdata = orig_tweetdata
-            retweet = False
-        else:
-            retweet = True
-
-        author = account_for_twitter_user(tweetdata['user'])
-        obj = object_for_tweet(tweetdata)
-
-        if UserStream.objects.filter(user=user, obj=tweet).exists():
-            continue
-
-        if not retweet:
-            UserStream.objects.create(user=user, obj=tweet,
-                time=tweet.time,
-                why_account=author, why_verb='post')
-            continue
-
-        retweeter = account_for_twitter_user(orig_tweetdata['user'])
-        UserStream.objects.create(user=user, obj=tweet,
-            time=tweet.time,
-            why_account=retweeter, why_verb='share')
+        save_tweet(orig_tweetdata)
