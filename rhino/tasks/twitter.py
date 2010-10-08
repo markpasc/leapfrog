@@ -66,7 +66,7 @@ def tweet_html(tweetdata):
     return tweet
 
 
-def raw_object_for_tweet(tweetdata):
+def raw_object_for_tweet(tweetdata, client):
     try:
         return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
     except Object.DoesNotExist:
@@ -90,7 +90,7 @@ def raw_object_for_tweet(tweetdata):
 
             next_tweetdata = json.loads(content)
             log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
-            in_reply_to = raw_object_for_tweet(next_tweetdata)
+            in_reply_to = raw_object_for_tweet(next_tweetdata, client)
 
     tweet = Object(
         service='twitter.com',
@@ -139,7 +139,7 @@ def poll_twitter(account):
             why_verb = 'share'
 
         orig_actor = account_for_twitter_user(orig_tweetdata['user'])
-        tweet = raw_object_for_tweet(tweetdata)
+        tweet = raw_object_for_tweet(tweetdata, client)
 
         # CASES:
         # real reply to...
