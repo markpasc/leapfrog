@@ -27,6 +27,11 @@ class UserStreamAdmin(admin.ModelAdmin):
 admin.site.register(models.UserStream, UserStreamAdmin)
 
 
+class UserReplyStreamAdmin(admin.ModelAdmin):
+    list_display = ('reply', 'root', 'user', 'reply_time')
+
+admin.site.register(models.UserReplyStream, UserReplyStreamAdmin)
+
+
 admin.site.register(models.Person)
 admin.site.register(models.Media)
-admin.site.register(models.UserReplyStream)
