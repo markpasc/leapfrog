@@ -1,10 +1,14 @@
 from datetime import datetime
+from HTMLParser import HTMLParseError
 import json
 import logging
 import re
+import urllib2
 
+from BeautifulSoup import BeautifulSoup
 from django.conf import settings
 import oauth2 as oauth
+import oembed
 
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
 
@@ -127,6 +131,47 @@ def synthesize_entities(tweetdata):
     tweetdata['entities'] = ents
 
 
+class DiscoveryConsumer(oembed.OEmbedConsumer):
+
+    def _endpointFor(self, url):
+        endpoint = super(DiscoveryConsumer, self)._endpointFor(url)
+        if endpoint is None:
+            endpoint = self.discoverEndpoint(url)
+        return endpoint
+
+    def discoverEndpoint(self, url):
+        opener = urllib2.build_opener()
+        opener.addheaders = (
+            ('User-Agent', 'python-oembed/' + oembed.__version__),
+        )
+
+        response = opener.open(url)
+
+        headers = response.info()
+        try:
+            content_type = headers['Content-Type']
+        except KeyError:
+            raise oembed.OEmbedError('Resource targeted for discovery has no Content Type')
+        if not 'html' in content_type.lower():
+            raise oembed.OEmbedError('Resource targeted for discovery is %s, not an HTML page' % content_type)
+
+        try:
+            page = BeautifulSoup(response.read())
+        except HTMLParseError:
+            raise oembed.OEmbedError('Could not discover against invalid HTML target %s' % url)
+        head = page.head
+        if head is None:
+            raise oembed.OEmbedError('Could not discover against HTML target %s with no head' % url)
+
+        oembed_node = head.find(rel='alternate', type='application/json+oembed')
+        if oembed_node is None:
+            oembed_node = head.find(rel='alternate', type='text/xml+oembed')
+        if oembed_node is None:
+            raise oembed.OEmbedError('Could not discover against HTML target %s with no oembed tags' % url)
+
+        return oembed.OEmbedEndpoint(oembed_node['href'])
+
+
 def raw_object_for_tweet(tweetdata, client):
     try:
         return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
@@ -153,6 +198,22 @@ def raw_object_for_tweet(tweetdata, client):
             synthesize_entities(next_tweetdata)
             log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
             in_reply_to = raw_object_for_tweet(next_tweetdata, client)
+
+    # Is this something other than a status?
+    if len(tweetdata['entities']['urls']) == 1:
+        about_urldata = tweetdata['entities']['urls'][0]
+        about_url = about_urldata['expanded_url'] or about_urldata['url']
+
+        csr = DiscoveryConsumer()
+        endp = oembed.OEmbedEndpoint('http://www.flickr.com/services/oembed', ['http://*.flickr.com/*', 'http://flic.kr/*'])
+        csr.addEndpoint(endp)
+        try:
+            resource = csr.embed(about_url)
+        except (oembed.OEmbedError, urllib2.HTTPError), exc:
+            log.debug('%s trying to oembed %s: %s', type(exc).__name__, about_url, str(exc))
+        else:
+            # well
+            log.debug('YAY OEMBED ABOUT %s: %r', about_url, resource.getData())
 
     tweet = Object(
         service='twitter.com',
