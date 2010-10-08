@@ -4,10 +4,20 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Media(models.Model):
+
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    # TODO: change this when we store images locally
+    image_url = models.CharField(max_length=255, blank=True)
+    embed_code = models.TextField(blank=True)
+
+
 class Person(models.Model):
 
-    display_name = models.CharField(max_length=100)
     user = models.ForeignKey(User, blank=True, null=True)
+    display_name = models.CharField(max_length=100)
+    avatar = models.ForeignKey(Media, blank=True, null=True)
 
     def __unicode__(self):
         return unicode(self.display_name)
@@ -22,17 +32,12 @@ class Account(models.Model):
     authinfo = models.CharField(max_length=600, blank=True)
     person = models.ForeignKey(Person, related_name='accounts')
 
+    status_background_color = models.CharField(max_length=6, blank=True)
+    status_background_image_url = models.CharField(max_length=100, blank=True)
+    status_background_tile = models.BooleanField(blank=True)
+
     def __unicode__(self):
         return u'%s at %s' % (self.display_name, self.service)
-
-
-class Media(models.Model):
-
-    width = models.IntegerField(null=True, blank=True)
-    height = models.IntegerField(null=True, blank=True)
-    # TODO: change this when we store images locally
-    image_url = models.CharField(max_length=255, blank=True)
-    embed_code = models.TextField(blank=True)
 
 
 class Object(models.Model):
@@ -75,7 +80,7 @@ class UserStream(models.Model):
 
     obj = models.ForeignKey(Object, related_name='stream_items')
     user = models.ForeignKey(User, related_name='stream_items')
-    time = models.DateTimeField(auto_now_add=True)
+    time = models.DateTimeField(default=datetime.now)
     why_account = models.ForeignKey(Account, related_name='stream_items_caused')
     why_verb = models.CharField(max_length=20, choices=VERB_CHOICES)
 

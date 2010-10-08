@@ -33,12 +33,11 @@ body {
 
     background: #ffffff;
     color: #000000;
-    margin: 2em 0;
+    margin: 20px 0;
     min-height: 82px;
 
-    -webkit-box-shadow: -5px 5px 20px #ccc;
-    -moz-box-shadow: -5px 5px 20px #ccc;
-    box-shadow: -5px 5px 20px #ccc;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
 }
 
 .item .whyline {
@@ -91,21 +90,59 @@ body {
     width: 20px;
     height: auto;
     vertical-align: middle;
-    border-radius: 3px;
+
+    border: 2px solid white;
+    -webkit-box-shadow: 0px 0px 2px #000;
+    -moz-box-shadow: 0px 0px 2px #000;
+    box-shadow: 0px 0px 2px #000;
 }
 
-.item .item-actor {
-    width: 50px;
-    height: auto;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
+.item .item-body {
+    position: relative;
+}
+
+.item .author {
+    line-height: 0;
+
+    background: white;
+    border: 5px solid white;
+    border-width: 5px 5px 10px 5px;
+    -webkit-box-shadow: 0px 0px 4px #666;
+    -moz-box-shadow: 0px 0px 4px #666;
+    box-shadow: 0px 0px 4px #666;
 
     position: absolute;
-    left: -40px;
+    left: -50px;
+    top: 20px;
+}
+
+.item .author img {
+    width: 50px;
+    height: auto;
+    z-index: 1;
+}
+
+.item .author span {
+    position: absolute;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+
+    -webkit-box-shadow: inset 0px 0px 6px #666;
+    -moz-box-shadow: inset 0px 0px 6px #666;
+    box-shadow: inset 0px 0px 6px #666;
 }
 
 .item .item-content {
-    padding: 16px;
+    padding: 20px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-has-whyline .item-content {
+    border-radius: 0 0 5px 5px;
+    -moz-border-radius: 0 0 5px 5px;
 }
 
 .item .footer {
@@ -124,3 +161,31 @@ body {
     color: #222222;
 }
 
+
+/* item styles */
+
+.item .item-content-status {
+    padding: 0;
+}
+
+.item-content .status-shade {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content .status {
+    background: white;
+    padding: 20px;
+
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content .status .summary {
+    margin: 0;
+    padding: 0;
+    font-size: 1.5em;
+    line-height: 1.2em;
+}

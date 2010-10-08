@@ -4,14 +4,14 @@
 
     {% for item in stream_items %}
         {% set object = item.obj %}
-        <div class="item">
+        <div class="item{% if item.why_verb != 'post' %} item-has-whyline{% endif %}">
 
             {% if item.why_verb != 'post' %}
                 {% set actor = item.why_account.person %}
                 <div class="whyline">
                     <p>
-                    {% if actor.image_url %}
-                        <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.image_url }}" alt="{{ actor.display_name }}"></a>
+                    {% if actor.avatar %}
+                        <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.avatar.image_url }}" alt="{{ actor.display_name }}"></a>
                     {% endif %}
                     <a href="{{ actor.permalink_url }}">{{ actor.display_name }}</a>
 
@@ -32,22 +32,59 @@
                 </div>
             {% endif %}
 
+            <div class="item-body">
 
-            <div class="item-content">
-
-                {% if object.title %}
-                    <h1 class="title">
-                        <a href="{{ object.permalink_url }}">{{ object.title }}</a>
-                    </h1>
+                {% set author = object.author.person %}
+                {% if author.avatar %}
+                    {% set poster_rot = rot.next() %}
+                    <a class="author" href="{{ author.permalink_url }}"
+                        style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
+                        ><span></span><img
+                            src="{{ author.avatar.image_url }}"
+                            width="{{ author.avatar.width }}"
+                            height="{{ author.avatar.height }}"
+                            ></a>
                 {% endif %}
 
-                {% if object.body %}
-                    <p class="summary">{{ object.body|striptags }}</p>
-                {% endif %}
+                {% if object.render_mode == 'status' %}
+                    <div class="item-content item-content-status"
+                        style="background: {% if object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
+                        >
+                        <div class="status-shade">
+                            <div class="status">
+                                <p class="summary">{{ object.body }}</p>
 
-                <div class="footer">
-                    <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
-                </div>
+                                <div class="footer">
+                                    <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                                    by
+                                    <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+
+                    <div class="item-content">
+
+                        {% if object.title %}
+                            <h1 class="title">
+                                <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                            </h1>
+                        {% endif %}
+
+                        {% if object.body %}
+                            {{ object.body }}
+                        {% endif %}
+
+                        <div class="footer pkg">
+                            <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                            by
+                            <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                        </div>
+
+                    </div>
+
+                {% endif %}
 
             </div>
 
