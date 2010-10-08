@@ -68,9 +68,11 @@ def tweet_html(tweetdata):
             'indices': tagdata['indices'],
             'html': """<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
         })
-    for mutation in sorted(mutations, key=lambda x:x['indices'][0], reverse=True):
+
+    for mutation in sorted(mutations, key=lambda x: x['indices'][0], reverse=True):
         indices = mutation['indices']
         tweet = tweet[:indices[0]] + mutation['html'] + tweet[indices[1]:]
+
     return tweet
 
 
