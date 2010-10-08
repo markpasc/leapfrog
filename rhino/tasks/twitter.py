@@ -5,7 +5,10 @@ import logging
 from django.conf import settings
 import oauth2 as oauth
 
-from rhino.models import Object, Account, Person, UserStream, Media
+from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
+
+
+log = logging.getLogger(__name__)
 
 
 def account_for_twitter_user(userdata):
@@ -69,6 +72,26 @@ def raw_object_for_tweet(tweetdata):
     except Object.DoesNotExist:
         pass
 
+    log.debug('Making new tweet for %s status #%d', tweetdata['user']['screen_name'], tweetdata['id'])
+
+    in_reply_to = None
+    if tweetdata.get('in_reply_to_status_id'):
+        # Uh oh, gotta get that tweet.
+        # TODO: remove the mention from the front of the tweet
+        next_tweetid = tweetdata['in_reply_to_status_id']
+        try:
+            in_reply_to = Object.objects.get(service='twitter.com', foreign_id=str(next_tweetid))
+        except Object.DoesNotExist:
+            resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json'
+                % next_tweetid)
+            if resp.status != 200:
+                raise ValueError("Unexpected %d %s response fetching tweet #%s up a reply chain for "
+                    "%s's timeline" % (resp.status, resp.reason, next_tweetid, account.display_name))
+
+            next_tweetdata = json.loads(content)
+            log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
+            in_reply_to = raw_object_for_tweet(next_tweetdata)
+
     tweet = Object(
         service='twitter.com',
         foreign_id=str(tweetdata['id']),
@@ -77,38 +100,12 @@ def raw_object_for_tweet(tweetdata):
         time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
         permalink_url='http://twitter.com/%s/status/%d'
             % (tweetdata['user']['screen_name'], tweetdata['id']),
-        author=author,
+        author=account_for_twitter_user(tweetdata['user']),
+        in_reply_to=in_reply_to,
     )
     tweet.save()
 
     return tweet
-
-
-def save_tweet(orig_tweetdata):
-    # TODO: filter based on source?
-
-    tweetdata = orig_tweetdata
-    why_verb = 'post'
-    try:
-        tweetdata = orig_tweetdata['retweeted_status']
-        why_verb = 'share'
-    except KeyError:
-        pass
-
-    while tweetdata.get('in_reply_to_status_id'):
-        # ...?
-        break
-
-    orig_actor = account_for_twitter_user(orig_tweetdata['user'])
-
-    # CASES:
-    # tweet with just a link
-    # tweet with a link and custom text
-    # tweet with a link and the link's target page title (found how?)
-    # real reply to...
-    # real retweet of...
-
-    pass
 
 
 def poll_twitter(account):
@@ -127,7 +124,52 @@ def poll_twitter(account):
 
     tl = json.loads(content)
     from pprint import pformat
-    logging.getLogger('.'.join((__name__, 'poll_twitter'))).debug(pformat(tl))
+    log.debug(pformat(tl))
 
-    for orig_tweetdata in tl:
-        save_tweet(orig_tweetdata)
+    for orig_tweetdata in reversed(tl):
+        # TODO: filter based on source?
+
+        tweetdata = orig_tweetdata
+        why_verb = 'post'
+        try:
+            tweetdata = orig_tweetdata['retweeted_status']
+        except KeyError:
+            pass
+        else:
+            why_verb = 'share'
+
+        orig_actor = account_for_twitter_user(orig_tweetdata['user'])
+        tweet = raw_object_for_tweet(tweetdata)
+
+        # CASES:
+        # real reply to...
+        # real retweet of...
+        # tweet with just a link
+        # tweet with a link and custom text
+        # tweet with a link and the link's target page title (found how?)
+
+        # Is it really a reply?
+        if why_verb == 'post' and not tweet.in_reply_to:
+            UserStream.objects.get_or_create(user=user, obj=tweet,
+                defaults={'why_account': tweet.author, 'why_verb': 'post', 'time': tweet.time})
+
+        elif why_verb == 'post':
+            root = tweet
+            while root.in_reply_to is not None:
+                log.debug('Walking up from %r to %r', root, root.in_reply_to)
+                root = root.in_reply_to
+
+            UserStream.objects.get_or_create(user=user, obj=root,
+                defaults={'why_account': tweet.author, 'why_verb': 'reply', 'time': tweet.time})
+            UserReplyStream.objects.get_or_create(user=user, root=root, reply=tweet,
+                defaults={'root_time': root.time, 'reply_time': tweet.time})
+
+        elif why_verb == 'share':
+            # Sharing is transitive, so really share the root.
+            root = tweet
+            while root.in_reply_to is not None:
+                log.debug('Walking up from %r to %r', root, root.in_reply_to)
+                root = root.in_reply_to
+
+            UserStream.objects.get_or_create(user=user, obj=root,
+                defaults={'why_account': orig_actor, 'why_verb': 'share', 'time': tweet.time})
