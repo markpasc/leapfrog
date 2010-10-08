@@ -15,7 +15,7 @@ class Media(models.Model):
 
 class Person(models.Model):
 
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.OneToOneField(User, null=True, blank=True)
     display_name = models.CharField(max_length=100)
     avatar = models.ForeignKey(Media, blank=True, null=True)
 
