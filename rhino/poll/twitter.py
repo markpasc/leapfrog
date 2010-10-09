@@ -7,7 +7,7 @@ from django.conf import settings
 import oauth2 as oauth
 
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
-from rhino.poll.embedlam import embed, EmbedError
+from rhino.poll.embedlam import object_for_embed, EmbedError
 
 
 log = logging.getLogger(__name__)
@@ -163,7 +163,7 @@ def raw_object_for_tweet(tweetdata, client):
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
         try:
-            resource = embed(about_url)
+            in_reply_to = object_for_embed(about_url)
         except EmbedError, exc:
             log.debug(str(exc))
 

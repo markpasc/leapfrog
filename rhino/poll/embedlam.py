@@ -1,3 +1,4 @@
+from datetime import datetime
 from HTMLParser import HTMLParseError
 import logging
 import urllib2
@@ -5,6 +6,8 @@ import urllib2
 from BeautifulSoup import BeautifulSoup
 import oembed
 from oembed import OEmbedConsumer, OEmbedEndpoint, OEmbedError
+
+from rhino.models import Account, Object, Person
 
 
 log = logging.getLogger(__name__)
@@ -32,7 +35,7 @@ class DiscoveryConsumer(OEmbedConsumer):
         )
         response = opener.open(url)
         log.debug('To find out about %s, ended up discovering against %s', url, response.geturl())
-        url = response.geturl()
+        url = self.last_real_url = response.geturl()
 
         headers = response.info()
         try:
@@ -77,4 +80,53 @@ def embed(url):
     # well
     log.debug('YAY OEMBED ABOUT %s: %r', url, resource.getData())
 
-    return resource
+    return csr.last_real_url, resource
+
+
+def account_for_embed_resource(resource):
+    url = resource['author_url']
+    try:
+        return Account.objects.get(service='', ident=url)
+    except Account.DoesNotExist:
+        pass
+
+    # TODO: go find an avatar by way of ~~=<( MAGIC )>=~~
+    person = Person(
+        display_name=resource['author_name'],
+    )
+    person.save()
+    acc = Account(
+        service='',
+        ident=url,
+        display_name=resource['author_name'],
+        person=person,
+    )
+    acc.save()
+
+    return acc
+
+
+def object_for_embed(url):
+    real_url, resource = embed(url)
+
+    try:
+        return Object.objects.get(service='', foreign_id=real_url)
+    except Object.DoesNotExist:
+        pass
+
+    resource_type = resource['type']
+    if resource_type == 'video':
+        obj = Object(
+            service='',
+            foreign_id=real_url,
+            render_mode='mixed',
+            title=resource['title'],
+            body=resource['html'],
+            author=account_for_embed_resource(resource),
+            time=datetime.now(),
+            permalink_url=real_url,
+        )
+        obj.save()
+        return obj
+
+    raise EmbedError('Unknown embed resource type %r' % resource_type)
