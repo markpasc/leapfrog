@@ -11,10 +11,15 @@ def home(request):
     # TEMP HACK: For now, default to user 1 until we have working login
     user = request.user if request.user else User.objects.get(id=1)
 
-    stream_items = user.stream_items.filter(user=user).order_by("-time").select_related()
+    stream_items = user.stream_items.order_by("-time").select_related()
+    stream_items = list(stream_items[:50])
+
+    replies = user.reply_stream_items.filter(root_time__range=(stream_items[-1].time, stream_items[0].time)).select_related()
 
     data = {
         'stream_items': stream_items,
+        'replies': replies,
+        'page_title': "%s's neighborhood" % user.person.display_name,
     }
 
     template = 'rhino/index.jj'
