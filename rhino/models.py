@@ -12,6 +12,12 @@ class Media(models.Model):
     image_url = models.CharField(max_length=255, blank=True)
     embed_code = models.TextField(blank=True)
 
+    def __unicode__(self):
+        if self.image_url:
+            return unicode("image " + str(self.id) +  " " + self.image_url)
+        else:
+            return "embed " + str(self.id)
+
 
 class Person(models.Model):
 
