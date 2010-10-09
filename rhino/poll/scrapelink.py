@@ -16,7 +16,10 @@ def object_for_url(url):
     opener.addheaders = (
         ('User-Agent', 'rhino-scraper'),
     )
-    response = opener.open(url)
+    try:
+        response = opener.open(url)
+    except urllib2.HTTPError:
+        return None
     permalink_url = response.geturl()
 
     headers = response.info()

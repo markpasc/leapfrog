@@ -8,6 +8,7 @@ import oauth2 as oauth
 
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
 from rhino.poll.embedlam import object_for_embed, EmbedError
+from rhino.poll.scrapelink import object_for_url
 
 
 log = logging.getLogger(__name__)
@@ -166,6 +167,7 @@ def raw_object_for_tweet(tweetdata, client):
             in_reply_to = object_for_embed(about_url)
         except EmbedError, exc:
             log.debug(str(exc))
+            in_reply_to = object_for_url(about_url)
 
     tweet = Object(
         service='twitter.com',

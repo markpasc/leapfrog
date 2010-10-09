@@ -35,7 +35,7 @@
             <div class="item-body">
 
                 {% set author = object.author.person %}
-                {% if author.avatar %}
+                {% if author and author.avatar %}
                     {% set poster_rot = rot.next() %}
                     <a class="author" href="{{ author.permalink_url }}"
                         style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
@@ -48,7 +48,7 @@
 
                 {% if object.render_mode == 'status' %}
                     <div class="item-content item-content-status"
-                        style="background: {% if object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
+                        style="background: {% if object.author and object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
                         >
                         <div class="status-shade">
                             <div class="status">
@@ -78,8 +78,10 @@
 
                         <div class="footer pkg">
                             <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
-                            by
-                            <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                            {% if author %}
+                                by
+                                <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                            {% endif %}
                         </div>
 
                     </div>
