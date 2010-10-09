@@ -1,8 +1,8 @@
 from django.core.management.base import NoArgsCommand, CommandError
 from rhino.models import *
 
-from rhino.tasks import twitter
-from rhino.tasks import typepad
+from rhino.poll import twitter
+from rhino.poll import typepad
 
 pollers = {
     "twitter.com": twitter.poll_twitter,
