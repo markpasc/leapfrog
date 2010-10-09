@@ -30,8 +30,9 @@ class DiscoveryConsumer(OEmbedConsumer):
         opener.addheaders = (
             ('User-Agent', 'python-oembed/' + oembed.__version__),
         )
-
         response = opener.open(url)
+        log.debug('To find out about %s, ended up discovering against %s', url, response.geturl())
+        url = response.geturl()
 
         headers = response.info()
         try:

@@ -164,8 +164,8 @@ def raw_object_for_tweet(tweetdata, client):
 
         try:
             resource = embed(about_url)
-        except EmbedError:
-            pass
+        except EmbedError, exc:
+            log.debug(str(exc))
 
     tweet = Object(
         service='twitter.com',
