@@ -5,7 +5,10 @@ import urllib2
 
 from BeautifulSoup import BeautifulSoup
 import oembed
-from oembed import OEmbedConsumer, OEmbedEndpoint, OEmbedError
+from oembed import Consumer as OEmbedConsumer
+from oembed import Endpoint as OEmbedEndpoint
+from oembed import Error as OEmbedError
+#from oembed import OEmbedConsumer, OEmbedEndpoint, OEmbedError
 
 from rhino.models import Account, Object, Person
 
@@ -22,8 +25,8 @@ class DiscoveredEndpoint(OEmbedEndpoint):
 
 class DiscoveryConsumer(OEmbedConsumer):
 
-    def _endpointFor(self, url):
-        endpoint = super(DiscoveryConsumer, self)._endpointFor(url)
+    def find_endpoint(self, url):
+        endpoint = super(DiscoveryConsumer, self).find_endpoint(url)
         if endpoint is None:
             endpoint = self.discoverEndpoint(url)
         return endpoint
@@ -31,7 +34,7 @@ class DiscoveryConsumer(OEmbedConsumer):
     def discoverEndpoint(self, url):
         opener = urllib2.build_opener()
         opener.addheaders = (
-            ('User-Agent', 'python-oembed/' + oembed.__version__),
+            ('User-Agent', 'python-oembed/whatever'),
         )
         response = opener.open(url)
         log.debug('To find out about %s, ended up discovering against %s', url, response.geturl())
@@ -70,10 +73,11 @@ def embed(url):
     csr = DiscoveryConsumer()
     endp = OEmbedEndpoint('http://www.flickr.com/services/oembed',
         ['http://*.flickr.com/*', 'http://flic.kr/*'])
-    csr.addEndpoint(endp)
+    csr.add_provider('http://www.flickr.com/services/oembed',
+        ['http://*.flickr.com/*', 'http://flic.kr/*'])
 
     try:
-        resource = csr.embed(url)
+        resource = csr.lookup(url)
     except (OEmbedError, urllib2.HTTPError), exc:
         raise EmbedError('%s trying to embed %s: %s' % (type(exc).__name__, url, str(exc)))
 
