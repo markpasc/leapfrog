@@ -13,9 +13,11 @@ class ObjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'render_mode', 'external_id')
 
     def external_id(self, obj):
-        if not obj.service or not obj.foreign_id:
-            return None
-        return u'%s:%s' % (obj.service, obj.foreign_id)
+        if obj.service and obj.foreign_id:
+            return u'%s:%s' % (obj.service, obj.foreign_id)
+        if obj.foreign_id:
+            return obj.foreign_id
+        return None
 
 admin.site.register(models.Object, ObjectAdmin)
 
