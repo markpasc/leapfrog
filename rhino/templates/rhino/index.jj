@@ -62,6 +62,35 @@
                             </div>
                         </div>
                     </div>
+
+                {% elif object.render_mode == 'link' %}
+
+                    <div class="item-content">
+                        {% if object.title %}
+                            <h1 class="title">
+                                <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                            </h1>
+                        {% endif %}
+
+                        {% if object.body or object.image %}
+                        <div class="body pkg">
+                            {% if object.image %}
+                                <img class="item-body-image" src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title or 'image' }}">
+                            {% endif %}
+                            {{ object.body }}
+                        </div>
+                        {% endif %}
+
+                        <div class="footer">
+                            <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                            {% if author %}
+                                by
+                                <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+
                 {% else %}
 
                     <div class="item-content">
@@ -73,10 +102,12 @@
                         {% endif %}
 
                         {% if object.body %}
-                            {{ object.body }}
+                            <div class="body pkg">
+                                {{ object.body }}
+                            </div>
                         {% endif %}
 
-                        <div class="footer pkg">
+                        <div class="footer">
                             <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
                             {% if author %}
                                 by
