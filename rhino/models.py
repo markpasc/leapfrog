@@ -57,6 +57,7 @@ class Object(models.Model):
 
     service = models.CharField(max_length=20, blank=True)
     foreign_id = models.CharField(max_length=255, blank=True)
+    public = models.BooleanField(blank=True, default=True)
 
     title = models.CharField(max_length=255, blank=True, null=True)
     body = models.TextField(blank=True)
