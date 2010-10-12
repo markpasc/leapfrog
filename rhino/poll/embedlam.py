@@ -171,11 +171,10 @@ def object_for_url(url):
 
     # Fetch the resource and soupify it.
     h = httplib2.Http()
-    
     try:
         resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
     except httplib2.RedirectLimit:
-    	raise ValueError("%s redirected too many times" % url)
+        raise ValueError("%s redirected too many times" % url)
     if resp.status != 200:
         raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
     url = resp['content-location']
