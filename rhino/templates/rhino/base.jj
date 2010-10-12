@@ -6,6 +6,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/reset.css"}) }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/text.css"}) }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/style.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/extrastyle.css"}) }}">
     {% endblock %}
 </head><body>
 
