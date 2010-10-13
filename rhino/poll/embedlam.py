@@ -1,4 +1,5 @@
 from datetime import datetime
+import feedparser
 from HTMLParser import HTMLParseError
 import json
 import logging
@@ -94,11 +95,6 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
 
 def object_from_html_head(url, orig_url, head):
 
-    try:
-        return Object.objects.get(service='', foreign_id=url)
-    except Object.DoesNotExist:
-        pass  # time to make the donuts
-
     # Try a number of strategies to extract a title.
     og_title_elem = head.find("meta", property="og:title")
     old_facebook_title_elem = head.find("meta", {"name":"title"})
@@ -129,6 +125,39 @@ def object_from_html_head(url, orig_url, head):
         time=datetime.now(),
         image=image,
     )
+    obj.save()
+
+    return obj
+
+
+def object_from_feed_entry(feed_url, item_url):
+    feed = feedparser.parse(feed_url)
+    matching_entries = [ entry for entry in feed.entries if entry.link == item_url ]
+    if len(matching_entries) > 0:
+        entry = matching_entries[0]
+    else:
+        return None
+
+    obj = Object(
+        service='',
+        foreign_id=item_url,
+        title=entry.title,
+        permalink_url=item_url,
+    )
+
+    # If we have full content then this becomes a "mixed". Otherwise, we
+    # marshall it as a link.
+    if "content" in entry and len(entry.content) > 0:
+        obj.render_mode = 'mixed'
+        obj.body = entry.content[0].value
+    else:
+        obj.render_mode = 'link'
+        obj.body = entry.summary if "summary" in entry else ""
+
+    object_time = entry.published_parsed if "published_parsed" in entry else entry.updated_parsed;
+    if object_time:
+        obj.time = datetime(*object_time[:6])
+
     obj.save()
 
     return obj
@@ -208,10 +237,25 @@ def object_for_url(url):
         if orig_host == canon_host:
             url = canon_url
 
+    try:
+        return Object.objects.get(service='', foreign_id=url)
+    except Object.DoesNotExist:
+        pass  # time to make the donuts
+
     # Does it support OEmbed?
     oembed_node = head.find(rel='alternate', type='application/json+oembed')
     # TODO: support xml?
     if oembed_node is not None:
         return object_from_oembed(oembed_node['href'], url, discovered=True)
+
+    # Does it have a feed declared? If so, let's go hunting in the feed for
+    # an entry corresponding to this page.
+    atom_feed_link = head.find(rel='alternate', type='application/atom+xml')
+    rss_feed_link = head.find(rel='alternate', type='application/rss+xml')
+    feed_url = value_for_meta_elems((atom_feed_link, rss_feed_link), base_url=orig_url)
+    if feed_url:
+        object = object_from_feed_entry(feed_url, url)
+        if object:
+            return object
 
     return object_from_html_head(url, orig_url, head)
