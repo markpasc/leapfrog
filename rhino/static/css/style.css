@@ -168,7 +168,8 @@ body {
 
 /* item styles */
 
-.item .item-content-status {
+.item .item-content-status,
+.item .item-content-image {
     padding: 0;
 }
 
@@ -200,6 +201,14 @@ body {
 }
 .item .item-content blockquote img, .item .item-content div.highlight img {
     max-width: 580px;
+}
+
+.item .item-content-image {
+    line-height: 0;
+}
+
+.item .item-content-image img {
+    max-width: 700px;
 }
 
 

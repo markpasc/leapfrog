@@ -4,10 +4,11 @@ import logging
 import re
 
 from django.conf import settings
+import httplib2
 import oauth2 as oauth
 
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
-from rhino.poll.embedlam import object_for_url
+import rhino.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -131,6 +132,42 @@ def synthesize_entities(tweetdata):
     tweetdata['entities'] = ents
 
 
+def object_from_twitpic_url(url):
+    mo = re.match(r'http://twitpic\.com/(\w+)', url)
+    twitpic_id = mo.group(1)
+
+    try:
+        return Object.objects.get(service='twitpic.com', foreign_id=twitpic_id)
+    except Object.DoesNotExist:
+        pass
+
+    h = httplib2.Http()
+    resp, content = h.request('http://api.twitpic.com/2/media/show.json?id=%s' % twitpic_id)
+
+    picdata = json.loads(content)
+    userdata = picdata['user']
+    userdata['id'] = userdata['twitter_id']
+
+    pic = Media(
+        image_url='http://twitpic.com/show/large/%s' % twitpic_id,
+        width=int(picdata['width']),
+        height=int(picdata['height']),
+    )
+    pic.save()
+    obj = Object(
+        service='twitpic.com',
+        foreign_id=twitpic_id,
+        render_mode='image',
+        title=picdata['message'],
+        image=pic,
+        author=account_for_twitter_user(userdata),
+        time=datetime.strptime(picdata['timestamp'], '%Y-%m-%d %H:%M:%S'),
+        permalink_url=url,
+    )
+    obj.save()
+    return obj
+
+
 def raw_object_for_tweet(tweetdata, client):
     try:
         return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
@@ -164,7 +201,7 @@ def raw_object_for_tweet(tweetdata, client):
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
         try:
-            in_reply_to = object_for_url(about_url)
+            in_reply_to = rhino.poll.embedlam.object_for_url(about_url)
         except ValueError, exc:
             log.debug(str(exc))
 
