@@ -2,13 +2,26 @@
 
 {% block content %}
 
-    <form method="POST" action="{{ url_for('login') }}">
-        {% if csrf_token and csrf_token != 'NOTPROVIDED' %}
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-        {% endif %}
-        <input type="hidden" name="next" value="{{ next }}">
-        {{ form.as_p() }}
-        <input type="submit" value="Sign in">
-    </form>
+    <div id="login" class="item">
+        <div id="login-inner">
+            <form method="POST" action="{{ url_for('login') }}">
+                {% if csrf_token and csrf_token != 'NOTPROVIDED' %}
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                {% endif %}
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <p>
+                    <label for="id_username">Username:</label>
+                    <span class="input">{{ form.username }}</span>
+                </p>
+                <p>
+                    <label for="id_password">Password:</label>
+                    <span class="input">{{ form.password }}</span>
+                </p>
+
+                <input type="submit" value="Sign in">
+            </form>
+        </div>
+    </div>
 
 {% endblock %}
