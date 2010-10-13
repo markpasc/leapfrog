@@ -1,14 +1,16 @@
 {% extends "rhino/base.jj" %}
 
+{% block htmltitle %}Sign in{% endblock %}
+
 {% block content %}
 
-    <div id="login" class="item">
-        <div id="login-inner">
-            <form method="POST" action="{{ url_for('login') }}">
+    <div id="signin" class="item">
+        <div id="signin-inner">
+            <form method="POST" action="{{ url_for('signin') }}">
                 {% if csrf_token and csrf_token != 'NOTPROVIDED' %}
                     <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 {% endif %}
-                <input type="hidden" name="next" value="{{ next }}">
+                <input type="hidden" name="next" value="{{ next or url_for('home') }}">
 
                 <p>
                     <label for="id_username">Username:</label>

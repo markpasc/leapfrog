@@ -203,9 +203,9 @@ body {
 }
 
 
-/* login page styles */
+/* signin page styles */
 
-#login {
+#signin {
     width: 400px;
     margin-left: auto;
     margin-right: auto;
@@ -215,26 +215,30 @@ body {
     background-image: -moz-linear-gradient(left, right, from(#fffeea), to(#fffb95));
     filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#fffeea, endColorstr=#fffb95, GradientType=0);
 }
-#login-inner {
+#signin-inner {
     position: relative;
     padding: 20px;
 }
 
-#login label {
+#signin label {
     display: block;
 }
-#login .input {
+#signin .input {
     background: white;
     display: block;
     border-radius: 5px;
     -moz-border-radius: 5px;
     padding: 5px;
 }
-#login .input input {
+#signin .input input {
     border-width: 0;
     width: 100%;
 }
 
-#login input {
+#signin input {
     font-size: 1.5em;
+}
+
+#signin p.last {
+    margin: 0;
 }

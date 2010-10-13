@@ -1,15 +1,22 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
 
-#@login_required
-def home(request):
-    data = {}
+class LoginUrl(object):
+    def __str__(self):
+        try:
+            return self.url
+        except AttributeError:
+            self.url = reverse('signin')
+            return self.url
 
-    # TEMP HACK: For now, default to user 1 until we have working login
-    user = request.user if request.user else User.objects.get(id=1)
+
+@login_required(login_url=LoginUrl())
+def home(request):
+    user = request.user
 
     stream_items = user.stream_items.order_by("-time").select_related()
     stream_items = list(stream_items[:50])

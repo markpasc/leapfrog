@@ -4,12 +4,14 @@ from django.conf.urls.defaults import *
 
 
 urlpatterns = patterns('rhino.views',
-    url(r'^$', 'home'),
+    url(r'^$', 'home', name='home'),
 )
 
 urlpatterns += patterns('',
-    url(r'^accounts/login/$', 'django.contrib.auth.views.login',
-        {'template_name': 'rhino/login.jj'}, name='login'),
+    url(r'^signin$', 'django.contrib.auth.views.login',
+        {'template_name': 'rhino/signin.jj'}, name='signin'),
+    url(r'^signout$', 'django.contrib.auth.views.logout',
+        {'template_name': 'rhino/signout.jj'}, name='signout'),
 )
 
 urlpatterns += patterns('',
