@@ -92,20 +92,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     raise ValueError('Unknown OEmbed resource type %r' % resource_type)
 
 
-def object_from_html_head(url, head):
-    # What's the real URL?
-    orig_url = url
-    canon_url = None
-    og_url_elem = head.find("meta", property="og:url")
-    canon_elem = head.find('link', rel='canonical')
-    canon_url = value_for_meta_elems((og_url_elem, canon_elem), base_url=orig_url)
-
-    if canon_url is not None:
-        # Only allow this canonicalization if it's at the same domain as the original URL.
-        orig_host = urlparse(url)[1]
-        canon_host = urlparse(canon_url)[1]
-        if orig_host == canon_host:
-            url = canon_url
+def object_from_html_head(url, orig_url, head):
 
     try:
         return Object.objects.get(service='', foreign_id=url)
@@ -154,11 +141,11 @@ def value_for_meta_elems(elems, default=None, base_url=None):
 
         value = None
 
-        if "content" in elem:
+        if elem.has_key("content"):
             value = elem["content"]
 
         # Matches link href="..."
-        elif "href" in elem:
+        elif elem.has_key("href"):
             value = elem["href"]
 
         # Matches <title>...</title>
@@ -166,7 +153,7 @@ def value_for_meta_elems(elems, default=None, base_url=None):
             value = elem.string
 
         # Some poor, confused souls publish meta value="..."
-        elif "value" in elem:
+        elif elem.has_key("value"):
             value = elem["value"]
 
         if value is not None:
@@ -207,10 +194,24 @@ def object_for_url(url):
     if head is None:
         raise ValueError('Could not discover against HTML target %s with no head' % url)
 
+    # What's the real URL?
+    orig_url = url
+    canon_url = None
+    og_url_elem = head.find("meta", property="og:url")
+    canon_elem = head.find('link', rel='canonical')
+    canon_url = value_for_meta_elems((og_url_elem, canon_elem), base_url=orig_url)
+
+    if canon_url is not None:
+        # Only allow this canonicalization if it's at the same domain as the original URL.
+        orig_host = urlparse(url)[1]
+        canon_host = urlparse(canon_url)[1]
+        if orig_host == canon_host:
+            url = canon_url
+
     # Does it support OEmbed?
     oembed_node = head.find(rel='alternate', type='application/json+oembed')
     # TODO: support xml?
     if oembed_node is not None:
         return object_from_oembed(oembed_node['href'], url, discovered=True)
 
-    return object_from_html_head(url, head)
+    return object_from_html_head(url, orig_url, head)
