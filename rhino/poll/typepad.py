@@ -28,6 +28,7 @@ def account_for_typepad_user(tp_user, person=None):
             person = Person(
                 display_name=tp_user.display_name,
                 avatar=avatar,
+                permalink_url=tp_user.profile_page_url,
             )
             person.save()
         account = Account(

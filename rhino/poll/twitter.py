@@ -28,6 +28,7 @@ def account_for_twitter_user(userdata, person=None):
             person = Person(
                 display_name=userdata['name'],
                 avatar=avatar,
+                permalink_url='http://twitter.com/%s' % userdata['screen_name'],
             )
             person.save()
         account = Account(
@@ -147,6 +148,7 @@ def object_from_twitpic_url(url):
     picdata = json.loads(content)
     userdata = picdata['user']
     userdata['id'] = userdata['twitter_id']
+    userdata['screen_name'] = userdata['username']
 
     pic = Media(
         image_url='http://twitpic.com/show/large/%s' % twitpic_id,
