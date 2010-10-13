@@ -29,7 +29,7 @@
 
             <div id="signin-services">
                 <a href="{{ url_for('signin-twitter') }}"><img src="{{ url_for('rhino-static', path='img/sign-in-with-twitter-l.png') }}"></a>
-                <a href="">TypePad</a>
+                <a href="{{ url_for('signin-typepad') }}">TypePad</a>
                 <a href="">Flickr</a>
             </div>
         </div>

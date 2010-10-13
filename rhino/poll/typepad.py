@@ -7,28 +7,29 @@ from tidylib import tidy_fragment
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
 
 
-def account_for_typepad_user(tp_user):
+def account_for_typepad_user(tp_user, person=None):
     try:
         account = Account.objects.get(service='typepad.com', ident=tp_user.url_id)
     except Account.DoesNotExist:
-        if tp_user.avatar_link.url_template:
-            avatar = Media(
-                width=50,
-                height=50,
-                image_url=tp_user.avatar_link.url_template.replace('{spec}', '50si'),
+        if person is None:
+            if tp_user.avatar_link.url_template:
+                avatar = Media(
+                    width=50,
+                    height=50,
+                    image_url=tp_user.avatar_link.url_template.replace('{spec}', '50si'),
+                )
+            else:
+                avatar = Media(
+                    width=tp_user.avatar_link.width,
+                    height=tp_user.avatar_link.height,
+                    image_url=tp_user.avatar_link.url,
+                )
+            avatar.save()
+            person = Person(
+                display_name=tp_user.display_name,
+                avatar=avatar,
             )
-        else:
-            avatar = Media(
-                width=tp_user.avatar_link.width,
-                height=tp_user.avatar_link.height,
-                image_url=tp_user.avatar_link.url,
-            )
-        avatar.save()
-        person = Person(
-            display_name=tp_user.display_name,
-            avatar=avatar,
-        )
-        person.save()
+            person.save()
         account = Account(
             service='typepad.com',
             ident=tp_user.url_id,

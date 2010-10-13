@@ -1,4 +1,5 @@
 import json
+import logging
 from urllib import urlencode, quote
 from urlparse import parse_qsl
 
@@ -10,9 +11,15 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+import httplib2
 import oauth2 as oauth
+import typd.objecttypes
 
 from rhino.poll.twitter import account_for_twitter_user
+from rhino.poll.typepad import account_for_typepad_user
+
+
+log = logging.getLogger(__name__)
 
 
 class LoginUrl(object):
@@ -61,14 +68,14 @@ def signin_twitter(request):
         raise ValueError("Unexpected response asking for request token: %d %s" % (resp.status, resp.reason))
 
     request_token = dict(parse_qsl(content))
-    request.session['request_token'] = request_token
+    request.session['twitter_request_token'] = request_token
 
     return HttpResponseRedirect('https://api.twitter.com/oauth/authenticate?oauth_token=%s' % request_token['oauth_token'])
 
 
 def complete_twitter(request):
     try:
-        request_token = request.session['request_token']
+        request_token = request.session['twitter_request_token']
     except KeyError:
         raise ValueError("Can't complete Twitter authentication without a request token for this session")
 
@@ -87,7 +94,7 @@ def complete_twitter(request):
         raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.content))
 
     access_token = dict(parse_qsl(content))
-    del request.session['request_token']
+    del request.session['twitter_request_token']
     #request.session['access_token'] = access_token
 
     # But who is that?
@@ -116,6 +123,85 @@ def complete_twitter(request):
         login(request, person.user)
 
     account.authinfo = ':'.join((access_token['oauth_token'], access_token['oauth_token_secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
+
+
+def signin_typepad(request):
+    csr = oauth.Consumer(*settings.TYPEPAD_CONSUMER)
+    client = oauth.Client(csr)
+
+    oauth_callback = quote(request.build_absolute_uri(reverse('complete-typepad')))
+    resp, content = client.request('https://www.typepad.com/secure/services/oauth/request_token?oauth_callback=%s' % oauth_callback)
+    if resp.status != 200:
+        raise ValueError('Unexpected response asking for TypePad request token: %d %s' % (resp.status, resp.reason))
+
+    request_token = dict(parse_qsl(content))
+    request.session['typepad_request_token'] = request_token
+
+    return HttpResponseRedirect('https://www.typepad.com/secure/services/api/6p0120a96c7944970b/oauth-approve?oauth_token=%s' % request_token['oauth_token'])
+
+
+def complete_typepad(request):
+    try:
+        request_token = request.session['typepad_request_token']
+    except KeyError:
+        raise ValueError("Can't complete TypePad authentication without a request token in the session")
+
+    try:
+        verifier = request.GET['oauth_verifier']
+    except KeyError:
+        raise ValueError("Can't complete TypePad authentication without a verifier")
+
+    csr = oauth.Consumer(*settings.TYPEPAD_CONSUMER)
+    token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
+    client = oauth.Client(csr, token)
+
+    body = urlencode({'oauth_verifier': verifier})
+    resp, content = client.request('https://www.typepad.com/secure/services/oauth/access_token', method='POST', body=body)
+    if resp.status != 200:
+        raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.reason))
+
+    access_token_data = dict(parse_qsl(content))
+    del request.session['typepad_request_token']
+
+    # But who is it?
+    access_token = oauth.Token(access_token_data['oauth_token'], access_token_data['oauth_token_secret'])
+    oauth_request = oauth.Request.from_consumer_and_token(csr, access_token,
+        http_method='GET', http_url='https://api.typepad.com/users/@self.json')
+    oauth_sign_method = oauth.SignatureMethod_HMAC_SHA1()
+    oauth_request.sign_request(oauth_sign_method, csr, access_token)
+    oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, access_token)
+    oauth_header = oauth_request.to_header()
+    h = httplib2.Http()
+    h.follow_redirects = 0
+    resp, content = h.request(oauth_request.normalized_url, method=oauth_request.method,
+        headers=oauth_header)
+    if resp.status != 302:
+        raise ValueError("Unexpected response verifying TypePad credentials: %d %s" % (resp.status, resp.reason))
+
+    userdata = json.loads(content)
+    tp_user = typd.objecttypes.User.from_dict(userdata)
+
+    person = None
+    if not request.user.is_anonymous:
+        person = request.user.person
+    account = account_for_typepad_user(tp_user, person=person)
+    if request.user.is_anonymous:
+        person = account.person
+        if person.user is None:
+            # AGH
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+
+    account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
     account.save()
 
     return HttpResponseRedirect(reverse('home'))
