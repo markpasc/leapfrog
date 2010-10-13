@@ -13,21 +13,22 @@ from rhino.poll.embedlam import object_for_url
 log = logging.getLogger(__name__)
 
 
-def account_for_twitter_user(userdata):
+def account_for_twitter_user(userdata, person=None):
     try:
         account = Account.objects.get(service='twitter.com', ident=str(userdata['id']))
     except Account.DoesNotExist:
-        avatar = Media(
-            width=48,
-            height=48,
-            image_url=userdata['profile_image_url'],
-        )
-        avatar.save()
-        person = Person(
-            display_name=userdata['name'],
-            avatar=avatar,
-        )
-        person.save()
+        if person is None:
+            avatar = Media(
+                width=48,
+                height=48,
+                image_url=userdata['profile_image_url'],
+            )
+            avatar.save()
+            person = Person(
+                display_name=userdata['name'],
+                avatar=avatar,
+            )
+            person.save()
         account = Account(
             service='twitter.com',
             ident=str(userdata['id']),

@@ -12,6 +12,9 @@ urlpatterns += patterns('',
         {'template_name': 'rhino/signin.jj'}, name='signin'),
     url(r'^signout$', 'django.contrib.auth.views.logout',
         {'template_name': 'rhino/signout.jj'}, name='signout'),
+
+    url(r'^signin/twitter$', 'rhino.views.signin_twitter', name='signin-twitter'),
+    url(r'^complete/twitter$', 'rhino.views.complete_twitter', name='complete-twitter'),
 )
 
 urlpatterns += patterns('',

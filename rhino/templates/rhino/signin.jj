@@ -23,6 +23,15 @@
 
                 <input type="submit" value="Sign in">
             </form>
+
+            <hr>
+            <p>Or use your account on one of these services:</p>
+
+            <div id="signin-services">
+                <a href="{{ url_for('signin-twitter') }}"><img src="{{ url_for('rhino-static', path='img/sign-in-with-twitter-l.png') }}"></a>
+                <a href="">TypePad</a>
+                <a href="">Flickr</a>
+            </div>
         </div>
     </div>
 
