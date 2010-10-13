@@ -94,13 +94,11 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
 
 def object_from_html_head(url, head):
     # What's the real URL?
+    orig_url = url
     canon_url = None
     og_url_elem = head.find("meta", property="og:url")
     canon_elem = head.find('link', rel='canonical')
-    if canon_elem is not None:
-        canon_url = urljoin(url, canon_elem['href'])
-    elif og_url_elem is not None:
-        canon_url = urljoin(url, og_url_elem["content"])
+    canon_url = value_for_meta_elems((og_url_elem, canon_elem), base_url=orig_url)
 
     if canon_url is not None:
         # Only allow this canonicalization if it's at the same domain as the original URL.
@@ -115,32 +113,18 @@ def object_from_html_head(url, head):
         pass  # time to make the donuts
 
     # Try a number of strategies to extract a title.
-    title = ""
     og_title_elem = head.find("meta", property="og:title")
     old_facebook_title_elem = head.find("meta", {"name":"title"})
     title_elem = head.find("title")
-    if og_title_elem:
-        title = og_title_elem["content"]
-    elif old_facebook_title_elem:
-        title = old_facebook_title_elem["content"]
-    elif title_elem:
-        title = title_elem.string
+    title = value_for_meta_elems((og_title_elem, old_facebook_title_elem, title_elem), "")
 
-    image_url = None
     og_image_elem = head.find("meta", property="og:image")
     old_facebook_image_elem = head.find("link", rel="image_src")
-    if og_image_elem:
-        image_url = og_image_elem["content"]
-    elif old_facebook_image_elem:
-        image_url = old_facebook_image_elem["href"]
+    image_url = value_for_meta_elems((og_image_elem, old_facebook_image_elem), base_url=orig_url)
 
-    summary = ""
     og_summary_elem = head.find("meta", property="og:description")
     summary_elem = head.find('meta', {'name': 'description'})
-    if og_summary_elem:
-        summary = og_summary_elem["content"]
-    elif summary_elem:
-        summary = summary_elem['content']
+    summary = value_for_meta_elems((og_summary_elem, summary_elem), "")
 
     image = None
     if image_url:
@@ -161,6 +145,37 @@ def object_from_html_head(url, head):
     obj.save()
 
     return obj
+
+
+def value_for_meta_elems(elems, default=None, base_url=None):
+    for elem in elems:
+        if elem is None:
+            continue
+
+        value = None
+
+        if "content" in elem:
+            value = elem["content"]
+
+        # Matches link href="..."
+        elif "href" in elem:
+            value = elem["href"]
+
+        # Matches <title>...</title>
+        elif elem.string:
+            value = elem.string
+
+        # Some poor, confused souls publish meta value="..."
+        elif "value" in elem:
+            value = elem["value"]
+
+        if value is not None:
+            if base_url:
+                return urljoin(base_url, value)
+            else:
+                return value
+
+    return default
 
 
 def object_for_url(url):
