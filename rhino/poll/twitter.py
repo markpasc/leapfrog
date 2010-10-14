@@ -147,8 +147,10 @@ def object_from_twitpic_url(url):
 
     picdata = json.loads(content)
     userdata = picdata['user']
+    # ugh, why did they rename these
     userdata['id'] = userdata['twitter_id']
     userdata['screen_name'] = userdata['username']
+    userdata['profile_image_url'] = userdata['avatar_url']
 
     pic = Media(
         image_url='http://twitpic.com/show/large/%s' % twitpic_id,
