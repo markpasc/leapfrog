@@ -13,6 +13,7 @@ from mimeparse import parse_mime_type
 
 from rhino.models import Account, Object, Person, Media
 import rhino.poll.twitter
+import rhino.poll.typepad
 
 
 log = logging.getLogger(__name__)
@@ -202,6 +203,12 @@ def object_for_url(url):
         return object_from_oembed('http://www.flickr.com/services/oembed/', url)
     if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
         return rhino.poll.twitter.object_from_twitpic_url(url)
+    if re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        try:
+            return rhino.poll.typepad.object_from_url(url)
+        except ValueError:
+            # Try the regular way.
+            pass
 
     # Fetch the resource and soupify it.
     h = httplib2.Http()
@@ -242,6 +249,14 @@ def object_for_url(url):
         canon_host = urlparse(canon_url)[1]
         if orig_host == canon_host:
             url = canon_url
+
+    # If the site mentions TypePad, at least try asking TypePad about it.
+    if re.search(r'typepad', content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE):
+        try:
+            return rhino.poll.typepad.object_from_url(url)
+        except ValueError:
+            # Keep trying the regular way.
+            pass
 
     try:
         return Object.objects.get(service='', foreign_id=url)

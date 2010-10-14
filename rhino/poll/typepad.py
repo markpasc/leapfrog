@@ -1,6 +1,9 @@
 from datetime import datetime
 import logging
+from urlparse import urlparse
 
+from django.conf import settings
+import oauth2 as oauth
 import typd
 from tidylib import tidy_fragment
 
@@ -107,6 +110,21 @@ def good_notes_for_notes(notes, t):
 
         # Yay, let's show this one!
         yield note
+
+
+def object_from_url(url):
+    # We're using an action endpoint anyway, so the oauth2.Client will work here.
+    csr = oauth.Consumer(*settings.TYPEPAD_CONSUMER)
+    token = oauth.Token(*settings.TYPEPAD_ANONYMOUS_ACCESS_TOKEN)
+    cl = oauth.Client(csr, token)
+    t = typd.TypePad(endpoint='https://api.typepad.com/', client=cl)
+
+    urlparts = urlparse(url)
+    result = t.domains.resolve_path(id=urlparts.netloc, path=urlparts.path)
+    if result.is_full_match and result.asset:
+        return object_for_typepad_object(result.asset)
+
+    raise ValueError("Could not identify TypePad asset for url %s" % url)
 
 
 def poll_typepad(account):
