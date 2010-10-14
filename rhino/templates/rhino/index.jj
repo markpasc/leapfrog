@@ -91,6 +91,12 @@
 
                     </div>
 
+                {% elif object.render_mode == 'image' %}
+
+                    <div class="item-content item-content-image">
+                        <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title }}"></a>
+                    </div>
+
                 {% else %}
 
                     <div class="item-content">

@@ -24,6 +24,7 @@ class Person(models.Model):
     user = models.OneToOneField(User, null=True, blank=True)
     display_name = models.CharField(max_length=100)
     avatar = models.ForeignKey(Media, blank=True, null=True)
+    permalink_url = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
         return unicode(self.display_name)

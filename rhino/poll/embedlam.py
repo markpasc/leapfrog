@@ -12,6 +12,7 @@ import httplib2
 from mimeparse import parse_mime_type
 
 from rhino.models import Account, Object, Person, Media
+import rhino.poll.twitter
 
 
 log = logging.getLogger(__name__)
@@ -199,6 +200,8 @@ def object_for_url(url):
     # TODO: special handlers
     if re.match(r'http:// .* \.flickr\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
         return object_from_oembed('http://www.flickr.com/services/oembed/', url)
+    if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        return rhino.poll.twitter.object_from_twitpic_url(url)
 
     # Fetch the resource and soupify it.
     h = httplib2.Http()

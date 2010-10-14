@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html><head>
     <meta charset="utf-8">
-    <title>{{ page_title }}</title>
+    <title>{% block htmltitle %}{{ page_title }}{% endblock %}</title>
     {% block htmlhead %}
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/reset.css"}) }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/text.css"}) }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/style.css"}) }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', kwargs={'path': "css/extrastyle.css"}) }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/reset.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/text.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/style.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/extrastyle.css") }}">
     {% endblock %}
 </head><body>
 

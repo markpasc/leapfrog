@@ -168,7 +168,8 @@ body {
 
 /* item styles */
 
-.item .item-content-status {
+.item .item-content-status,
+.item .item-content-image {
     padding: 0;
 }
 
@@ -200,4 +201,53 @@ body {
 }
 .item .item-content blockquote img, .item .item-content div.highlight img {
     max-width: 580px;
+}
+
+.item .item-content-image {
+    line-height: 0;
+}
+
+.item .item-content-image img {
+    max-width: 700px;
+}
+
+
+/* signin page styles */
+
+#signin {
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+
+    background: #fffb95;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#fffeea), to(#fffb95));
+    background-image: -moz-linear-gradient(left, right, from(#fffeea), to(#fffb95));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#fffeea, endColorstr=#fffb95, GradientType=0);
+}
+#signin-inner {
+    position: relative;
+    padding: 20px;
+}
+
+#signin label {
+    display: block;
+}
+#signin .input {
+    background: white;
+    display: block;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    padding: 5px;
+}
+#signin .input input {
+    border-width: 0;
+    width: 100%;
+}
+
+#signin input {
+    font-size: 1.5em;
+}
+
+#signin p.last {
+    margin: 0;
 }
