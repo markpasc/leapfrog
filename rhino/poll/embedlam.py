@@ -209,6 +209,9 @@ def object_for_url(url):
         resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
     except httplib2.RedirectLimit:
         raise ValueError("%s redirected too many times" % url)
+    except httplib2.ServerNotFoundError, exc:
+        raise ValueError(str(exc))
+
     if resp.status != 200:
         raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
     url = resp['content-location']
