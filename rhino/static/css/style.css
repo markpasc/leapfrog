@@ -12,9 +12,37 @@ body {
     min-height: 100%;
 }
 
+#bar {
+    position: relative;
+    color: #fff;
+    padding: 5px 0;
+    font-size: 30px;
+}
+
+#bar #gear {
+    float: right;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+#bar a:link, #bar a:hover, #bar a:visited, #bar a:focus, #bar a:active {
+    color: #fff;
+    opacity: 0.5;
+    text-decoration: none;
+}
+
+#bar a:hover, #bar #gear.spinning a {
+    opacity: 0.8;
+}
+
 #content {
     width: 700px;
     margin: 16px auto;
+}
+
+#settings {
+    background: #666;
+    height: 0;
 }
 
 .pkg:after {

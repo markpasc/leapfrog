@@ -7,11 +7,53 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/text.css") }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/style.css") }}">
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/extrastyle.css") }}">
+
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
     {% endblock %}
 </head><body>
+
+    <div id="settings">
+    </div>
+
+    <div id="bar">
+        <div id="gear"><a href="#">&#9881;</a></div>
+    </div>
 
     <div id="content">
         {% block content %}{% endblock %}
     </div>
+
+    <script type="text/javascript">
+    function spinGear(i) {
+        i++;
+
+        var gearAngle = (18 * i) % 360;
+
+        var transform = 'rotate(' + gearAngle + 'deg)';
+        var $gear = $('#gear');
+        $gear.css({
+            '-moz-transform': transform,
+            '-webkit-transform': transform,
+            'transform': transform,
+        }).addClass('spinning');
+
+        if (i == 20) {
+            $gear.removeClass('spinning');
+            return;
+        }
+        $gear.delay(40).queue(function (next) {
+            spinGear(i);
+            next();
+        });
+    }
+
+    $(document).ready(function () {
+        $('#gear').click(function () {
+            $('#settings').animate({'height': $('#settings').height() ? '0px' : '200px'}, 'slow');
+            spinGear(0);
+            return false;
+        });
+    });
+    </script>
 
 </body></html>
