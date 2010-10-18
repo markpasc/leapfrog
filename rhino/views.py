@@ -1,5 +1,7 @@
 import json
 import logging
+from random import choice
+import string
 from urllib import urlencode, quote
 from urlparse import parse_qsl
 
@@ -38,18 +40,24 @@ def home(request):
     stream_items = user.stream_items.order_by("-time").select_related()
     stream_items = list(stream_items[:50])
 
-    replies = user.reply_stream_items.filter(root_time__range=(stream_items[-1].time, stream_items[0].time)).select_related()
-    reply_by_item = dict()
-    for reply in replies:
-        item_replies = reply_by_item.setdefault(reply.root_id, set())
-        item_replies.add(reply)
-    for item in stream_items:
-        reply_set = reply_by_item.get(item.obj_id, set())
-        item.replies = sorted(iter(reply_set), key=lambda i: i.reply_time)
+    # Put the stream items' replies on the items.
+    try:
+        first_stream_item, last_stream_item = stream_items[0], stream_items[-1]
+    except IndexError:
+        # No stream items?
+        pass
+    else:
+        replies = user.reply_stream_items.filter(root_time__range=(stream_items[-1].time, stream_items[0].time)).select_related()
+        reply_by_item = dict()
+        for reply in replies:
+            item_replies = reply_by_item.setdefault(reply.root_id, set())
+            item_replies.add(reply)
+        for item in stream_items:
+            reply_set = reply_by_item.get(item.obj_id, set())
+            item.replies = sorted(iter(reply_set), key=lambda i: i.reply_time)
 
     data = {
         'stream_items': stream_items,
-        'replies': replies,
         'page_title': "%s's neighborhood" % user.person.display_name,
     }
 
