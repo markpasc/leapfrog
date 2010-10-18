@@ -2,30 +2,21 @@
 
 {% block htmltitle %}Sign in{% endblock %}
 
+{% block htmlhead %}
+    {{ super() }}
+    {% if typekit_code %}
+        <script type="text/javascript" src="http://use.typekit.com/{{ typekit_code }}.js"></script>
+        <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 
     <div id="signin" class="item">
         <div id="signin-inner">
-            <form method="POST" action="{{ url_for('signin') }}">
-                {% if csrf_token and csrf_token != 'NOTPROVIDED' %}
-                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-                {% endif %}
-                <input type="hidden" name="next" value="{{ next or url_for('home') }}">
+            <h1 class="blamfx">leapfrog</h1>
 
-                <p>
-                    <label for="id_username">Username:</label>
-                    <span class="input">{{ form.username }}</span>
-                </p>
-                <p>
-                    <label for="id_password">Password:</label>
-                    <span class="input">{{ form.password }}</span>
-                </p>
-
-                <input type="submit" value="Sign in">
-            </form>
-
-            <hr>
-            <p>Or use your account on one of these services:</p>
+            <p>Read your friends better by signing in with one of these services:</p>
 
             <div id="signin-services">
                 <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>

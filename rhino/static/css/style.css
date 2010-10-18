@@ -246,11 +246,6 @@ body {
     width: 400px;
     margin-left: auto;
     margin-right: auto;
-
-    background: #fffb95;
-    background-image: -webkit-gradient(linear, left top, left bottom, from(#fffeea), to(#fffb95));
-    background-image: -moz-linear-gradient(left, right, from(#fffeea), to(#fffb95));
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#fffeea, endColorstr=#fffb95, GradientType=0);
 }
 #signin-inner {
     position: relative;
@@ -270,6 +265,12 @@ body {
 #signin .input input {
     border-width: 0;
     width: 100%;
+}
+
+#signin h1 {
+    font-weight: normal;
+    font-size: 3em;
+    line-height: 1em;
 }
 
 #signin input {

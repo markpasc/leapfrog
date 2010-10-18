@@ -1,5 +1,7 @@
 import random
 
+from django.conf import settings
+
 
 def random_rotation():
     while True:
@@ -8,3 +10,10 @@ def random_rotation():
 
 def random_rotator(request):
     return { 'rot': random_rotation() }
+
+
+def typekit_code(request):
+    try:
+        return {'typekit_code': settings.TYPEKIT_CODE}
+    except AttributeError:
+        return {}
