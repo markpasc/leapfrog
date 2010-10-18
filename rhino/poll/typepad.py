@@ -120,7 +120,10 @@ def object_from_url(url):
     t = typd.TypePad(endpoint='https://api.typepad.com/', client=cl)
 
     urlparts = urlparse(url)
-    result = t.domains.resolve_path(id=urlparts.netloc, path=urlparts.path)
+    try:
+        result = t.domains.resolve_path(id=urlparts.netloc, path=urlparts.path)
+    except typd.NotFound, exc:
+        raise ValueError("TypePad could not resolve URL %s: %s" % (url, str(exc)))
     if result.is_full_match and result.asset:
         return object_for_typepad_object(result.asset)
 
