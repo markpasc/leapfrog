@@ -42,7 +42,18 @@ body {
 
 #settings {
     background: #666;
+    color: #eee;
     height: 0;
+    overflow: hidden;
+}
+
+#settings-inner {
+    width: 700px;
+    margin: 16px auto;
+}
+
+#settings img {
+    vertical-align: middle;
 }
 
 .pkg:after {

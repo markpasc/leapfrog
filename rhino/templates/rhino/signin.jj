@@ -10,6 +10,8 @@
     {% endif %}
 {% endblock %}
 
+{% block settings %}{% endblock %}
+
 {% block content %}
 
     <div id="signin" class="item">

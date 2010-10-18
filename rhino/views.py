@@ -114,10 +114,10 @@ def complete_twitter(request):
     userdata = json.loads(content)
 
     person = None
-    if not request.user.is_anonymous:
+    if not request.user.is_anonymous():
         person = request.user.person
     account = account_for_twitter_user(userdata, person=person)
-    if request.user.is_anonymous:
+    if request.user.is_anonymous():
         person = account.person
         if person.user is None:
             # AGH
@@ -193,10 +193,10 @@ def complete_typepad(request):
     tp_user = typd.objecttypes.User.from_dict(userdata)
 
     person = None
-    if not request.user.is_anonymous:
+    if not request.user.is_anonymous():
         person = request.user.person
     account = account_for_typepad_user(tp_user, person=person)
-    if request.user.is_anonymous:
+    if request.user.is_anonymous():
         person = account.person
         if person.user is None:
             # AGH
