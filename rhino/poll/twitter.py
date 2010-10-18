@@ -173,8 +173,16 @@ def object_from_twitpic_url(url):
 
 
 def raw_object_for_tweet(tweetdata, client):
+    """Returns the normalized Object for the given tweetdata, and whether
+    that Object represents that tweet or the thing the tweet is sharing.
+
+    This is returned as a tuple containing (a) whether the tweet is a
+    share, and (b) the ``rhino.models.Object`` reference for that tweet
+    data, in that order.
+
+    """
     try:
-        return Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
+        return False, Object.objects.get(service='twitter.com', foreign_id=str(tweetdata['id']))
     except Object.DoesNotExist:
         pass
 
@@ -197,10 +205,11 @@ def raw_object_for_tweet(tweetdata, client):
             next_tweetdata = json.loads(content)
             synthesize_entities(next_tweetdata)
             log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
-            in_reply_to = raw_object_for_tweet(next_tweetdata, client)
+            # If it's really a share, this tweet is transitively in reply to the shared thing, so this is fine.
+            really_a_share, in_reply_to = raw_object_for_tweet(next_tweetdata, client)
 
     # Is this something other than a status?
-    if len(tweetdata['entities']['urls']) == 1:
+    elif len(tweetdata['entities']['urls']) == 1:
         about_urldata = tweetdata['entities']['urls'][0]
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
@@ -208,6 +217,18 @@ def raw_object_for_tweet(tweetdata, client):
             in_reply_to = rhino.poll.embedlam.object_for_url(about_url)
         except ValueError, exc:
             log.debug(str(exc))
+        else:
+            # If the tweet was only the object's url and its title, make it a share.
+            tweettext = tweetdata['text']
+            link_starts, link_ends = about_urldata['indices']
+            tweettext = tweettext[:link_starts] + tweettext[link_ends:]
+            tweettext = tweettext.lower()
+            if in_reply_to.title:
+                tweettext = tweettext.replace(in_reply_to.title.lower(), '')
+            tweettext = re.sub(r'\s', '', tweettext)
+
+            if not tweettext:
+                return True, in_reply_to
 
     tweet = Object(
         service='twitter.com',
@@ -222,7 +243,7 @@ def raw_object_for_tweet(tweetdata, client):
     )
     tweet.save()
 
-    return tweet
+    return False, tweet
 
 
 def poll_twitter(account):
@@ -256,7 +277,9 @@ def poll_twitter(account):
             why_verb = 'share'
 
         orig_actor = account_for_twitter_user(orig_tweetdata['user'])
-        tweet = raw_object_for_tweet(tweetdata, client)
+        really_a_share, tweet = raw_object_for_tweet(tweetdata, client)
+        if really_a_share:
+            why_verb = 'share'
 
         # CASES:
         # real reply to...
