@@ -16,7 +16,9 @@
     </div>
 
     <div id="bar">
-        <div id="gear"><a href="#">&#9881;</a></div>
+        {% if not user.is_anonymous %}
+            <div id="gear"><a href="#">&#9881;</a></div>
+        {% endif %}
     </div>
 
     <div id="content">
