@@ -300,8 +300,13 @@ def poll_twitter(account):
 
                 UserStream.objects.get_or_create(user=user, obj=root,
                     defaults={'why_account': tweet.author, 'why_verb': 'reply', 'time': tweet.time})
-                UserReplyStream.objects.get_or_create(user=user, root=root, reply=tweet,
-                    defaults={'root_time': root.time, 'reply_time': tweet.time})
+
+                # Now add a reply for each tweet in the thread.
+                supertweet = tweet
+                while supertweet.in_reply_to is not None:
+                    UserReplyStream.objects.get_or_create(user=user, root=root, reply=supertweet,
+                        defaults={'root_time': root.time, 'reply_time': supertweet.time})
+                    supertweet = supertweet.in_reply_to
 
             elif why_verb == 'share':
                 # Sharing is transitive, so really share the root.
