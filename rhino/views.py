@@ -3,7 +3,7 @@ import logging
 from random import choice
 import string
 from urllib import urlencode, quote
-from urlparse import parse_qsl
+from urlparse import parse_qsl, urlunparse
 
 from django.conf import settings
 from django.contrib.auth import login
@@ -19,6 +19,7 @@ import typd.objecttypes
 
 from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
+from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
 
 
 log = logging.getLogger(__name__)
@@ -210,6 +211,54 @@ def complete_typepad(request):
         login(request, person.user)
 
     account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
+
+
+def signin_flickr(request):
+    query = {
+        'api_key': settings.FLICKR_KEY[0],
+        'perms': 'read',
+    }
+    sign_flickr_query(query)
+    url = urlunparse(('http', 'flickr.com', 'services/auth/', None, urlencode(query), None))
+
+    return HttpResponseRedirect(url)
+
+
+def complete_flickr(request):
+    try:
+        frob = request.GET['frob']
+    except KeyError:
+        raise ValueError("Redirect back from Flickr did not include a frob")
+
+    result = call_flickr('flickr.auth.getToken', sign=True, frob=frob)
+
+    try:
+        nsid = result['auth']['user']['nsid']
+    except KeyError:
+        raise ValueError("Result of Flickr getToken call did not have a user NSID")
+
+    try:
+        token = result['auth']['token']['_content']
+    except KeyError:
+        raise ValueError("Result of Flickr getToken call did not include a token")
+
+    person = None
+    if not request.user.is_anonymous():
+        person = request.user.person
+    account = account_for_flickr_id(nsid, person=person)
+    if request.user.is_anonymous():
+        person = account.person
+        if person.user is None:
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+    account.authinfo = token
     account.save()
 
     return HttpResponseRedirect(reverse('home'))

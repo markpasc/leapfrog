@@ -17,6 +17,8 @@ urlpatterns += patterns('',
     url(r'^complete/twitter$', 'rhino.views.complete_twitter', name='complete-twitter'),
     url(r'^signin/typepad$', 'rhino.views.signin_typepad', name='signin-typepad'),
     url(r'^complete/typepad$', 'rhino.views.complete_typepad', name='complete-typepad'),
+    url(r'^signin/flickr$', 'rhino.views.signin_flickr', name='signin-flickr'),
+    url(r'^complete/flickr$', 'rhino.views.complete_flickr', name='complete-flickr'),
 )
 
 urlpatterns += patterns('',
