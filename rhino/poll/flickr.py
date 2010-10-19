@@ -1,5 +1,6 @@
 from hashlib import md5
 import json
+import logging
 from urllib import urlencode
 from urlparse import urlunparse
 
@@ -7,6 +8,9 @@ from django.conf import settings
 import httplib2
 
 from rhino.models import Account, Media, Person
+
+
+log = logging.getLogger(__name__)
 
 
 def account_for_flickr_id(nsid, person=None):
@@ -105,19 +109,22 @@ def poll_flickr(account):
     recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo, extras='date_upload')
     for photodata in recent['photos']:
         try:
-            obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
-        except Object.DoesNotExist:
-            obj = Object(
-                service='flickr.com',
-                foreign_id=photodata['id'],
-                render_mode='photo',
-                title=photodata['title'],
-                #body=,
-                #time=,
-                permalink_url='http://www.flickr.com/photos/%(owner)s/%(id)s/' % photodata,
-                author=account_for_flickr_id(photodata['owner']),
-            )
-            obj.save()
+            try:
+                obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
+            except Object.DoesNotExist:
+                obj = Object(
+                    service='flickr.com',
+                    foreign_id=photodata['id'],
+                    render_mode='photo',
+                    title=photodata['title'],
+                    #body=,
+                    #time=,
+                    permalink_url='http://www.flickr.com/photos/%(owner)s/%(id)s/' % photodata,
+                    author=account_for_flickr_id(photodata['owner']),
+                )
+                obj.save()
 
-        UserStream.objects.get_or_create(user=user, obj=obj,
-            defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
+            UserStream.objects.get_or_create(user=user, obj=obj,
+                defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
+        except Exception, exc:
+            log.exception(exc)

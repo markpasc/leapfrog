@@ -1,3 +1,5 @@
+import logging
+
 from django.core.management.base import NoArgsCommand, CommandError
 
 from rhino.models import *
@@ -17,9 +19,17 @@ class Command(NoArgsCommand):
         users = User.objects.all()
         for user in users:
             try:
-                for account in user.person.accounts.all():
-                    if account.service in pollers:
-                        poller = pollers[account.service]
-                        poller(account)
+                person = user.person
             except Person.DoesNotExist:
-                pass
+                continue
+
+            for account in person.accounts.all():
+                if account.service not in pollers:
+                    continue
+
+                poller = pollers[account.service]
+                try:
+                    poller(account)
+                except Exception, exc:
+                    log = logging.getLogger('%s.%s' % (__name__, account.service))
+                    log.exception(exc)

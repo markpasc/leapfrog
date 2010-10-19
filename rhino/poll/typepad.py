@@ -10,6 +10,9 @@ from tidylib import tidy_fragment
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
 
 
+log = logging.getLogger(__name__)
+
+
 def account_for_typepad_user(tp_user, person=None):
     try:
         account = Account.objects.get(service='typepad.com', ident=tp_user.url_id)
@@ -140,23 +143,27 @@ def poll_typepad(account):
     notes = t.users.get_notifications(account.ident)
 
     for note in good_notes_for_notes(reversed(notes.entries), t):
-        obj = object_for_typepad_object(note.object)
+        try:
+            obj = object_for_typepad_object(note.object)
 
-        # TODO: mangle reblogs into shares or replies
+            # TODO: mangle reblogs into shares or replies
 
-        if not UserStream.objects.filter(user=user, obj=obj).exists():
-            actor = account_for_typepad_user(note.actor)
-            why_verb = {
-                'AddedFavorite': 'like',
-                'NewAsset': 'post',
-                'Comment': 'reply',
-                'Reblog': 'reply',
-            }[note.verb]
-            UserStream.objects.create(user=user, obj=obj,
-                time=note.published,
-                why_account=actor, why_verb=why_verb)
+            if not UserStream.objects.filter(user=user, obj=obj).exists():
+                actor = account_for_typepad_user(note.actor)
+                why_verb = {
+                    'AddedFavorite': 'like',
+                    'NewAsset': 'post',
+                    'Comment': 'reply',
+                    'Reblog': 'reply',
+                }[note.verb]
+                UserStream.objects.create(user=user, obj=obj,
+                    time=note.published,
+                    why_account=actor, why_verb=why_verb)
 
-        if note.verb in ('Comment', 'Reblog'):
-            reply = object_for_typepad_object(note.original)
-            UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply,
-                defaults={'root_time': obj.time, 'reply_time': reply.time})
+            if note.verb in ('Comment', 'Reblog'):
+                reply = object_for_typepad_object(note.original)
+                UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply,
+                    defaults={'root_time': obj.time, 'reply_time': reply.time})
+
+        except Exception, exc:
+            log.exception(exc)
