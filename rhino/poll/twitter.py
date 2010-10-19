@@ -276,10 +276,15 @@ def poll_twitter(account):
             else:
                 why_verb = 'share'
 
-            orig_actor = account_for_twitter_user(orig_tweetdata['user'])
             really_a_share, tweet = raw_object_for_tweet(tweetdata, client)
+
             if really_a_share:
                 why_verb = 'share'
+
+            if why_verb == 'share':
+                why_account = account_for_twitter_user(orig_tweetdata['user'])
+            else:
+                why_account = tweet.author
 
             # CASES:
             # real reply to...
@@ -288,36 +293,24 @@ def poll_twitter(account):
             # tweet with a link and custom text
             # tweet with a link and the link's target page title (found how?)
 
-            if why_verb == 'post' and not tweet.in_reply_to:
-                UserStream.objects.get_or_create(user=user, obj=tweet,
-                    defaults={'why_account': tweet.author, 'why_verb': 'post', 'time': tweet.time})
+            if why_verb == 'post' and tweet.in_reply_to is not None:
+                why_verb = 'reply'
 
-            # But if it's really a reply?
-            elif why_verb == 'post':
-                root = tweet
-                while root.in_reply_to is not None:
-                    log.debug('Walking up from %r to %r', root, root.in_reply_to)
-                    root = root.in_reply_to
+            root = tweet
+            while root.in_reply_to is not None:
+                log.debug('Walking up from %r to %r', root, root.in_reply_to)
+                root = root.in_reply_to
 
-                UserStream.objects.get_or_create(user=user, obj=root,
-                    defaults={'why_account': tweet.author, 'why_verb': 'reply', 'time': tweet.time})
+            UserStream.objects.get_or_create(user=user, obj=root,
+                # TODO: is tweet.time the right time here or do we need the "why time" from orig_tweetdata?
+                defaults={'why_account': why_account, 'why_verb': why_verb, 'time': tweet.time})
 
-                # Now add a reply for each tweet in the thread.
-                supertweet = tweet
-                while supertweet.in_reply_to is not None:
-                    UserReplyStream.objects.get_or_create(user=user, root=root, reply=supertweet,
-                        defaults={'root_time': root.time, 'reply_time': supertweet.time})
-                    supertweet = supertweet.in_reply_to
-
-            elif why_verb == 'share':
-                # Sharing is transitive, so really share the root.
-                root = tweet
-                while root.in_reply_to is not None:
-                    log.debug('Walking up from %r to %r', root, root.in_reply_to)
-                    root = root.in_reply_to
-
-                UserStream.objects.get_or_create(user=user, obj=root,
-                    defaults={'why_account': orig_actor, 'why_verb': 'share', 'time': tweet.time})
+            # Now add a reply for each tweet in the thread along the way.
+            supertweet = tweet
+            while supertweet.in_reply_to is not None:
+                UserReplyStream.objects.get_or_create(user=user, root=root, reply=supertweet,
+                    defaults={'root_time': root.time, 'reply_time': supertweet.time})
+                supertweet = supertweet.in_reply_to
 
         except Exception, exc:
             log.exception(exc)
