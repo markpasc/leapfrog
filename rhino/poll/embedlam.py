@@ -161,7 +161,12 @@ def object_from_feed_entry(feed_url, item_url):
         obj.render_mode = 'link'
         obj.body = entry.summary if "summary" in entry else ""
 
-    object_time = entry.published_parsed if "published_parsed" in entry else entry.updated_parsed;
+    if "published_parsed" in entry:
+        object_time = entry.published_parsed
+    elif "updated_parsed" in entry:
+        object_time = entry.updated_parsed
+    else:
+        object_time = False
     if object_time:
         obj.time = datetime(*object_time[:6])
 
