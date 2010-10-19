@@ -184,7 +184,9 @@ body {
     -moz-border-radius: 5px;
 }
 
-.item-has-whyline .item-content {
+.item-has-whyline .item-content,
+.item-has-whyline .item-content-status .item-inner,
+.item-has-whyline .item-content-status .status-shade {
     border-radius: 0 0 5px 5px;
     -moz-border-radius: 0 0 5px 5px;
 }
