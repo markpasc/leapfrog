@@ -72,6 +72,9 @@ class Object(models.Model):
 
     in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
 
+    def __repr__(self):
+        return '<Object: %s>' % (unicode(self).encode('ascii', 'replace'),)
+
     def __unicode__(self):
         if self.title:
             return self.title
