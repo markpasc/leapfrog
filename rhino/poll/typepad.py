@@ -52,21 +52,28 @@ def object_for_typepad_object(tp_obj):
     try:
         obj = Object.objects.get(service='typepad.com', foreign_id=tp_obj.url_id)
     except Object.DoesNotExist:
-        author = account_for_typepad_user(tp_obj.author)
-        body = tp_obj.rendered_content or tp_obj.content or ''
-        if body:
-            body, errors = tidy_fragment(body)
-        obj = Object(
-            service='typepad.com',
-            foreign_id=tp_obj.url_id,
-            render_mode='mixed',
-            title=tp_obj.title,
-            body=body,
-            time=tp_obj.published,
-            permalink_url=tp_obj.permalink_url,
-            author=author,
-        )
-        obj.save()
+        pass
+    else:
+        log.debug("Reusing typepad object %r for asset %s", obj, tp_obj.url_id)
+        return obj
+
+    log.debug("Making new object for TypePad post %s by %s", tp_obj.url_id, tp_obj.author.display_name)
+
+    author = account_for_typepad_user(tp_obj.author)
+    body = tp_obj.rendered_content or tp_obj.content or ''
+    if body:
+        body, errors = tidy_fragment(body)
+    obj = Object(
+        service='typepad.com',
+        foreign_id=tp_obj.url_id,
+        render_mode='mixed',
+        title=tp_obj.title,
+        body=body,
+        time=tp_obj.published,
+        permalink_url=tp_obj.permalink_url,
+        author=author,
+    )
+    obj.save()
 
     return obj
 

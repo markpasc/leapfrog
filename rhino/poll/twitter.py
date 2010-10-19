@@ -261,8 +261,6 @@ def poll_twitter(account):
             % (resp.status, resp.reason, account.display_name))
 
     tl = json.loads(content)
-    from pprint import pformat
-    log.debug(pformat(tl))
 
     for orig_tweetdata in reversed(tl):
         try:
