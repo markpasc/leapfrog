@@ -63,6 +63,7 @@ def object_for_typepad_object(tp_obj):
     body = tp_obj.rendered_content or tp_obj.content or ''
     if body:
         body, errors = tidy_fragment(body)
+
     obj = Object(
         service='typepad.com',
         foreign_id=tp_obj.url_id,
@@ -73,6 +74,31 @@ def object_for_typepad_object(tp_obj):
         permalink_url=tp_obj.permalink_url,
         author=author,
     )
+
+    if tp_obj.object_type == 'Photo':
+        height, width = tp_obj.image_link.height, tp_obj.image_link.width
+        image_url = tp_obj.image_link.url
+        if tp_obj.image_link.url_template:
+            if height > 1024 or width > 1024:
+                # Use the 1024pi version.
+                image_url = tp_obj.image_link.url_template.replace('{spec}', '1024pi')
+                if height > width:
+                    width = int(1024 * width / height)
+                    height = 1024
+                else:
+                    height = int(1024 * height / width)
+                    width = 1024
+
+        image = Media(
+            image_url=image_url,
+            height=height,
+            width=width,
+        )
+        image.save()
+
+        obj.image = image
+        obj.render_mode = 'image'
+
     obj.save()
 
     return obj
