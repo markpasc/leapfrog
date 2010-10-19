@@ -1,3 +1,6 @@
+from __future__ import division
+
+from datetime import datetime
 from hashlib import md5
 import json
 import logging
@@ -7,7 +10,7 @@ from urlparse import urlunparse
 from django.conf import settings
 import httplib2
 
-from rhino.models import Account, Media, Person
+from rhino.models import Account, Media, Person, Object, UserStream
 
 
 log = logging.getLogger(__name__)
@@ -20,9 +23,10 @@ def account_for_flickr_id(nsid, person=None):
         pass
 
     result = call_flickr('flickr.people.getInfo', user_id=nsid)
-    persondata = result['person']
 
     if person is None:
+        persondata = result['person']
+
         if int(persondata['iconfarm']) == 0:
             avatar = None
         else:
@@ -33,8 +37,11 @@ def account_for_flickr_id(nsid, person=None):
                 height=48,
             )
             avatar.save()
+
+        namenode = persondata.get('realname', persondata.get('username'))
+
         person = Person(
-            display_name=persondata['realname']['_content'],
+            display_name=namenode['_content'],
             permalink_url=persondata['profileurl']['_content'],
             avatar=avatar,
         )
@@ -53,14 +60,6 @@ def account_for_flickr_id(nsid, person=None):
     )
     acc.save()
     return acc
-
-
-def object_for_flickr_object(flobj):
-    pass
-
-
-def object_from_url(url):
-    pass
 
 
 def sign_flickr_query(query):
@@ -101,28 +100,53 @@ def photo_url_for_photo(photodata):
     return 'http://farm%(farm)s.static.flickr.com/%(server)s/%(id)s_%(secret)s_b.jpg' % photodata
 
 
+def object_from_url(url):
+    raise NotImplementedError
+
+
 def poll_flickr(account):
     user = account.person.user
     if user is None:
         return
 
-    recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo, extras='date_upload')
-    for photodata in recent['photos']:
+    recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo, extras='date_upload,o_dims')
+    for photodata in recent['photos']['photo']:
         try:
             try:
                 obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
             except Object.DoesNotExist:
+                log.debug("Creating new object for %s's Flickr photo #%s", photodata['owner'], photodata['id'])
+
+                # We aren't supposed to be able to ask for the dimensions, but we can, so use 'em.
+                height, width = [int(photodata[key]) for key in ('o_height', 'o_width')]
+                if height > width:
+                    width = int(1024 * width / height)
+                    height = 1024
+                else:
+                    height = int(1024 * height / width)
+                    width = 1024
+
+                image = Media(
+                    image_url=photo_url_for_photo(photodata),
+                    width=width,
+                    height=height,
+                )
+                image.save()
+
                 obj = Object(
                     service='flickr.com',
                     foreign_id=photodata['id'],
-                    render_mode='photo',
+                    render_mode='image',
                     title=photodata['title'],
                     #body=,
-                    #time=,
+                    image=image,
+                    time=datetime.utcfromtimestamp(int(photodata['dateupload'])),
                     permalink_url='http://www.flickr.com/photos/%(owner)s/%(id)s/' % photodata,
                     author=account_for_flickr_id(photodata['owner']),
                 )
                 obj.save()
+            else:
+                log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
 
             UserStream.objects.get_or_create(user=user, obj=obj,
                 defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})

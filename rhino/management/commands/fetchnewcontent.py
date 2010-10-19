@@ -5,11 +5,13 @@ from django.core.management.base import NoArgsCommand, CommandError
 from rhino.models import *
 from rhino.poll import twitter
 from rhino.poll import typepad
+from rhino.poll import flickr
 
 
 pollers = {
     "twitter.com": twitter.poll_twitter,
     "typepad.com": typepad.poll_typepad,
+    "flickr.com": flickr.poll_flickr,
 }
 
 
