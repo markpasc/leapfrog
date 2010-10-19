@@ -188,6 +188,10 @@ body {
     -moz-border-radius: 0 0 5px 5px;
 }
 
+.item .item-content .body {
+    position: relative;
+}
+
 .item .footer {
     font-size: 0.8em;
     color: #999;
@@ -240,6 +244,37 @@ body {
 }
 .item .item-content blockquote img, .item .item-content div.highlight img {
     max-width: 580px;
+}
+
+.item-content blockquote {
+    margin: 10px 40px;
+}
+.item-content blockquote p {
+    font-size: 0.9em;
+    line-height: 1.5em;
+}
+.item-content blockquote+p small {
+    margin-left: 40px;
+    font-style: oblique;
+    color: #666;
+}
+
+.item-content blockquote:before, .item-content blockquote:after {
+    display: inline-block;
+    position: absolute;
+    font-size: 5em;
+    font-weight: bold;
+    color: #ccc;
+}
+.item-content blockquote:before {
+    left: -5px;
+    content: "“";
+    margin: 20px 0 0 0;
+}
+.item-content blockquote:after {
+    right: 0;
+    content: "”";
+    margin-top: -20px;
 }
 
 .item .item-content-image {
