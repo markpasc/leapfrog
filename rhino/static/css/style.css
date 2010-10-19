@@ -157,6 +157,7 @@ body {
     position: absolute;
     left: -50px;
     top: 20px;
+    z-index: 3;
 }
 
 .item .author img {
@@ -214,18 +215,32 @@ body {
 .item .item-content-status,
 .item .item-content-image {
     padding: 0;
+    position: relative;
 }
 
-.item-content .status-shade {
-    padding: 20px;
-    background: rgba(255, 255, 255, 0.8);
+.item-content-status .status-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
     border-radius: 5px;
     -moz-border-radius: 5px;
 }
 
-.item-content .status {
+.item-content-status .item-inner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content-status .status {
+    position: relative;
     background: white;
     padding: 20px;
+    margin: 20px;
 
     border-radius: 5px;
     -moz-border-radius: 5px;
@@ -296,21 +311,6 @@ body {
 #signin-inner {
     position: relative;
     padding: 20px;
-}
-
-#signin label {
-    display: block;
-}
-#signin .input {
-    background: white;
-    display: block;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    padding: 5px;
-}
-#signin .input input {
-    border-width: 0;
-    width: 100%;
 }
 
 #signin h1 {

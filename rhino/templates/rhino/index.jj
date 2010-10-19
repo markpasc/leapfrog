@@ -47,10 +47,11 @@
                 {% endif %}
 
                 {% if object.render_mode == 'status' %}
-                    <div class="item-content item-content-status"
-                        style="background: {% if object.author and object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
-                        >
-                        <div class="status-shade">
+                    <div class="item-content item-content-status">
+                        <div class="item-inner">
+                            <div class="status-shade"
+                                style="background: {% if object.author and object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
+                                ></div>
                             <div class="status">
                                 <p class="summary">{{ object.body }}</p>
 
