@@ -70,13 +70,16 @@ body {
 .item {
     position: relative;
 
-    background: #ffffff;
     color: #000000;
     margin: 60px 0 10px;
     min-height: 82px;
 
     border-radius: 5px;
     -moz-border-radius: 5px;
+}
+
+.item-content {
+    background: white;
 }
 
 .reply {
@@ -186,7 +189,8 @@ body {
 
 .item-has-whyline .item-content,
 .item-has-whyline .item-content-status .item-inner,
-.item-has-whyline .item-content-status .status-shade {
+.item-has-whyline .item-content-status .status-shade,
+.item-has-whyline .item-content-image img {
     border-radius: 0 0 5px 5px;
     -moz-border-radius: 0 0 5px 5px;
 }
@@ -296,10 +300,48 @@ body {
 
 .item .item-content-image {
     line-height: 0;
+    display: inline-block;
 }
 
 .item .item-content-image img {
     max-width: 700px;
+}
+
+.item .item-content-image,
+.item-has-whyline .item-content-image {
+    background: transparent;
+    border-radius: 0;
+    -moz-border-radius: 0;
+}
+
+.item-content-image img {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content-image .title {
+    position: absolute;
+    top: 0; left: 0;
+    padding: 20px;
+    z-index: 1;
+    color: white;
+    text-shadow: black 0 0 20px;
+}
+
+.item-content-image .footer {
+    position: absolute;
+    bottom: 0;
+    padding: 0 0 10px 10px;
+    text-shadow: black 0 0 3px;
+    margin: 0;
+    border-width: 0;
+    z-index: 7;
+    color: #ddd;
+}
+
+.item-content-image:hover .title,
+.item-content-image:hover .footer {
+    display: none;
 }
 
 
