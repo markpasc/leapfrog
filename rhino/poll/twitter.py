@@ -216,7 +216,8 @@ def raw_object_for_tweet(tweetdata, client):
         try:
             in_reply_to = rhino.poll.embedlam.object_for_url(about_url)
         except ValueError, exc:
-            log.debug(str(exc))
+            log.error("Error making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
+            log.exception(exc)
         else:
             # If the tweet was only the object's url and its title, make it a share.
             tweettext = tweetdata['text']
