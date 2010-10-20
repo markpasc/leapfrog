@@ -48,14 +48,16 @@ def home(request):
         # No stream items?
         pass
     else:
-        replies = user.reply_stream_items.filter(root_time__range=(stream_items[-1].time, stream_items[0].time)).select_related()
+        replies = user.reply_stream_items.filter(root_time__range=(last_stream_item.time, first_stream_item.time)).select_related()
         reply_by_item = dict()
         for reply in replies:
             item_replies = reply_by_item.setdefault(reply.root_id, set())
             item_replies.add(reply)
+            log.debug("Saving reply #%d %r for obj #%d", reply.pk, reply, reply.root_id)
         for item in stream_items:
             reply_set = reply_by_item.get(item.obj_id, set())
             item.replies = sorted(iter(reply_set), key=lambda i: i.reply_time)
+            log.debug("Found %d replies for obj #%d %s", len(item.replies), item.obj_id, item.obj.title)
 
     data = {
         'stream_items': stream_items,
