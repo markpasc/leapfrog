@@ -75,6 +75,11 @@ def object_for_typepad_object(tp_obj):
         author=author,
     )
 
+    if getattr(tp_obj, 'in_reply_to', None) is not None:
+        obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
+    elif getattr(tp_obj, 'reblog_of', None) is not None:
+        obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
+
     if tp_obj.object_type == 'Photo':
         height, width = tp_obj.image_link.height, tp_obj.image_link.width
         image_url = tp_obj.image_link.url
@@ -124,14 +129,23 @@ def good_notes_for_notes(notes, t):
             continue
 
         if note.verb == 'NewAsset':
-            if getattr(obj, 'root', None) is not None:
-                note.original = obj
+            if getattr(obj, 'in_reply_to', None) is not None:
                 note.verb = 'Comment'
-                obj = note.object = t.assets.get(obj.root.url_id)
 
-            if getattr(obj, 'reblog_of', None) is not None:
-                note.original = obj
+                superobj = obj
+                while getattr(superobj, 'in_reply_to', None) is not None:
+                    if superobj.root.object_type == 'Comment':
+                        superobj.root, superobj.in_reply_to = superobj.in_reply_to, superobj.root
+                    superobj.in_reply_to = t.assets.get(superobj.in_reply_to.url_id)
+                    superobj = superobj.in_reply_to
+
+            elif getattr(obj, 'reblog_of', None) is not None:
                 note.verb = 'Reblog'
+
+                reblog = obj
+                while getattr(reblog, 'reblog_of', None) is not None:
+                    reblog.reblog_of = t.assets.get(obj.reblog_of.url_id)
+                    reblog = reblog.reblog_of
 
         if note.verb == 'NewAsset':
             okay_types = ['Post']
@@ -139,10 +153,6 @@ def good_notes_for_notes(notes, t):
                 okay_types.extend(['Photo', 'Audio', 'Video', 'Link'])
             if obj.object_type not in okay_types:
                 continue
-
-        # Move all reactions up to the root object of reblogging.
-        while getattr(obj, 'reblog_of', None) is not None:
-            obj = note.object = t.assets.get(obj.reblog_of.url_id)
 
         # Yay, let's show this one!
         yield note
@@ -179,9 +189,11 @@ def poll_typepad(account):
         try:
             obj = object_for_typepad_object(note.object)
 
-            # TODO: mangle reblogs into shares or replies
+            root = obj
+            while root.in_reply_to is not None:
+                root = root.in_reply_to
 
-            if not UserStream.objects.filter(user=user, obj=obj).exists():
+            if not UserStream.objects.filter(user=user, obj=root).exists():
                 actor = account_for_typepad_user(note.actor)
                 why_verb = {
                     'AddedFavorite': 'like',
@@ -189,14 +201,15 @@ def poll_typepad(account):
                     'Comment': 'reply',
                     'Reblog': 'reply',
                 }[note.verb]
-                UserStream.objects.create(user=user, obj=obj,
+                UserStream.objects.create(user=user, obj=root,
                     time=note.published,
                     why_account=actor, why_verb=why_verb)
 
-            if note.verb in ('Comment', 'Reblog'):
-                reply = object_for_typepad_object(note.original)
-                UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply,
-                    defaults={'root_time': obj.time, 'reply_time': reply.time})
+            superobj = obj
+            while superobj.in_reply_to is not None:
+                UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
+                    defaults={'root_time': root.time, 'reply_time': superobj.time})
+                superobj = superobj.in_reply_to
 
         except Exception, exc:
             log.exception(exc)
