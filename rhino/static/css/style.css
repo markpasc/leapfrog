@@ -326,6 +326,7 @@ body {
     z-index: 1;
     color: white;
     text-shadow: black 0 0 20px;
+    line-height: 1em;
 }
 
 .item-content-image .footer {
