@@ -264,3 +264,8 @@ def complete_flickr(request):
     account.save()
 
     return HttpResponseRedirect(reverse('home'))
+
+
+def redirect_home(request):
+    return HttpResponseRedirect(reverse('home'))
+
