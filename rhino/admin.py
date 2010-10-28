@@ -35,5 +35,10 @@ class UserReplyStreamAdmin(admin.ModelAdmin):
 admin.site.register(models.UserReplyStream, UserReplyStreamAdmin)
 
 
-admin.site.register(models.Person)
+class PersonAdmin(admin.ModelAdmin):
+    list_filter = ('user',)
+
+admin.site.register(models.Person, PersonAdmin)
+
+
 admin.site.register(models.Media)
