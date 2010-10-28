@@ -158,6 +158,13 @@
             </div>
         {% endfor %}
 
+    {% else %}
+        <div class="item">
+            <div class="item-content">
+                <h1 class="title">Welcome!</h1>
+                <div>We're looking for your stuff so check back in a minute.</div>
+            </div>
+        </div>
     {% endfor %}
 
 {% endblock %}
