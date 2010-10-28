@@ -23,10 +23,9 @@ def account_for_flickr_id(nsid, person=None):
         pass
 
     result = call_flickr('flickr.people.getInfo', user_id=nsid)
+    persondata = result['person']
 
     if person is None:
-        persondata = result['person']
-
         if int(persondata['iconfarm']) == 0:
             avatar = None
         else:
