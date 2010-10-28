@@ -43,10 +43,10 @@ class Migration(SchemaMigration):
         db.delete_column('rhino_userstream', 'who_id')
 
         # Adding field 'UserStream.author'
-        db.add_column('rhino_userstream', 'author', self.gf('django.db.models.fields.related.ForeignKey')(default='THIS SHOULD HAVE BEEN WHO', related_name='stream_items', to=orm['auth.User']), keep_default=False)
+        db.add_column('rhino_userstream', 'author', self.gf('django.db.models.fields.related.ForeignKey')(default=0, related_name='stream_items', to=orm['auth.User']), keep_default=False)
 
         # Adding field 'UserStream.why_who'
-        db.add_column('rhino_userstream', 'why_who', self.gf('django.db.models.fields.related.ForeignKey')(default='hi', related_name='stream_items_caused', to=orm['auth.User']), keep_default=False)
+        db.add_column('rhino_userstream', 'why_who', self.gf('django.db.models.fields.related.ForeignKey')(default=0, related_name='stream_items_caused', to=orm['auth.User']), keep_default=False)
 
         # Adding field 'UserStream.why_verb'
         db.add_column('rhino_userstream', 'why_verb', self.gf('django.db.models.fields.CharField')(default='muh', max_length=20), keep_default=False)
@@ -79,8 +79,9 @@ class Migration(SchemaMigration):
         db.alter_column('rhino_object', 'foreign_id', self.gf('django.db.models.fields.CharField')(max_length=255, null=True))
 
         # We cannot add back in field 'UserStream.who'
-        raise RuntimeError(
-            "Cannot reverse this migration. 'UserStream.who' and its values cannot be restored.")
+        if not db.dry_run:
+            raise RuntimeError(
+                "Cannot reverse this migration. 'UserStream.who' and its values cannot be restored.")
 
         # Deleting field 'UserStream.author'
         db.delete_column('rhino_userstream', 'author_id')
