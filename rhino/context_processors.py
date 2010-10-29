@@ -16,4 +16,5 @@ def typekit_code(request):
     return {
         'typekit_code': getattr(settings, 'TYPEKIT_CODE', None),
         'ganalytics_code': getattr(settings, 'GANALYTICS_CODE', None),
+        'zendesk': getattr(settings, 'ZENDESK', None),
     }
