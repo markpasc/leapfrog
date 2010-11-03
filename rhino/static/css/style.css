@@ -372,3 +372,23 @@ body {
 #signin p.last {
     margin: 0;
 }
+
+
+#zendesk-dropbox {
+    display: block;
+    position: fixed;
+    left: -10px;
+    top: 200px;
+    width: 45px;
+    height: 108px;
+
+    background: black url(//asset0.zendesk.com/external/zenbox/images/tab_feedback.png);
+    border: 1px solid black;
+    border-left-width: 0;
+    cursor: pointer;
+}
+
+#zendesk-dropbox:hover {
+    background-color: #063;
+    left: -8px;
+}

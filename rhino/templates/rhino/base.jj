@@ -85,20 +85,30 @@
 {% endif %}
 
 {% if zendesk %}
+<div id="zendesk-dropbox" class="ZenboxTabLeft"></div>
+
 <script type="text/javascript" src="//asset0.zendesk.com/external/zenbox/zenbox-2.0.js"></script>
 <style type="text/css" media="screen, projection">
   @import url(//asset0.zendesk.com/external/zenbox/zenbox-2.0.css);
 </style>
 <script type="text/javascript">
-  if (typeof(Zenbox) !== "undefined") {
-    Zenbox.init({
-      dropboxID:   "{{ zendesk.dropbox_id }}",
-      url:         "{{ zendesk.url }}",
-      tabID:       "{{ zendesk.tab_id or "feedback" }}",
-      tabColor:    "{{ zendesk.tab_color or "black" }}",
-      tabPosition: "{{ zendesk.tab_position or "Left" }}",
+    if (typeof(Zenbox) !== "undefined") {
+        Zenbox.init({
+            dropboxID:   "{{ zendesk.dropbox_id }}",
+            url:         "{{ zendesk.url }}",
+            tabID:       "{{ zendesk.tab_id or "feedback" }}",
+            tabColor:    "{{ zendesk.tab_color or "black" }}",
+            tabPosition: "{{ zendesk.tab_position or "Left" }}",
+            hide_tab:    true
+        });
+    }
+    $(document).ready(function () {
+        $('#zendesk-dropbox').click(function () {
+            Zenbox.is_rendered = false;
+            Zenbox.show();
+            return false;
+        });
     });
-  }
 </script>
 {% endif %}
 
