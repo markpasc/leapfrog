@@ -101,7 +101,6 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
 
 
 def object_from_html_head(url, orig_url, head):
-
     # Try a number of strategies to extract a title.
     og_title_elem = head.find("meta", property="og:title")
     old_facebook_title_elem = head.find("meta", {"name":"title"})
@@ -122,10 +121,14 @@ def object_from_html_head(url, orig_url, head):
         image.image_url = image_url
         image.save()
 
+    render_mode = 'link'
+    if re.match(r'http:// (?: instagr\.am | yfrog\.com ) /', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        render_mode = 'image'
+
     obj = Object(
         service='',
         foreign_id=url,
-        render_mode='link',
+        render_mode=render_mode,
         title=title,
         body=summary,
         permalink_url=url,

@@ -321,12 +321,24 @@ body {
 
 .item-content-image .title {
     position: absolute;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     padding: 20px;
     z-index: 1;
     color: white;
     text-shadow: black 0 0 20px;
     line-height: 1em;
+}
+
+.item .item-content-image .body {
+    position: absolute;
+    bottom: 20px;
+    text-shadow: black 0 0 3px;
+    margin: 0;
+    z-index: 1;
+    line-height: 1em;
+    padding: 10px;
+    color: white;
 }
 
 .item-content-image .footer {
@@ -341,6 +353,7 @@ body {
 }
 
 .item-content-image:hover .title,
+.item-content-image:hover .body,
 .item-content-image:hover .footer {
     display: none;
 }
