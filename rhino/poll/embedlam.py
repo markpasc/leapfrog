@@ -222,6 +222,8 @@ def object_for_url(url):
         except ValueError:
             # Try the regular way.
             pass
+    if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        return rhino.poll.twitter.object_from_url(url)
 
     # Fetch the resource and soupify it.
     h = httplib2.Http()

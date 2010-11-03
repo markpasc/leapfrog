@@ -172,6 +172,36 @@ def object_from_twitpic_url(url):
     return obj
 
 
+def object_from_tweet_id(tweet_id, client=None):
+    try:
+        return False, Object.objects.get(service='twitter.com', foreign_id=str(tweet_id))
+    except Object.DoesNotExist:
+        pass
+
+    if client is None:
+        # Be unauth'd then.
+        client = httplib2.Http()
+
+    resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json'
+        % tweet_id)
+    if resp.status != 200:
+        raise ValueError("Unexpected %d %s response fetching tweet #%s"
+            % (resp.status, resp.reason, tweet_id))
+
+    tweetdata = json.loads(content)
+    synthesize_entities(tweetdata)
+    log.debug("    Let's make a new tweet for %s status #%d", tweetdata['user']['screen_name'], tweetdata['id'])
+    # If it's really a share, this tweet is transitively in reply to the shared thing, so this is fine.
+    return raw_object_for_tweet(tweetdata, client)
+
+
+def object_from_url(url):
+    mo = re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
+    tweet_id = mo.group(1)
+    really_a_share, tweet_obj = object_from_tweet_id(int(tweet_id))
+    return tweet_obj
+
+
 def raw_object_for_tweet(tweetdata, client):
     """Returns the normalized Object for the given tweetdata, and whether
     that Object represents that tweet or the thing the tweet is sharing.
@@ -188,25 +218,17 @@ def raw_object_for_tweet(tweetdata, client):
 
     log.debug('Making new tweet for %s status #%d', tweetdata['user']['screen_name'], tweetdata['id'])
 
+    if 'foursquare.com' in tweetdata.get('source', ''):
+        log.debug("Skipping %s's tweet #%d as it's from foursquare", tweetdata['user']['screen_name'], tweetdata['id'])
+        # TODO: really we should end generation less tragically but callers don't expect us to return None for a tweet
+        raise ValueError("Tweet is from foursquare")
+
     in_reply_to = None
     if tweetdata.get('in_reply_to_status_id'):
         # Uh oh, gotta get that tweet.
         # TODO: remove the mention from the front of the tweet
         next_tweetid = tweetdata['in_reply_to_status_id']
-        try:
-            in_reply_to = Object.objects.get(service='twitter.com', foreign_id=str(next_tweetid))
-        except Object.DoesNotExist:
-            resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json'
-                % next_tweetid)
-            if resp.status != 200:
-                raise ValueError("Unexpected %d %s response fetching tweet #%s up a reply chain for "
-                    "%s's timeline" % (resp.status, resp.reason, next_tweetid, account.display_name))
-
-            next_tweetdata = json.loads(content)
-            synthesize_entities(next_tweetdata)
-            log.debug("    Let's make a new tweet for %s status #%d", next_tweetdata['user']['screen_name'], next_tweetdata['id'])
-            # If it's really a share, this tweet is transitively in reply to the shared thing, so this is fine.
-            really_a_share, in_reply_to = raw_object_for_tweet(next_tweetdata, client)
+        really_a_share, in_reply_to = object_from_tweet_id(next_tweetid, client)
 
     # Is this something other than a status?
     elif len(tweetdata['entities']['urls']) == 1:
