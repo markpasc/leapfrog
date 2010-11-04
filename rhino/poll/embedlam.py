@@ -200,11 +200,8 @@ def value_for_meta_elems(elems, default=None, base_url=None):
         elif elem.has_key("value"):
             value = elem["value"]
 
-        if value is not None:
-            if base_url:
-                return urljoin(base_url, value)
-            else:
-                return value
+        if value:
+            return urljoin(base_url, value) if base_url else value
 
     return default
 
