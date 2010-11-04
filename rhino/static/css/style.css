@@ -12,6 +12,14 @@ body {
     min-height: 100%;
 }
 
+a:link, a:hover, a:focus, a:active {
+    color: #00e;
+}
+
+a:visited {
+    color: #551a8b;
+}
+
 #bar {
     position: relative;
     color: #fff;
@@ -264,7 +272,16 @@ body {
     margin: 0;
 }
 
-.item .item-content-link .title a.link:hover {
+.item .item-content-link .title a {
+    color: #00e;
+    text-decoration: underline;
+}
+
+.item .item-content-link .title a:visited {
+    color: #551a8b;
+}
+
+.item .item-content-link .title a.link, .item .item-content-link .title a.link:hover {
     text-decoration: none;
 }
 
