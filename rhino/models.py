@@ -1,4 +1,5 @@
 from datetime import datetime
+from urlparse import urlparse
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -79,6 +80,10 @@ class Object(models.Model):
         if self.title:
             return self.title
         return u'%s by %s' % (self.render_mode, unicode(self.author))
+
+    @property
+    def permalink_host(self):
+        return urlparse(self.permalink_url).netloc
 
 
 class UserStream(models.Model):

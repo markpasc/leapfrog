@@ -259,6 +259,34 @@ body {
     line-height: 1.2em;
 }
 
+.item-content-link .title {
+    font-size: 1.2em;
+    margin: 0;
+}
+
+.item .item-content-link .title a.link:hover {
+    text-decoration: none;
+}
+
+.item-content-link .link-host {
+    margin: 0 0 1ex;
+    font-size: 1em;
+}
+
+.item-content-link .link-host a {
+    color: #999;
+    text-decoration: none;
+}
+
+.item-content-link .link-host a:hover {
+    text-decoration: underline;
+}
+
+.item-content-link .item-body-image {
+    float: left;
+    margin: 0 1em 2ex 0;
+}
+
 .item .item-content img {
     max-width: 660px;
     height: auto;

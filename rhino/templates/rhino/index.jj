@@ -66,21 +66,25 @@
 
                 {% elif object.render_mode == 'link' %}
 
-                    <div class="item-content">
-                        {% if object.title %}
-                            <h1 class="title">
-                                <a href="{{ object.permalink_url }}">{{ object.title }}</a>
-                            </h1>
-                        {% endif %}
-
-                        {% if object.body or object.image %}
+                    <div class="item-content item-content-link">
                         <div class="body pkg">
                             {% if object.image %}
-                                <img class="item-body-image" src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title or 'image' }}">
+                                <a href="{{ object.permalink_url }}"><img class="item-body-image" src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title or '' }}"></a>
                             {% endif %}
-                            {{ object.body }}
+
+                            <h1 class="title">
+                                <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                                <a class="link" href="{{ object.permalink_url }}">&#10148;</a>
+                            </h1>
+
+                            <p class="link-host">
+                                <a href="{{ object.permalink_url }}">{{ object.permalink_host }}</a>
+                            </p>
+
+                            {% if object.body %}
+                                {{ object.body }}
+                            {% endif %}
                         </div>
-                        {% endif %}
 
                         <div class="footer">
                             <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
