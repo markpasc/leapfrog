@@ -34,10 +34,10 @@ class LoginUrl(object):
             return self.url
 
 
-@login_required(login_url=LoginUrl())
-def home(request):
-    user = request.user
+settings.LOGIN_URL = LoginUrl()
 
+
+def stream_items_for_user(user):
     stream_items = user.stream_items.order_by("-time").select_related()
     stream_items = list(stream_items[:50])
 
@@ -59,6 +59,15 @@ def home(request):
             reply_set = reply_by_item.get(item.obj_id, set())
             item.replies = sorted(iter(reply_set), key=lambda i: i.reply_time)
             log.debug("Found %d replies for obj #%d %s", len(item.replies), item.obj_id, item.obj.title)
+
+    return stream_items
+
+
+@login_required()
+def home(request):
+    user = request.user
+
+    stream_items = stream_items_for_user(user)
 
     data = {
         'stream_items': stream_items,
@@ -270,3 +279,65 @@ def complete_flickr(request):
 def redirect_home(request):
     return HttpResponseRedirect(reverse('home'))
 
+
+def json_stream(request):
+
+    ret = {}
+
+    user = request.user
+    if user.id is None:
+        # FIXME: Also include an oauth2 auth challenge
+        return HttpResponse("Auth is required", status=401)
+    
+    stream_items = stream_items_for_user(user)
+
+    ret_items = []
+    ret["items"] = ret_items
+
+    def json_image_link(media):
+        ret = {}
+        ret["url"] = media.image_url
+        if media.width is not None:
+            ret["width"] = media.width
+        if media.height is not None:
+            ret["height"] = media.height
+        return ret
+
+    def json_account(account):
+        ret = {}
+        person = account.person
+        ret["display_name"] = person.display_name
+        ret["profile_url"] = person.permalink_url
+        ret["service"] = account.service
+        ret["ident"] = account.ident
+        if person.avatar is not None:
+            ret["avatar"] = json_image_link(person.avatar)
+        return ret
+
+    for item in stream_items:
+        ret_item = {}
+
+        ret_item["id"] = "s%08x%08x" % (user.id, item.id)
+        ret_item["time"] = item.time.isoformat()
+        ret_item["verb"] = item.why_verb
+        ret_item["actor"] = json_account(item.why_account)
+
+        obj = item.obj
+        ret_obj = {}
+        ret_item["object"] = ret_obj
+        if obj.title is not None:
+            ret_obj["title"] = obj.title
+        if obj.body:
+            ret_obj["body_html"] = obj.body # FIXME: How can we make this always be HTML even when the underlying storage isn't?
+        ret_obj["permalink_url"] = obj.permalink_url
+        ret_obj["render_mode"] = obj.render_mode
+        if obj.image is not None:
+            ret_obj["image"] = json_image_link(obj.image)
+
+        if obj.author is not None:
+            ret_obj["author"] = json_account(obj.author)
+
+        ret_items.append(ret_item)
+
+    import simplejson as json
+    return HttpResponse(json.dumps(ret), mimetype="application/json")

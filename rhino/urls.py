@@ -31,3 +31,8 @@ urlpatterns += patterns('',
         {'document_root': join(dirname(__file__), 'static')},
         name='rhino-static'),
 )
+
+urlpatterns += patterns('',
+    url(r'^stream\.json$', 'rhino.views.json_stream'),
+)
+
