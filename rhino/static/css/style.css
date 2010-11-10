@@ -132,11 +132,11 @@ a:visited {
 .item .whyline a:visited,
 .item .whyline a:focus,
 .item .whyline a:active,
-.item .footer a:link,
-.item .footer a:hover,
-.item .footer a:visited,
-.item .footer a:focus,
-.item .footer a:active {
+.item .metadata a:link,
+.item .metadata a:hover,
+.item .metadata a:visited,
+.item .metadata a:focus,
+.item .metadata a:active {
     color: inherit;
 }
 
@@ -207,9 +207,18 @@ a:visited {
     position: relative;
 }
 
-.item .footer {
+.item .metadata {
+    display: block;
     font-size: 0.8em;
     color: #999;
+}
+
+.item .metadata .authorname {
+    float: left;
+}
+
+.item .metadata .timestamp {
+    float: right;
 }
 
 .item h2 {
@@ -386,7 +395,7 @@ a:visited {
     color: white;
 }
 
-.item-content-image .footer {
+.item-content-image .metadata {
     position: absolute;
     bottom: 0;
     padding: 0 0 10px 10px;
@@ -397,9 +406,13 @@ a:visited {
     color: #ddd;
 }
 
+.item-content-image .metadata .timestamp {
+    margin-left: 1em;
+}
+
 .item-content-image:hover .title,
 .item-content-image:hover .body,
-.item-content-image:hover .footer {
+.item-content-image:hover .metadata {
     display: none;
 }
 

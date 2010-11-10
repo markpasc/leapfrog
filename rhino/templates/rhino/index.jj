@@ -54,11 +54,9 @@
                                 ></div>
                             <div class="status">
                                 <p class="summary">{{ object.body }}</p>
-
-                                <div class="footer">
-                                    <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
-                                    by
-                                    <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                                <div class="metadata pkg">
+                                    <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                                    <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
                                 </div>
                             </div>
                         </div>
@@ -86,12 +84,11 @@
                             {% endif %}
                         </div>
 
-                        <div class="footer">
-                            <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                        <div class="metadata pkg">
                             {% if author %}
-                                by
-                                <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                                <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
                             {% endif %}
+                            <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
                         </div>
 
                     </div>
@@ -99,6 +96,13 @@
                 {% else %}
 
                     <div class="item-content item-content-{{ object.render_mode }}">
+
+                        <div class="metadata pkg">
+                            {% if author %}
+                                <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                            {% endif %}
+                            <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                        </div>
 
                         {% if object.title %}
                             <h1 class="title">
@@ -115,14 +119,6 @@
                                 {{ object.body }}
                             </div>
                         {% endif %}
-
-                        <div class="footer">
-                            <a href="{{ object.permalink_url }}" class="relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
-                            {% if author %}
-                                by
-                                <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
-                            {% endif %}
-                        </div>
 
                     </div>
 
@@ -151,12 +147,11 @@
                         {{ reply.body }}
                     </div>
 
-                    <div class="footer">
-                        <a href="{{ reply.permalink_url }}" class="relativedatestamp" title="{{ reply.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ reply.time.strftime("%d %b %Y %H:%M") }}</a>
+                    <div class="metadata pkg">
                         {% if author %}
-                            by
-                            <a href="{{ author.permalink_url }}">{{ author.display_name }}</a>
+                            <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
                         {% endif %}
+                        <a href="{{ reply.permalink_url }}" class="timestamp relativedatestamp" title="{{ reply.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ reply.time.strftime("%d %b %Y %H:%M") }}</a>
                     </div>
                 </div>
             </div>
