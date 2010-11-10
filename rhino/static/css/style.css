@@ -384,8 +384,13 @@ a:visited {
     line-height: 1em;
 }
 
+.item .item-content-image .body {
+    display: block;
+}
+
 .item .item-image-compact .body {
     position: absolute;
+    display: inline-block;
     bottom: 20px;
     text-shadow: black 0 0 3px;
     margin: 0;
