@@ -112,8 +112,10 @@ def object_from_html_head(url, orig_url, head):
     image_url = value_for_meta_elems((og_image_elem, old_facebook_image_elem), base_url=orig_url)
 
     og_summary_elem = head.find("meta", property="og:description")
-    summary_elem = head.find('meta', {'name': 'description'})
-    summary = value_for_meta_elems((og_summary_elem, summary_elem), "")
+    summary = value_for_meta_elems((og_summary_elem,), "")
+
+    if not image_url and not summary:
+        return None
 
     image = None
     if image_url:
@@ -207,6 +209,14 @@ def value_for_meta_elems(elems, default=None, base_url=None):
 
 
 def object_for_url(url):
+    """Returns a saved `rhino.models.Object` for the resource at the URL
+    ``url``.
+
+    If the resulting object has only a title (neither body content nor a
+    representative image), this function will return ``None`` instead of
+    an `Object` instance.
+
+    """
     # Is this a special URL we have a special handler for?
     # TODO: special handlers
     if re.match(r'http:// .* \.flickr\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
