@@ -22,11 +22,6 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns('',
-    url(r'^\w+/?$', 'rhino.views.redirect_home'),
-    url(r'^\w+/activity', 'rhino.views.redirect_home'),
-)
-
-urlpatterns += patterns('',
     url(r'^static/rhino/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': join(dirname(__file__), 'static')},
         name='rhino-static'),
