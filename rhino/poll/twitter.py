@@ -54,9 +54,11 @@ def tweet_html(tweetdata):
     mutations = list()
     for urldata in tweetdata['entities'].get('urls', ()):
         url = urldata['expanded_url'] or urldata['url']
+        start, end = urldata['indices']
+        text = urldata.get('text', tweet[start:end])
         mutations.append({
-            'indices': urldata['indices'],
-            'html': """<a href="%s">%s</a>""" % (url, url),
+            'indices': (start, end),
+            'html': """<a href="%s">%s</a>""" % (url, text),
         })
     for mentiondata in tweetdata['entities'].get('user_mentions', ()):
         mutations.append({
@@ -253,6 +255,10 @@ def raw_object_for_tweet(tweetdata, client):
 
             if not tweettext:
                 return True, in_reply_to
+
+            # Otherwise, suggest the title as link text.
+            if in_reply_to.title:
+                tweetdata['entities']['urls'][0]['text'] = in_reply_to.title
 
     tweet = Object(
         service='twitter.com',
