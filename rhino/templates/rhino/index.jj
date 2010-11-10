@@ -95,7 +95,7 @@
 
                 {% else %}
 
-                    <div class="item-content item-content-{{ object.render_mode }}">
+                    <div class="item-content item-content-{{ object.render_mode }}{% if object.image.width and object.image.width >= 700 %} item-image-compact{% endif %}">
 
                         <div class="metadata pkg">
                             {% if author %}
