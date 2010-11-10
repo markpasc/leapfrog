@@ -122,9 +122,9 @@ var uservoiceOptions = {
   showTab: true,
   /* optional */
   alignment: 'left',
-  background_color:'#f00',
+  background_color:'black',
   text_color: 'white',
-  hover_color: '#06C',
+  hover_color: '#063',
   lang: 'en'
 };
 
