@@ -115,12 +115,14 @@ def object_from_html_head(url, orig_url, head):
     summary = value_for_meta_elems((og_summary_elem,), "")
 
     if not image_url and not summary:
+        log.debug("Found neither an image URL nor a summary for %s, so returning no object", url)
         return None
 
     image = None
     if image_url:
         image = Media()
         image.image_url = image_url
+        # TODO: how big is this image?
         image.save()
 
     render_mode = 'link'
@@ -166,15 +168,17 @@ def object_from_feed_entry(feed_url, item_url):
         obj.render_mode = 'link'
         obj.body = entry.summary if "summary" in entry else ""
 
+    object_time = None
     if "published_parsed" in entry:
         object_time = entry.published_parsed
     elif "updated_parsed" in entry:
         object_time = entry.updated_parsed
-    else:
-        object_time = False
-    if object_time:
-        obj.time = datetime(*object_time[:6])
 
+    if object_time is None:
+        log.debug("Feed item %s has no timestamp, so making no object", item_url)
+        return None
+
+    obj.time = datetime(*object_time[:6])
     obj.save()
 
     return obj
@@ -270,6 +274,7 @@ def object_for_url(url):
         orig_host = urlparse(url)[1]
         canon_host = urlparse(canon_url)[1]
         if orig_host == canon_host:
+            log.debug('Decided canonical URL for %s is %s, so using that', url, canon_url)
             url = canon_url
 
     # If the site mentions TypePad, at least try asking TypePad about it.
@@ -289,6 +294,7 @@ def object_for_url(url):
     oembed_node = head.find(rel='alternate', type='application/json+oembed')
     # TODO: support xml?
     if oembed_node is not None:
+        log.debug('Finding object for %s through OEmbed', url)
         return object_from_oembed(oembed_node['href'], url, discovered=True)
 
     # Does it have a feed declared? If so, let's go hunting in the feed for
@@ -299,6 +305,8 @@ def object_for_url(url):
     if feed_url:
         object = object_from_feed_entry(feed_url, url)
         if object:
+            log.debug('Found object for %s through the feed', url)
             return object
 
+    log.debug('Finding object for %s from the existing HTML head data', url)
     return object_from_html_head(url, orig_url, head)

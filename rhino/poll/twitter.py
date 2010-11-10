@@ -221,7 +221,7 @@ def raw_object_for_tweet(tweetdata, client):
     if 'foursquare.com' in tweetdata.get('source', ''):
         log.debug("Skipping %s's tweet #%d as it's from foursquare", tweetdata['user']['screen_name'], tweetdata['id'])
         # TODO: really we should end generation less tragically but callers don't expect us to return None for a tweet
-        raise ValueError("Tweet is from foursquare")
+        return False, None
 
     in_reply_to = None
     if tweetdata.get('in_reply_to_status_id'):
@@ -300,6 +300,8 @@ def poll_twitter(account):
                 why_verb = 'share'
 
             really_a_share, tweet = raw_object_for_tweet(tweetdata, client)
+            if tweet is None:
+                continue
 
             if really_a_share:
                 why_verb = 'share'
