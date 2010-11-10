@@ -22,7 +22,7 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns('',
-    url(r'^\w+$', 'rhino.views.redirect_home'),
+    url(r'^\w+/?$', 'rhino.views.redirect_home'),
     url(r'^\w+/activity', 'rhino.views.redirect_home'),
 )
 
