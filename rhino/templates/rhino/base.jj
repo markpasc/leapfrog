@@ -9,6 +9,7 @@
         <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/extrastyle.css") }}">
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+        <script type="text/javascript" src="{{ url_for('rhino-static', path="jquery.relatize_date.js") }}"></script>
     {% endblock %}
 </head><body>
 
@@ -64,6 +65,12 @@
             $('#settings').animate({'height': $('#settings').height() ? '0px' : '200px'}, 'slow');
             spinGear(0);
             return false;
+        });
+    });
+
+    $(document).ready(function () {
+        $('.relativedatestamp').each(function (i, val) {
+            $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
         });
     });
     </script>
