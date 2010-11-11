@@ -142,6 +142,13 @@ def complete_twitter(request):
 
         person.user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
 
     account.authinfo = ':'.join((access_token['oauth_token'], access_token['oauth_token_secret']))
     account.save()
