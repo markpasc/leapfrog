@@ -17,6 +17,7 @@ import httplib2
 import oauth2 as oauth
 import typd.objecttypes
 
+from rhino.models import Person
 from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
