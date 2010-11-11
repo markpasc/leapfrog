@@ -66,12 +66,18 @@ def stream_items_for_user(user):
 @login_required()
 def home(request):
     user = request.user
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        display_name = user.get_full_name()
+    else:
+        display_name = person.display_name
 
     stream_items = stream_items_for_user(user)
 
     data = {
         'stream_items': stream_items,
-        'page_title': "%s's neighborhood" % user.person.display_name,
+        'page_title': "%s's neighborhood" % display_name,
     }
 
     template = 'rhino/index.jj'
