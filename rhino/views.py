@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 from random import choice
@@ -38,8 +39,13 @@ class LoginUrl(object):
 settings.LOGIN_URL = LoginUrl()
 
 
-def stream_items_for_user(user):
-    stream_items = user.stream_items.order_by("-time").select_related()
+def stream_items_for_user(user, before=None, after=None):
+    stream_items = user.stream_items
+    if before is not None:
+        stream_items = stream_items.filter(time__lte=before)
+    elif after is not None:
+        stream_items = stream_items.filter(time__gte=after)
+    stream_items = stream_items.order_by("-time").select_related()
     stream_items = list(stream_items[:50])
 
     # Put the stream items' replies on the items.
@@ -295,63 +301,56 @@ def redirect_home(request):
 
 
 def json_stream(request):
-
-    ret = {}
-
     user = request.user
     if user.id is None:
         # FIXME: Also include an oauth2 auth challenge
         return HttpResponse("Auth is required", status=401)
-    
-    stream_items = stream_items_for_user(user)
 
-    ret_items = []
-    ret["items"] = ret_items
+    before, after = (datetime.strptime(request.GET[field], '%Y-%m-%dT%H:%M:%S') if field in request.GET else None for field in ('before', 'after'))
+    stream_items = stream_items_for_user(user, before, after)
 
     def json_image_link(media):
-        ret = {}
-        ret["url"] = media.image_url
+        imagedata = {
+            'url': media.image_url,
+        }
         if media.width is not None:
-            ret["width"] = media.width
+            imagedata["width"] = media.width
         if media.height is not None:
-            ret["height"] = media.height
-        return ret
+            imagedata["height"] = media.height
+        return imagedata
 
     def json_account(account):
-        ret = {}
         person = account.person
-        ret["display_name"] = person.display_name
-        ret["profile_url"] = person.permalink_url
-        ret["service"] = account.service
-        ret["ident"] = account.ident
+        accdata = {
+            'display_name': person.display_name,
+            'profile_url': person.permalink_url,
+            'service': account.service,
+            'ident': account.ident,
+        }
         if person.avatar is not None:
-            ret["avatar"] = json_image_link(person.avatar)
-        return ret
+            accdata["avatar"] = json_image_link(person.avatar)
+        return accdata
 
-    for item in stream_items:
-        ret_item = {}
-
-        ret_item["id"] = "s%08x%08x" % (user.id, item.id)
-        ret_item["time"] = item.time.isoformat()
-        ret_item["verb"] = item.why_verb
-        ret_item["actor"] = json_account(item.why_account)
-
-        obj = item.obj
-        ret_obj = {}
-        ret_item["object"] = ret_obj
+    def json_object(obj):
+        objdata = {
+            'permalink_url': obj.permalink_url,
+            'render_mode': obj.render_mode,
+        }
         if obj.title is not None:
-            ret_obj["title"] = obj.title
+            objdata["title"] = obj.title
         if obj.body:
-            ret_obj["body_html"] = obj.body # FIXME: How can we make this always be HTML even when the underlying storage isn't?
-        ret_obj["permalink_url"] = obj.permalink_url
-        ret_obj["render_mode"] = obj.render_mode
+            objdata["body_html"] = obj.body # FIXME: How can we make this always be HTML even when the underlying storage isn't?
         if obj.image is not None:
-            ret_obj["image"] = json_image_link(obj.image)
-
+            objdata["image"] = json_image_link(obj.image)
         if obj.author is not None:
-            ret_obj["author"] = json_account(obj.author)
+            objdata["author"] = json_account(obj.author)
+        return objdata
 
-        ret_items.append(ret_item)
-
-    import simplejson as json
-    return HttpResponse(json.dumps(ret), mimetype="application/json")
+    result = {'items': [{
+        'id': item.id,
+        'time': item.time.isoformat(),
+        'verb': item.why_verb,
+        'actor': json_account(item.why_account),
+        'object': json_object(item.obj),
+    } for item in stream_items]}
+    return HttpResponse(json.dumps(result), mimetype="application/json")
