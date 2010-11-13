@@ -8,11 +8,11 @@ Use:
 
 """
 
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.template import TemplateDoesNotExist
 from django.template.loader import BaseLoader
 from django.template.loaders.app_directories import app_template_dirs
-from django.template import TemplateDoesNotExist
-from django.core.urlresolvers import reverse
-from django.conf import settings
 import jinja2
 
 
