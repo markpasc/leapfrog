@@ -276,6 +276,14 @@ a:visited {
     line-height: 1.2em;
 }
 
+.item .aboutlink {
+    background: #ddd;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 2px 8px;
+}
+
 .item-content-link .title {
     font-size: 1.2em;
     margin: 0;

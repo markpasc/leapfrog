@@ -56,9 +56,10 @@ def tweet_html(tweetdata):
         url = urldata['expanded_url'] or urldata['url']
         start, end = urldata['indices']
         text = urldata.get('text', tweet[start:end])
+        classattr = 'class="%s" ' % urldata['class'] if 'class' in urldata else ''
         mutations.append({
             'indices': (start, end),
-            'html': """<a href="%s">%s</a>""" % (url, text),
+            'html': """<a %shref="%s">%s</a>""" % (classattr, url, text),
         })
     for mentiondata in tweetdata['entities'].get('user_mentions', ()):
         mutations.append({
@@ -71,6 +72,7 @@ def tweet_html(tweetdata):
             'html': """<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
         })
 
+    # Mutate the tweet from the end, so the replacements don't invalidate the remaining indices.
     for mutation in sorted(mutations, key=lambda x: x['indices'][0], reverse=True):
         indices = mutation['indices']
         tweet = tweet[:indices[0]] + mutation['html'] + tweet[indices[1]:]
@@ -258,7 +260,12 @@ def raw_object_for_tweet(tweetdata, client):
 
             # Otherwise, suggest the title as link text.
             if in_reply_to.title:
-                tweetdata['entities']['urls'][0]['text'] = in_reply_to.title
+                about_urldata['text'] = in_reply_to.title
+            log.debug('Tweet %s is about a link; the URL ends at char %d and the tweet is %d char long',
+                tweetdata['id'], about_urldata['indices'][-1], len(tweetdata['text']))
+            if about_urldata['indices'][-1] == len(tweetdata['text']):
+                log.debug('YAY ABOUTLINK')
+                about_urldata['class'] = 'aboutlink'
 
     tweet = Object(
         service='twitter.com',
