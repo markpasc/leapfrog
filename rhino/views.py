@@ -14,6 +14,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+from django.template.loader import render_to_string
 import httplib2
 import oauth2 as oauth
 import typd.objecttypes
@@ -346,11 +347,20 @@ def json_stream(request):
             objdata["author"] = json_account(obj.author)
         return objdata
 
-    result = {'items': [{
-        'id': item.id,
-        'time': item.time.isoformat(),
-        'verb': item.why_verb,
-        'actor': json_account(item.why_account),
-        'object': json_object(item.obj),
-    } for item in stream_items]}
+    if request.GET.get('html'):
+        rc = RequestContext(request)
+        result = {'items': [{
+            'id': item.id,
+            'time': item.time.isoformat(),
+            'html': render_to_string('rhino/streamitem.jj', {'item': item}, context_instance=rc),
+        } for item in stream_items]}
+    else:
+        result = {'items': [{
+            'id': item.id,
+            'time': item.time.isoformat(),
+            'verb': item.why_verb,
+            'actor': json_account(item.why_account),
+            'object': json_object(item.obj),
+        } for item in stream_items]}
+
     return HttpResponse(json.dumps(result), mimetype="application/json")

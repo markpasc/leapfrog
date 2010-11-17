@@ -28,6 +28,5 @@ urlpatterns += patterns('',
 )
 
 urlpatterns += patterns('',
-    url(r'^stream\.json$', 'rhino.views.json_stream'),
+    url(r'^stream\.json$', 'rhino.views.json_stream', name='stream'),
 )
-

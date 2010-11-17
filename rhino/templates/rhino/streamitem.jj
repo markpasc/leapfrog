@@ -1,0 +1,153 @@
+{% set object = item.obj %}
+<div id="item-{{ item.id }}" class="item{% if item.why_verb != 'post' %} item-has-whyline{% endif %} item-time-{{ item.time.strftime('%Y%m%d-%H%M%S') }}">
+
+    {% if item.why_verb != 'post' %}
+        {% set actor = item.why_account.person %}
+        <div class="whyline">
+            <p>
+            {% if actor.avatar %}
+                <a href="{{ actor.permalink_url }}" title="{{ actor.display_name }}"><img src="{{ actor.avatar.image_url }}" alt="{{ actor.display_name }}"></a>
+            {% endif %}
+            <a href="{{ actor.permalink_url }}">{{ actor.display_name }}</a>
+
+            {% if item.why_verb == 'share' %}
+                shared this
+            {% elif item.why_verb == 'like' %}
+                liked this
+            {% elif item.why_verb == 'reply' %}
+                replied to this
+            {% else %}
+                <samp>{{ item.why_verb }}</samp>ed this
+            {% endif %}
+
+            <span title="{{ item.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}" class="relativedatestamp">{{ item.time.strftime("%d %b %Y %H:%M") }}</span>
+
+            <!-- target? -->
+            </p>
+        </div>
+    {% endif %}
+
+    <div class="item-body">
+
+        {% set author = object.author.person %}
+        {% if author and author.avatar %}
+            {% set poster_rot = rot.next() %}
+            <a class="author" href="{{ author.permalink_url }}"
+                style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
+                ><span></span><img
+                    src="{{ author.avatar.image_url }}"
+                    width="{{ author.avatar.width }}"
+                    height="{{ author.avatar.height }}"
+                    ></a>
+        {% endif %}
+
+        {% if object.render_mode == 'status' %}
+            <div class="item-content item-content-status">
+                <div class="item-inner">
+                    <div class="status-shade"
+                        style="background: {% if object.author and object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
+                        ></div>
+                    <div class="status">
+                        <p class="summary">{{ object.body }}</p>
+                        <div class="metadata pkg">
+                            <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                            <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% elif object.render_mode == 'link' %}
+
+            <div class="item-content item-content-link">
+                <div class="body pkg">
+                    {% if object.image %}
+                        <a href="{{ object.permalink_url }}"><img class="item-body-image" src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title or '' }}"></a>
+                    {% endif %}
+
+                    <h1 class="title">
+                        <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                        <a class="link" href="{{ object.permalink_url }}">&#10148;</a>
+                    </h1>
+
+                    <p class="link-host">
+                        <a href="{{ object.permalink_url }}">{{ object.permalink_host }}</a>
+                    </p>
+
+                    {% if object.body %}
+                        {{ object.body }}
+                    {% endif %}
+                </div>
+
+                <div class="metadata pkg">
+                    {% if author %}
+                        <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                    {% endif %}
+                    <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="item-content item-content-{{ object.render_mode }}{% if object.image.width and object.image.width >= 700 %} item-image-compact{% endif %}">
+
+                <div class="metadata pkg">
+                    {% if author %}
+                        <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                    {% endif %}
+                    <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                </div>
+
+                {% if object.title %}
+                    <h1 class="title">
+                        <a href="{{ object.permalink_url }}">{{ object.title }}</a>
+                    </h1>
+                {% endif %}
+
+                {% if object.render_mode == 'image' %}
+                    <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title }}"></a>
+                {% endif %}
+
+                {% if object.body %}
+                    <div class="body pkg">
+                        {{ object.body }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% for reply_item in item.replies %}
+    {% set reply = reply_item.reply %}
+    <div class="item reply">
+        {% set author = reply.author.person %}
+        {% if author and author.avatar %}
+            {% set poster_rot = rot.next() %}
+            <a class="author" href="{{ author.permalink_url }}"
+                style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
+                ><span></span><img
+                    src="{{ author.avatar.image_url }}"
+                    width="{{ author.avatar.width }}"
+                    height="{{ author.avatar.height }}"
+                    ></a>
+        {% endif %}
+        <div class="item-content">
+            <div class="body pkg">
+                {{ reply.body }}
+            </div>
+
+            <div class="metadata pkg">
+                {% if author %}
+                    <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                {% endif %}
+                <a href="{{ reply.permalink_url }}" class="timestamp relativedatestamp" title="{{ reply.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ reply.time.strftime("%d %b %Y %H:%M") }}</a>
+            </div>
+        </div>
+    </div>
+{% endfor %}
