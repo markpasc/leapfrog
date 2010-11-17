@@ -239,28 +239,50 @@ def raw_object_for_tweet(tweetdata, client):
         about_urldata = tweetdata['entities']['urls'][0]
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
+        about_page = None
         try:
-            in_reply_to = rhino.poll.embedlam.object_for_url(about_url)
+            about_page = rhino.poll.embedlam.Page(about_url)
         except ValueError, exc:
-            log.error("Error making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
+            log.error("Error making page data from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
             log.exception(exc)
 
-        if in_reply_to is not None:
-            # If the tweet was only the object's url and its title, make it a share.
-            tweettext = tweetdata['text']
-            link_starts, link_ends = about_urldata['indices']
-            tweettext = tweettext[:link_starts] + tweettext[link_ends:]
-            tweettext = tweettext.lower()
-            if in_reply_to.title:
-                tweettext = tweettext.replace(in_reply_to.title.lower(), '')
-            tweettext = re.sub(r'\s', '', tweettext)
+        if about_page is not None:
+            try:
+                in_reply_to = about_page.to_object()
+            except ValueError, exc:
+                log.error("Error making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
+                log.exception(exc)
 
-            if not tweettext:
-                return True, in_reply_to
+            # If the tweet was only the object's url and its title, make it a share.
+            if in_reply_to is not None:
+                tweettext = tweetdata['text']
+                link_starts, link_ends = about_urldata['indices']
+                tweettext = tweettext[:link_starts] + tweettext[link_ends:]
+                tweettext = tweettext.lower()
+                if in_reply_to.title:
+                    tweettext = tweettext.replace(in_reply_to.title.lower(), '')
+                tweettext = re.sub(r'\s', '', tweettext)
+
+                if not tweettext:
+                    return True, in_reply_to
+
+                # Otherwise, pull all the below data from the target object.
+                about_page = in_reply_to
+
+            # Use the real canonical URL.
+            about_urldata['expanded_url'] = about_page.permalink_url
 
             # Otherwise, suggest the title as link text.
-            if in_reply_to.title:
-                about_urldata['text'] = in_reply_to.title
+            if about_page.title:
+                # Don't replace the if the link text is not identical to the
+                # URL (if it's an autolinked domain name, we'd break how the
+                # tweet reads).
+                tweet_text = tweetdata['text']
+                start, end = about_urldata['indices']
+                if tweet_text[start:end] == about_urldata['url']:
+                    about_urldata['text'] = about_page.title
+
+            # Mark links at the ends of tweets as aboutlinks.
             log.debug('Tweet %s is about a link; the URL ends at char %d and the tweet is %d char long',
                 tweetdata['id'], about_urldata['indices'][-1], len(tweetdata['text']))
             if about_urldata['indices'][-1] == len(tweetdata['text']):

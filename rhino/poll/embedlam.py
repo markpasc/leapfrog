@@ -100,12 +100,16 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     raise ValueError('Unknown OEmbed resource type %r' % resource_type)
 
 
-def object_from_html_head(url, orig_url, head):
-    # Try a number of strategies to extract a title.
+def title_from_html_head(head):
     og_title_elem = head.find("meta", property="og:title")
     old_facebook_title_elem = head.find("meta", {"name":"title"})
     title_elem = head.find("title")
     title = value_for_meta_elems((og_title_elem, old_facebook_title_elem, title_elem), "")
+    return title
+
+
+def object_from_html_head(url, orig_url, head):
+    title = title_from_html_head(head)
 
     og_image_elem = head.find("meta", property="og:image")
     old_facebook_image_elem = head.find("link", rel="image_src")
@@ -212,6 +216,119 @@ def value_for_meta_elems(elems, default=None, base_url=None):
     return default
 
 
+class Page(object):
+
+    def __init__(self, url):
+        self.content = ''
+
+        # These we can already ask about by URL, so don't bother fetching about them.
+        if re.match(r'http:// (?: flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return
+
+        # Fetch the resource and soupify it.
+        h = httplib2.Http()
+        try:
+            resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
+        except httplib2.RedirectLimit:
+            raise ValueError("%s redirected too many times" % url)
+        except httplib2.ServerNotFoundError, exc:
+            raise ValueError(str(exc))
+
+        if resp.status != 200:
+            raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
+        url = resp['content-location']
+
+        content_type = parse_mime_type(resp['content-type'])
+        if content_type[0:2] != ('text', 'html'):
+            # hmm
+            raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
+
+        try:
+            soup = BeautifulSoup(content)
+        except HTMLParseError, exc:
+            raise ValueError("Could not parse HTML response for %s: %s" % (url, str(exc)))
+        head = soup.head
+        if head is None:
+            raise ValueError('Could not discover against HTML target %s with no head' % url)
+
+        # What's the real URL?
+        orig_url = url
+        og_url_elem = head.find("meta", property="og:url")
+        canon_elem = head.find('link', rel='canonical')
+        canon_url = value_for_meta_elems((og_url_elem, canon_elem), base_url=orig_url)
+
+        if canon_url is not None:
+            # Only allow this canonicalization if it's at the same domain as the original URL.
+            orig_host = urlparse(url)[1]
+            canon_host = urlparse(canon_url)[1]
+            if orig_host == canon_host:
+                log.debug('Decided canonical URL for %s is %s, so using that', url, canon_url)
+                url = canon_url
+
+        self.orig_url = orig_url
+        self.url = url
+        self.content = content
+        self.soup = soup
+
+    @property
+    def title(self):
+        try:
+            return title_from_html_head(self.soup.head)
+        except AttributeError:
+            return None
+
+    @property
+    def permalink_url(self):
+        return self.url
+
+    def to_object(self):
+        url = self.url
+
+        if re.match(r'http:// .* \.flickr\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return object_from_oembed('http://www.flickr.com/services/oembed/', url)
+        if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return rhino.poll.twitter.object_from_twitpic_url(url)
+        if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return rhino.poll.twitter.object_from_url(url)
+
+        # If the site mentions TypePad, try asking TypePad about it.
+        is_typepad_url = re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
+        mentions_typepad = lambda: re.search(r'typepad', self.content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
+        if is_typepad_url or mentions_typepad():
+            try:
+                return rhino.poll.typepad.object_from_url(url)
+            except ValueError:
+                # Keep trying the regular way.
+                pass
+
+        try:
+            return Object.objects.get(service='', foreign_id=url)
+        except Object.DoesNotExist:
+            pass  # time to make the donuts
+
+        # Does it support OEmbed?
+        head = self.soup.head
+        oembed_node = head.find(rel='alternate', type='application/json+oembed')
+        # TODO: support xml?
+        if oembed_node is not None:
+            log.debug('Finding object for %s through OEmbed', url)
+            return object_from_oembed(oembed_node['href'], url, discovered=True)
+
+        # Does it have a feed declared? If so, let's go hunting in the feed for
+        # an entry corresponding to this page.
+        atom_feed_link = head.find(rel='alternate', type='application/atom+xml')
+        rss_feed_link = head.find(rel='alternate', type='application/rss+xml')
+        feed_url = value_for_meta_elems((atom_feed_link, rss_feed_link), base_url=self.orig_url)
+        if feed_url:
+            object = object_from_feed_entry(feed_url, url)
+            if object:
+                log.debug('Found object for %s through the feed', url)
+                return object
+
+        log.debug('Finding object for %s from the existing HTML head data', url)
+        return object_from_html_head(url, self.orig_url, head)
+
+
 def object_for_url(url):
     """Returns a saved `rhino.models.Object` for the resource at the URL
     ``url``.
@@ -221,94 +338,4 @@ def object_for_url(url):
     an `Object` instance.
 
     """
-    # Is this a special URL we have a special handler for?
-    # TODO: special handlers
-    if re.match(r'http:// .* \.flickr\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-        return object_from_oembed('http://www.flickr.com/services/oembed/', url)
-    if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-        return rhino.poll.twitter.object_from_twitpic_url(url)
-    if re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-        try:
-            return rhino.poll.typepad.object_from_url(url)
-        except ValueError:
-            # Try the regular way.
-            pass
-    if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-        return rhino.poll.twitter.object_from_url(url)
-
-    # Fetch the resource and soupify it.
-    h = httplib2.Http()
-    try:
-        resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
-    except httplib2.RedirectLimit:
-        raise ValueError("%s redirected too many times" % url)
-    except httplib2.ServerNotFoundError, exc:
-        raise ValueError(str(exc))
-
-    if resp.status != 200:
-        raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
-    url = resp['content-location']
-
-    content_type = parse_mime_type(resp['content-type'])
-    if content_type[0:2] != ('text', 'html'):
-        # hmm
-        raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
-
-    try:
-        page = BeautifulSoup(content)
-    except HTMLParseError, exc:
-        raise ValueError("Could not parse HTML response for %s: %s" % (url, str(exc)))
-    head = page.head
-    if head is None:
-        raise ValueError('Could not discover against HTML target %s with no head' % url)
-
-    # What's the real URL?
-    orig_url = url
-    canon_url = None
-    og_url_elem = head.find("meta", property="og:url")
-    canon_elem = head.find('link', rel='canonical')
-    canon_url = value_for_meta_elems((og_url_elem, canon_elem), base_url=orig_url)
-
-    if canon_url is not None:
-        # Only allow this canonicalization if it's at the same domain as the original URL.
-        orig_host = urlparse(url)[1]
-        canon_host = urlparse(canon_url)[1]
-        if orig_host == canon_host:
-            log.debug('Decided canonical URL for %s is %s, so using that', url, canon_url)
-            url = canon_url
-
-    if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-        return rhino.poll.twitter.object_from_url(url)
-    # If the site mentions TypePad, at least try asking TypePad about it.
-    if re.search(r'typepad', content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE):
-        try:
-            return rhino.poll.typepad.object_from_url(url)
-        except ValueError:
-            # Keep trying the regular way.
-            pass
-
-    try:
-        return Object.objects.get(service='', foreign_id=url)
-    except Object.DoesNotExist:
-        pass  # time to make the donuts
-
-    # Does it support OEmbed?
-    oembed_node = head.find(rel='alternate', type='application/json+oembed')
-    # TODO: support xml?
-    if oembed_node is not None:
-        log.debug('Finding object for %s through OEmbed', url)
-        return object_from_oembed(oembed_node['href'], url, discovered=True)
-
-    # Does it have a feed declared? If so, let's go hunting in the feed for
-    # an entry corresponding to this page.
-    atom_feed_link = head.find(rel='alternate', type='application/atom+xml')
-    rss_feed_link = head.find(rel='alternate', type='application/rss+xml')
-    feed_url = value_for_meta_elems((atom_feed_link, rss_feed_link), base_url=orig_url)
-    if feed_url:
-        object = object_from_feed_entry(feed_url, url)
-        if object:
-            log.debug('Found object for %s through the feed', url)
-            return object
-
-    log.debug('Finding object for %s from the existing HTML head data', url)
-    return object_from_html_head(url, orig_url, head)
+    return Page(url).to_object()
