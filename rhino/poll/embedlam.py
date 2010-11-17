@@ -277,6 +277,8 @@ def object_for_url(url):
             log.debug('Decided canonical URL for %s is %s, so using that', url, canon_url)
             url = canon_url
 
+    if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        return rhino.poll.twitter.object_from_url(url)
     # If the site mentions TypePad, at least try asking TypePad about it.
     if re.search(r'typepad', content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE):
         try:
