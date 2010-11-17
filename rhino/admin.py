@@ -5,6 +5,8 @@ from rhino import models
 
 class AccountAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'service', 'ident')
+    list_filter = ('service',)
+    search_fields = ('display_name', 'ident')
 
 admin.site.register(models.Account, AccountAdmin)
 
@@ -36,7 +38,9 @@ admin.site.register(models.UserReplyStream, UserReplyStreamAdmin)
 
 
 class PersonAdmin(admin.ModelAdmin):
+    list_display = ('display_name', 'permalink_url', 'user')
     list_filter = ('user',)
+    search_fields = ('display_name',)
 
 admin.site.register(models.Person, PersonAdmin)
 
