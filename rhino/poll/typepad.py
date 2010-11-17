@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 from urlparse import urlparse
 
+from BeautifulSoup import BeautifulSoup
 from django.conf import settings
 import oauth2 as oauth
 import typd
@@ -79,6 +80,16 @@ def object_for_typepad_object(tp_obj):
         obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
     elif getattr(tp_obj, 'reblog_of', None) is not None:
         obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
+
+        # Remove reblog boilerplate too.
+        soup = BeautifulSoup(obj.body)
+        maybe_quote = soup.first()
+        if maybe_quote.name == 'blockquote':
+            maybe_quote.extract()
+            maybe_p = soup.first()
+            if maybe_p.name == 'p' and maybe_p.find(name='small'):
+                maybe_p.extract()
+            obj.body = unicode(soup)
 
     if tp_obj.object_type == 'Photo':
         height, width = tp_obj.image_link.height, tp_obj.image_link.width
