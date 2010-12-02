@@ -186,14 +186,15 @@ def object_from_tweet_id(tweet_id, client=None):
         # Be unauth'd then.
         client = httplib2.Http()
 
-    resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json'
+    resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json?include_entities=1'
         % tweet_id)
     if resp.status != 200:
         raise ValueError("Unexpected %d %s response fetching tweet #%s"
             % (resp.status, resp.reason, tweet_id))
 
     tweetdata = json.loads(content)
-    synthesize_entities(tweetdata)
+    if 'entities' not in tweetdata:
+        synthesize_entities(tweetdata)
     log.debug("    Let's make a new tweet for %s status #%d", tweetdata['user']['screen_name'], tweetdata['id'])
     # If it's really a share, this tweet is transitively in reply to the shared thing, so this is fine.
     return raw_object_for_tweet(tweetdata, client)
