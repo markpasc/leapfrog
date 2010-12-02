@@ -78,14 +78,17 @@ def home(request):
         person = user.person
     except Person.DoesNotExist:
         display_name = user.get_full_name()
+        accounts = {}
     else:
         display_name = person.display_name
+        accounts = dict((acc.service, acc) for acc in person.accounts.all())
 
     stream_items = stream_items_for_user(user)
 
     data = {
         'stream_items': stream_items,
         'page_title': "%s's neighborhood" % display_name,
+        'accounts': accounts,
     }
 
     template = 'rhino/index.jj'
@@ -105,7 +108,7 @@ def signin_twitter(request):
     request_token = dict(parse_qsl(content))
     request.session['twitter_request_token'] = request_token
 
-    return HttpResponseRedirect('https://api.twitter.com/oauth/authenticate?oauth_token=%s' % request_token['oauth_token'])
+    return HttpResponseRedirect('https://api.twitter.com/oauth/authorize?oauth_token=%s&oauth_access_type=write' % request_token['oauth_token'])
 
 
 def complete_twitter(request):
@@ -364,3 +367,40 @@ def json_stream(request):
         } for item in stream_items]}
 
     return HttpResponse(json.dumps(result), mimetype="application/json")
+
+
+def favorite_twitter(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to favorite', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to favorite', status=400, content_type='text/plain')
+
+    try:
+        tweet_id = request.POST['tweet']
+    except KeyError:
+        tweet_id = False
+    if not tweet_id:
+        return HttpResponse("Parameter 'tweet' is required", status=400, content_type='text/plain')
+
+    # TODO: get only one account once we enforce (service,person) uniqueness
+    accounts = person.accounts.filter(service='twitter.com')
+    for account in accounts:
+        # FAVED
+        csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
+        token = oauth.Token(*account.authinfo.split(':', 1))
+        client = oauth.Client(csr, token)
+        resp, content = client.request('http://api.twitter.com/1/favorites/create/%s.json' % tweet_id, method='POST')
+        if resp.status != 200:
+            log.warning('Unexpected HTTP response %d %s trying to favorite tweet %s for %s (%s): %s',
+                resp.status, resp.reason, tweet_id, account.ident, account.display_name, content)
+            return HttpResponse('Error favoriting tweet', status=400, content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')

@@ -119,6 +119,19 @@
 
         {% endif %}
 
+        {% if object.service and object.service in accounts %}
+            {% if object.service == 'twitter.com' %}
+                <div class="response response-twitter" data-tweet="{{ object.foreign_id }}">
+                    <a class="favorite" href="#">fav</a>
+                    <a class="retweet" href="#">rt</a>
+                </div>
+            {% elif object.service == 'typepad.com' %}
+                <div>fav reblog</div>
+            {% else %}
+                <h1>WHAT {{ object.service }}</h1>
+            {% endif %}
+        {% endif %}
+
     </div>
 
 </div>

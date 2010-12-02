@@ -14,7 +14,7 @@
         <script type="text/javascript">
         var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
 
-        $(document).ready(function () {
+        function setUpPaginateLink() {
             $('#navigate a').click(function () {
                 // TODO: show a spinner
 
@@ -33,7 +33,7 @@
 
                 return false;
             });
-        });
+        }
 
         function checkForUpdates() {
             $.getJSON('{{ url_for('stream') }}?after={{ stream_items[0].time.strftime('%Y-%m-%dT%H:%M:%S') }}', function (data) {
@@ -41,7 +41,22 @@
             });
         }
 
+        function setUpResponseLinks() {
+            $('.response-twitter .favorite').click(function () {
+                var $favlink = $(this);
+                $.post('{{ url_for('action-twitter-favorite') }}',
+                    {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
+                    function (data) {
+                        $favlink.addClass('favorited');
+                    });
+
+                return false;
+            });
+        }
+
         $(document).ready(function () {
+            setUpPaginateLink();
+            setUpResponseLinks();
             //setTimeout(60000, "checkForUpdates()");
         });
         </script>
