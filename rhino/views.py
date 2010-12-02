@@ -370,7 +370,7 @@ def json_stream(request):
     return HttpResponse(json.dumps(result), mimetype="application/json")
 
 
-def favorite_twitter(request):
+def respond_twitter(request, urlpattern):
     if request.method != 'POST':
         resp = HttpResponse('POST is required', status=405, content_type='text/plain')
         resp['Allow'] = ('POST',)
@@ -378,11 +378,11 @@ def favorite_twitter(request):
 
     user = request.user
     if not user.is_authenticated():
-        return HttpResponse('Authentication required to favorite', status=400, content_type='text/plain')
+        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
     try:
         person = user.person
     except Person.DoesNotExist:
-        return HttpResponse('Real reader account required to favorite', status=400, content_type='text/plain')
+        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
 
     try:
         tweet_id = request.POST['tweet']
@@ -401,7 +401,7 @@ def favorite_twitter(request):
         token = oauth.Token(*twitter_token)
         client = oauth.Client(csr, token)
 
-        resp, content = client.request('http://api.twitter.com/1/favorites/create/%s.json' % tweet_id, method='POST')
+        resp, content = client.request(urlpattern % {'tweet_id': tweet_id}, method='POST')
 
         if resp.status != 200:
             try:
@@ -415,7 +415,7 @@ def favorite_twitter(request):
                 # Yay, just go on.
                 continue
 
-            log.warning('Unexpected HTTP response %d %s trying to favorite tweet %s for %s (%s): %s',
+            log.warning('Unexpected HTTP response %d %s trying to respond to tweet %s for %s (%s): %s',
                 resp.status, resp.reason, tweet_id, account.ident, account.display_name, error)
 
             if error == 'Read-only application cannot POST':
@@ -425,3 +425,11 @@ def favorite_twitter(request):
             return HttpResponse(ret_error, status=400, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')
+
+
+def favorite_twitter(request):
+    return respond_twitter(request, 'http://api.twitter.com/1/favorites/create/%(tweet_id)s.json')
+
+
+def retweet_twitter(request):
+    return respond_twitter(request, 'http://api.twitter.com/1/statuses/retweet/%(tweet_id)s.json')

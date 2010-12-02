@@ -54,11 +54,29 @@
                     success: function (data) {
                         $favlink.removeClass('spinning');
                         $favlink.addClass('favorited');
-                        alert('FAVED');
                     },
                     error: function (data) {
                         $favlink.removeClass('spinning');
-                        alert('ERR: ' + data);
+                    }
+                });
+
+                return false;
+            });
+            $('.response-twitter .retweet').click(function () {
+                var $favlink = $(this);
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-twitter-retweet') }}',
+                    type: 'POST',
+                    data: {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('retweeted');
+                    },
+                    error: function (data) {
+                        $favlink.removeClass('spinning');
                     }
                 });
 

@@ -434,20 +434,29 @@ a:visited {
 
 .item-content-status .response a {
     margin-left: 1em;
-}
-
-.item-content-status .response .favorite {
     padding-left: 18px;
     min-height: 16px;
-    background: transparent url(../img/star-grey.png) no-repeat top left;
+    background: transparent no-repeat top left;
 }
 
 .item-content-status .response .spinning {
     background-image: url(../img/loadinfo.net.gif);
 }
 
+.item-content-status .response .favorite {
+    background-image: url(../img/star-grey.png);
+}
+
+.item-content-status .response .retweet {
+    background-image: url(../img/asterisk-grey.png);
+}
+
 .item-content-status .response .favorited {
     background-image: url(../img/star.png);
+}
+
+.item-content-status .response .retweeted {
+    background-image: url(../img/asterisk.png);
 }
 
 
