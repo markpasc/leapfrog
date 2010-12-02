@@ -10,6 +10,41 @@
         <div id="navigate">
             <a href="#">Older</a>
         </div>
+
+        <script type="text/javascript">
+        var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
+
+        $(document).ready(function () {
+            $('#navigate a').click(function () {
+                // TODO: show a spinner
+
+                var $nav = $('#navigate');
+                $.get('{{ url_for('stream') }}', { html: true, before: oldest_item_date }, function (data) {
+                    // TODO: omit items that are already in the page
+                    var items = data['items'];
+                    $.each(items, function (i, val) {
+                        if (!$('#item-' + val['id']).size()) {
+                            $nav.before(val['html']);
+                        }
+                    });
+
+                    oldest_item_date = items.slice(-1)[0]['time'];
+                });
+
+                return false;
+            });
+        });
+
+        function checkForUpdates() {
+            $.getJSON('{{ url_for('stream') }}?after={{ stream_items[0].time.strftime('%Y-%m-%dT%H:%M:%S') }}', function (data) {
+                // muh
+            });
+        }
+
+        $(document).ready(function () {
+            //setTimeout(60000, "checkForUpdates()");
+        });
+        </script>
     {% else %}
         <div class="item">
             <div class="item-content">
@@ -18,40 +53,5 @@
             </div>
         </div>
     {% endif %}
-
-    <script type="text/javascript">
-    var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
-
-    $(document).ready(function () {
-        $('#navigate a').click(function () {
-            // TODO: show a spinner
-
-            var $nav = $('#navigate');
-            $.get('{{ url_for('stream') }}', { html: true, before: oldest_item_date }, function (data) {
-                // TODO: omit items that are already in the page
-                var items = data['items'];
-                $.each(items, function (i, val) {
-                    if (!$('#item-' + val['id']).size()) {
-                        $nav.before(val['html']);
-                    }
-                });
-
-                oldest_item_date = items.slice(-1)[0]['time'];
-            });
-
-            return false;
-        });
-    });
-
-    function checkForUpdates() {
-        $.getJSON('{{ url_for('stream') }}?after={{ stream_items[0].time.strftime('%Y-%m-%dT%H:%M:%S') }}', function (data) {
-            // muh
-        });
-    }
-
-    $(document).ready(function () {
-        //setTimeout(60000, "checkForUpdates()");
-    });
-    </script>
 
 {% endblock %}
