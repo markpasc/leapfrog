@@ -167,6 +167,7 @@ def complete_twitter(request):
         # associating that account, but that's appropriate.)
         account.person = person
 
+    log.debug('Updating authinfo for Twitter account %s to have token %s : %s', account.display_name, access_token['oauth_token'], access_token['oauth_token_secret'])
     account.authinfo = ':'.join((access_token['oauth_token'], access_token['oauth_token_secret']))
     account.save()
 
@@ -395,12 +396,32 @@ def favorite_twitter(request):
     for account in accounts:
         # FAVED
         csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
-        token = oauth.Token(*account.authinfo.split(':', 1))
+        twitter_token = account.authinfo.split(':', 1)
+        log.debug('Authorizing client as Twitter user %s with token %s : %s', account.display_name, *twitter_token)
+        token = oauth.Token(*twitter_token)
         client = oauth.Client(csr, token)
+
         resp, content = client.request('http://api.twitter.com/1/favorites/create/%s.json' % tweet_id, method='POST')
+
         if resp.status != 200:
+            try:
+                errordata = json.loads(content)
+            except ValueError:
+                error = content
+            else:
+                error = errordata.get('error', content)
+
+            if error == 'You have already favorited this status.':
+                # Yay, just go on.
+                continue
+
             log.warning('Unexpected HTTP response %d %s trying to favorite tweet %s for %s (%s): %s',
-                resp.status, resp.reason, tweet_id, account.ident, account.display_name, content)
-            return HttpResponse('Error favoriting tweet', status=400, content_type='text/plain')
+                resp.status, resp.reason, tweet_id, account.ident, account.display_name, error)
+
+            if error == 'Read-only application cannot POST':
+                ret_error = 'Our Twitter token for that account is read-only'
+            else:
+                ret_error = 'Error favoriting tweet: %s' % error
+            return HttpResponse(ret_error, status=400, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')
