@@ -186,7 +186,7 @@ def signin_typepad(request):
     request_token = dict(parse_qsl(content))
     request.session['typepad_request_token'] = request_token
 
-    return HttpResponseRedirect('https://www.typepad.com/secure/services/api/6p0120a96c7944970b/oauth-approve?oauth_token=%s' % request_token['oauth_token'])
+    return HttpResponseRedirect('https://www.typepad.com/secure/services/api/%s/oauth-approve?oauth_token=%s' % (settings.TYPEPAD_APPLICATION, request_token['oauth_token']))
 
 
 def complete_typepad(request):
