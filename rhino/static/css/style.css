@@ -430,6 +430,27 @@ a:visited {
 }
 
 
+/* response styles */
+
+.item-content-status .response a {
+    margin-left: 1em;
+}
+
+.item-content-status .response .favorite {
+    padding-left: 18px;
+    min-height: 16px;
+    background: transparent url(../img/star-grey.png) no-repeat top left;
+}
+
+.item-content-status .response .spinning {
+    background-image: url(../img/loadinfo.net.gif);
+}
+
+.item-content-status .response .favorited {
+    background-image: url(../img/star.png);
+}
+
+
 /* signin page styles */
 
 #signin {
@@ -457,6 +478,8 @@ a:visited {
     margin: 0;
 }
 
+
+/* zendesk integration */
 
 #zendesk-dropbox {
     display: block;

@@ -44,11 +44,23 @@
         function setUpResponseLinks() {
             $('.response-twitter .favorite').click(function () {
                 var $favlink = $(this);
-                $.post('{{ url_for('action-twitter-favorite') }}',
-                    {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
-                    function (data) {
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-twitter-favorite') }}',
+                    type: 'POST',
+                    data: {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
                         $favlink.addClass('favorited');
-                    });
+                        alert('FAVED');
+                    },
+                    error: function (data) {
+                        $favlink.removeClass('spinning');
+                        alert('ERR: ' + data);
+                    }
+                });
 
                 return false;
             });
