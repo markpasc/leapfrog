@@ -256,7 +256,7 @@ def complete_typepad(request):
 def signin_flickr(request):
     query = {
         'api_key': settings.FLICKR_KEY[0],
-        'perms': 'read',
+        'perms': 'write',
     }
     sign_flickr_query(query)
     url = urlunparse(('http', 'flickr.com', 'services/auth/', None, urlencode(query), None))
@@ -485,5 +485,38 @@ def favorite_typepad(request):
         except typd.HttpError, exc:
             log.warning('Unexpected HTTP error %s trying to favorite %s for TypePad user %s: %s' % (type(exc).__name__, post_id, account.display_name, str(exc)))
             return HttpResponse('Error favoriting post: %s' % str(exc), status=400, content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
+def favorite_flickr(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
+
+    try:
+        photo_id = request.POST['photo']
+    except KeyError:
+        photo_id = False
+    if not photo_id:
+        return HttpResponse("Parameter 'photo' is required", status=400, content_type='text/plain')
+
+    # TODO: get only one account once we enforce (service,person) uniqueness
+    accounts = person.accounts.filter(service='flickr.com')
+    for account in accounts:
+        try:
+            call_flickr('flickr.favorites.add', sign=True, auth_token=account.authinfo, photo_id=photo_id)
+        except Exception, exc:
+            log.warning("Error favoriting photo %s for Flickr user %s: %s", photo_id, account.display_name, str(exc))
+            return HttpResponse('Error favoriting photo: %s' % str(exc), status=400, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')

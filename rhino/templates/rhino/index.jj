@@ -149,6 +149,27 @@
 
                 return false;
             });
+            $('.response-flickr .favorite').click(function () {
+                var $favlink = $(this);
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-flickr-favorite') }}',
+                    type: 'POST',
+                    data: {'photo': $favlink.parent('.response-flickr').attr('data-photo')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('favorited');
+                        $favlink.text("Marked a favorite!");
+                    },
+                    error: function (xhr) {
+                        $favlink.removeClass('spinning');
+                    }
+                });
+
+                return false;
+            });
         }
 
         $(document).ready(function () {

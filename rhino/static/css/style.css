@@ -439,6 +439,10 @@ a:visited {
     background: transparent no-repeat top left;
 }
 
+.item-image-compact .metadata .response {
+    display: none;
+}
+
 .item-content .metadata .response .spinning {
     background-image: url(../img/loadinfo.net.gif);
 }

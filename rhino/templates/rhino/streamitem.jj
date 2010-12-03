@@ -113,6 +113,10 @@
                             <span class="response response-typepad" data-post="{{ object.foreign_id }}">
                                 <a class="favorite" href="#">Favorite</a>
                             </span>
+                        {% elif object.service == 'flickr.com' %}
+                            <span class="response response-flickr" data-photo="{{ object.foreign_id }}">
+                                <a class="favorite" href="#">Favorite</a>
+                            </span>
                         {% endif %}
                     {% endif %}
 
