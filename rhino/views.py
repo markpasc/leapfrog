@@ -307,9 +307,16 @@ def redirect_home(request):
 
 def json_stream(request):
     user = request.user
-    if user.id is None:
+    if not user.is_authenticated():
         # FIXME: Also include an oauth2 auth challenge
-        return HttpResponse("Auth is required", status=401)
+        return HttpResponse("Auth is required", status=401, content_type='text/plain')
+
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        accounts = {}
+    else:
+        accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
     before, after = (datetime.strptime(request.GET[field], '%Y-%m-%dT%H:%M:%S') if field in request.GET else None for field in ('before', 'after'))
     stream_items = stream_items_for_user(user, before, after)
@@ -356,7 +363,10 @@ def json_stream(request):
         result = {'items': [{
             'id': item.id,
             'time': item.time.isoformat(),
-            'html': render_to_string('rhino/streamitem.jj', {'item': item}, context_instance=rc),
+            'html': render_to_string('rhino/streamitem.jj', {
+                'item': item,
+                'accounts': accounts,
+            }, context_instance=rc),
         } for item in stream_items]}
     else:
         result = {'items': [{
