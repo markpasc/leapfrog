@@ -67,12 +67,6 @@
             return false;
         });
     });
-
-    $(document).ready(function () {
-        $('.relativedatestamp').each(function (i, val) {
-            $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
-        });
-    });
     </script>
 
 {% if ganalytics_code %}
