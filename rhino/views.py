@@ -464,18 +464,26 @@ def favorite_typepad(request):
         typepad_token = account.authinfo.split(':', 1)
         log.debug('Authorizing client as TypePad user %s with token %s : %s', account.display_name, typepad_token[0], typepad_token[1])
         token = oauth.Token(*typepad_token)
+        # This is a POST, so the stock oauth2 Client works.
         client = oauth.Client(csr, token)
 
         t = typd.TypePad(endpoint='https://api.typepad.com/', client=client)
         log.debug('Trying to add post ID %r to favorites of user ID %r', post_id, account.ident)
         try:
-            httplib2.debuglevel = 9
-            t.users.post_to_favorites(account.ident, typd.Favorite(author=typd.User(url_id=account.ident),
-                in_reply_to=typd.AssetRef(url_id=post_id)))
+            try:
+                t.users.post_to_favorites(account.ident, typd.Favorite(
+                    author=typd.User(id='tag:api.typepad.com,2009:%s' % account.ident, url_id=account.ident),
+                    in_reply_to=typd.AssetRef(id='tag:api.typepad.com,2009:%s' % post_id, url_id=post_id),
+                ))
+            except typd.Forbidden:
+                # See if it's a group asset.
+                unauth_t = typd.TypePad(endpoint='http://api.typepad.com/')
+                asset = unauth_t.assets.get(post_id)
+                if asset.container.object_type == 'Group':
+                    return HttpResponse("Can't favorite Group assets", status=400, content_type='text/plain')
+                raise
         except typd.HttpError, exc:
             log.warning('Unexpected HTTP error %s trying to favorite %s for TypePad user %s: %s' % (type(exc).__name__, post_id, account.display_name, str(exc)))
             return HttpResponse('Error favoriting post: %s' % str(exc), status=400, content_type='text/plain')
-        finally:
-            httplib2.debuglevel = 0
 
     return HttpResponse('OK', content_type='text/plain')

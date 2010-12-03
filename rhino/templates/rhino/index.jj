@@ -83,6 +83,7 @@
                     success: function (data) {
                         $favlink.removeClass('spinning');
                         $favlink.addClass('favorited');
+                        $favlink.text("Marked a favorite!");
                     },
                     error: function (xhr) {
                         $favlink.removeClass('spinning');
@@ -107,6 +108,7 @@
                     success: function (data) {
                         $favlink.removeClass('spinning');
                         $favlink.addClass('retweeted');
+                        $favlink.text("Retweeted!");
                     },
                     error: function (data) {
                         $favlink.removeClass('spinning');
@@ -121,6 +123,9 @@
             });
             $('.response-typepad .favorite').click(function () {
                 var $favlink = $(this);
+                if ($favlink.hasClass('nogo')) {
+                    return false;
+                }
                 $favlink.addClass('spinning');
 
                 $.ajax({
@@ -131,9 +136,14 @@
                     success: function (data) {
                         $favlink.removeClass('spinning');
                         $favlink.addClass('favorited');
+                        $favlink.text("Marked a favorite!");
                     },
                     error: function (xhr) {
                         $favlink.removeClass('spinning');
+                        if (xhr.responseText == "Can't favorite Group assets") {
+                            $favlink.addClass('nogo');
+                            $favlink.text("Can't favorite posts from TypePad Groups :(");
+                        }
                     }
                 });
 

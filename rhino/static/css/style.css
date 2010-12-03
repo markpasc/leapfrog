@@ -459,6 +459,12 @@ a:visited {
     background-image: url(../img/asterisk.png);
 }
 
+.item-content .metadata .response .nogo, .item-content .metadata .response .nogo:hover {
+    background-image: url(../img/nogo-grey.png);
+    text-decoration: none;
+    cursor: normal;
+}
+
 
 /* signin page styles */
 
