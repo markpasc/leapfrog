@@ -104,23 +104,25 @@
             <div class="item-content item-content-{{ object.render_mode }}{% if object.image.width and object.image.width >= 700 %} item-image-compact{% endif %}">
 
                 <div class="metadata pkg">
-                    {% if author %}
-                        <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
-                    {% endif %}
-
-                    {% if object.service and object.service in accounts %}
-                        {% if object.service == 'typepad.com' %}
-                            <span class="response response-typepad" data-post="{{ object.foreign_id }}">
-                                <a class="favorite" href="#">Favorite</a>
-                            </span>
-                        {% elif object.service == 'flickr.com' %}
-                            <span class="response response-flickr" data-photo="{{ object.foreign_id }}">
-                                <a class="favorite" href="#">Favorite</a>
-                            </span>
+                    <div class="metadata-inner">
+                        {% if author %}
+                            <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
                         {% endif %}
-                    {% endif %}
 
-                    <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                        {% if object.service and object.service in accounts %}
+                            {% if object.service == 'typepad.com' %}
+                                <span class="response response-typepad" data-post="{{ object.foreign_id }}">
+                                    <a class="favorite" href="#">Favorite</a>
+                                </span>
+                            {% elif object.service == 'flickr.com' %}
+                                <span class="response response-flickr" data-photo="{{ object.foreign_id }}">
+                                    <a class="favorite" href="#">Favorite</a>
+                                </span>
+                            {% endif %}
+                        {% endif %}
+
+                        <a href="{{ object.permalink_url }}" class="timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
+                    </div>
                 </div>
 
                 {% if object.title %}
