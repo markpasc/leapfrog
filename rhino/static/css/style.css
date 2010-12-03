@@ -432,30 +432,30 @@ a:visited {
 
 /* response styles */
 
-.item-content-status .response a {
+.item-content .metadata .response a {
     margin-left: 1em;
     padding-left: 18px;
     min-height: 16px;
     background: transparent no-repeat top left;
 }
 
-.item-content-status .response .spinning {
+.item-content .metadata .response .spinning {
     background-image: url(../img/loadinfo.net.gif);
 }
 
-.item-content-status .response .favorite {
+.item-content .metadata .response .favorite {
     background-image: url(../img/star-grey.png);
 }
 
-.item-content-status .response .retweet {
+.item-content .metadata .response .retweet {
     background-image: url(../img/asterisk-grey.png);
 }
 
-.item-content-status .response .favorited {
+.item-content .metadata .response .favorited {
     background-image: url(../img/star.png);
 }
 
-.item-content-status .response .retweeted {
+.item-content .metadata .response .retweeted {
     background-image: url(../img/asterisk.png);
 }
 

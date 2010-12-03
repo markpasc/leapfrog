@@ -1,6 +1,7 @@
 from os.path import join, dirname
 
 from django.conf.urls.defaults import *
+from django.http import HttpResponse
 
 
 urlpatterns = patterns('rhino.views',
@@ -22,6 +23,7 @@ urlpatterns += patterns('',
 
     url(r'^action/twitter/favorite$', 'rhino.views.favorite_twitter', name='action-twitter-favorite'),
     url(r'^action/twitter/retweet$', 'rhino.views.retweet_twitter', name='action-twitter-retweet'),
+    url(r'^action/typepad/favorite$', 'rhino.views.favorite_typepad', name='action-typepad-favorite'),
 )
 
 urlpatterns += patterns('',
@@ -32,4 +34,8 @@ urlpatterns += patterns('',
 
 urlpatterns += patterns('',
     url(r'^stream\.json$', 'rhino.views.json_stream', name='stream'),
+)
+
+urlpatterns += patterns('',
+    url(r'^favicon\.ico$', lambda r: HttpResponse('', status=404, content_type='text/plain')),
 )

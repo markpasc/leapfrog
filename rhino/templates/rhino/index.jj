@@ -119,6 +119,26 @@
 
                 return false;
             });
+            $('.response-typepad .favorite').click(function () {
+                var $favlink = $(this);
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-typepad-favorite') }}',
+                    type: 'POST',
+                    data: {'post': $favlink.parent('.response').attr('data-post')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('favorited');
+                    },
+                    error: function (xhr) {
+                        $favlink.removeClass('spinning');
+                    }
+                });
+
+                return false;
+            });
         }
 
         $(document).ready(function () {

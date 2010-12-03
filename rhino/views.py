@@ -81,7 +81,7 @@ def home(request):
         accounts = {}
     else:
         display_name = person.display_name
-        accounts = dict((acc.service, acc) for acc in person.accounts.all())
+        accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
     stream_items = stream_items_for_user(user)
 
@@ -433,3 +433,49 @@ def favorite_twitter(request):
 
 def retweet_twitter(request):
     return respond_twitter(request, 'http://api.twitter.com/1/statuses/retweet/%(tweet_id)s.json')
+
+
+def favorite_typepad(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
+
+    try:
+        post_id = request.POST['post']
+    except KeyError:
+        post_id = False
+    if not post_id:
+        return HttpResponse("Parameter 'post' is required", status=400, content_type='text/plain')
+
+    # TODO: get only one account once we enforce (service,person) uniqueness
+    accounts = person.accounts.filter(service='typepad.com')
+    for account in accounts:
+        # FAVED
+        csr = oauth.Consumer(*settings.TYPEPAD_CONSUMER)
+        typepad_token = account.authinfo.split(':', 1)
+        log.debug('Authorizing client as TypePad user %s with token %s : %s', account.display_name, typepad_token[0], typepad_token[1])
+        token = oauth.Token(*typepad_token)
+        client = oauth.Client(csr, token)
+
+        t = typd.TypePad(endpoint='https://api.typepad.com/', client=client)
+        log.debug('Trying to add post ID %r to favorites of user ID %r', post_id, account.ident)
+        try:
+            httplib2.debuglevel = 9
+            t.users.post_to_favorites(account.ident, typd.Favorite(author=typd.User(url_id=account.ident),
+                in_reply_to=typd.AssetRef(url_id=post_id)))
+        except typd.HttpError, exc:
+            log.warning('Unexpected HTTP error %s trying to favorite %s for TypePad user %s: %s' % (type(exc).__name__, post_id, account.display_name, str(exc)))
+            return HttpResponse('Error favoriting post: %s' % str(exc), status=400, content_type='text/plain')
+        finally:
+            httplib2.debuglevel = 0
+
+    return HttpResponse('OK', content_type='text/plain')
