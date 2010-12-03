@@ -226,7 +226,7 @@ class Page(object):
             return
 
         # Fetch the resource and soupify it.
-        h = httplib2.Http()
+        h = httplib2.Http(timeout=5)
         try:
             resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
         except httplib2.RedirectLimit:
