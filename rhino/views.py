@@ -129,7 +129,7 @@ def complete_twitter(request):
     body = urlencode({'oauth_verifier': verifier})
     resp, content = client.request('https://api.twitter.com/oauth/access_token', method='POST', body=body)
     if resp.status != 200:
-        raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.content))
+        raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.reason))
 
     access_token = dict(parse_qsl(content))
     del request.session['twitter_request_token']
