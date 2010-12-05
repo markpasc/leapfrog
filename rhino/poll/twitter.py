@@ -235,7 +235,7 @@ def raw_object_for_tweet(tweetdata, client):
         next_tweetid = tweetdata['in_reply_to_status_id']
         really_a_share, in_reply_to = object_from_tweet_id(next_tweetid, client)
 
-    # Is this something other than a status?
+    # Is this status a reply to a link?
     elif len(tweetdata['entities']['urls']) == 1:
         about_urldata = tweetdata['entities']['urls'][0]
         about_url = about_urldata['expanded_url'] or about_urldata['url']
@@ -281,14 +281,38 @@ def raw_object_for_tweet(tweetdata, client):
                 tweet_text = tweetdata['text']
                 start, end = about_urldata['indices']
                 if tweet_text[start:end] == about_urldata['url']:
+                    # Mark links we change the text of as aboutlinks.
                     about_urldata['text'] = about_page.title
+                    about_urldata['class'] = 'aboutlink'
 
-            # Mark links at the ends of tweets as aboutlinks.
-            log.debug('Tweet %s is about a link; the URL ends at char %d and the tweet is %d char long',
-                tweetdata['id'], about_urldata['indices'][-1], len(tweetdata['text']))
-            if about_urldata['indices'][-1] == len(tweetdata['text']):
-                log.debug('YAY ABOUTLINK')
-                about_urldata['class'] = 'aboutlink'
+    # Update the status's links anyway.
+    else:
+        try:
+            urls = tweetdata['entities']['urls']
+        except KeyError:
+            urls = ()
+        for urldata in urls:
+            url = urldata.get('expanded_url') or urldata.get('url')
+            if not url:
+                continue
+            try:
+                url_page = rhino.poll.embedlam.Page(url)
+            except ValueError:
+                # meh
+                continue
+
+            urldata['expanded_url'] = url_page.permalink_url
+
+            if url_page.title:
+                # Don't replace the if the link text is not identical to the
+                # URL (if it's an autolinked domain name, we'd break how the
+                # tweet reads).
+                tweet_text = tweetdata['text']
+                start, end = urldata['indices']
+                if tweet_text[start:end] == urldata['url']:
+                    # Mark links we change the text of as aboutlinks.
+                    urldata['text'] = url_page.title
+                    urldata['class'] = 'aboutlink'
 
     tweet = Object(
         service='twitter.com',
