@@ -50,6 +50,40 @@ a:visited {
     opacity: 0.8;
 }
 
+#signin-services p.account {
+    margin: 0;
+    line-height: 32px;
+}
+
+#signin-services .account .label {
+    display: inline-block;
+    width: 5em;
+}
+
+#signin-services a:link, #signin-services a:hover, #signin-services a:visited, #signin-services a:active, #signin-services a:focus {
+    color: #99f;
+}
+
+#signin-services .detach,
+#signin-services .attached .attach-link {
+    display: none;
+}
+
+#signin-services .attached .detach {
+    display: inline;
+}
+
+#signin-services .detach .spinning {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background: white url(../img/loadinfo.net.gif);
+}
+
+#signin-services .detach .spinning span {
+    display: none;
+}
+
 #content {
     width: 700px;
     margin: 16px auto;

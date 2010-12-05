@@ -25,6 +25,7 @@ urlpatterns += patterns('',
     url(r'^action/twitter/retweet$', 'rhino.views.retweet_twitter', name='action-twitter-retweet'),
     url(r'^action/typepad/favorite$', 'rhino.views.favorite_typepad', name='action-typepad-favorite'),
     url(r'^action/flickr/favorite$', 'rhino.views.favorite_flickr', name='action-flickr-favorite'),
+    url(r'^action/detach-account$', 'rhino.views.detach_account', name='action-detach-account'),
 )
 
 urlpatterns += patterns('',

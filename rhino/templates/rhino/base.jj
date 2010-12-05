@@ -17,11 +17,53 @@
     <div id="settings">
         <div id="settings-inner">
             {% block settings %}
-                <div class="signin-services">
-                    <span>Add another account:</span>
-                    <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
-                    <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
-                    <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                <div id="signin-services">
+                    <h2>Your accounts</h2>
+
+                    <p class="account{% if 'twitter.com' in accounts %} attached{% endif %}">
+                        <span class="label">Twitter</span>
+                        {% if 'twitter.com' in accounts %}
+                            {% set account = accounts['twitter.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
+                            <a href="{{ url_for('signin-twitter') }}">Add Twitter account</a>
+                        </span>
+                    </p>
+
+                    <p class="account{% if 'typepad.com' in accounts %} attached{% endif %}">
+                        <span class="label">TypePad</span>
+                        {% if 'typepad.com' in accounts %}
+                            {% set account = accounts['typepad.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
+                            <a href="{{ url_for('signin-typepad') }}">Add TypePad account</a>
+                        </span>
+                    </p>
+
+                    <p class="account{% if 'flickr.com' in accounts %} attached{% endif %}">
+                        <span class="label">Flickr</span>
+                        {% if 'flickr.com' in accounts %}
+                            {% set account = accounts['flickr.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                            <a href="{{ url_for('signin-flickr') }}">Add Flickr account</a>
+                        </span>
+                    </p>
                 </div>
             {% endblock %}
         </div>
@@ -67,6 +109,25 @@
         $('#gearbox').click(function () {
             $('#settings').animate({'height': $('#settings').height() ? '0px' : '200px'}, 'slow');
             spinGear(0);
+            return false;
+        });
+
+        $('#settings .detach-account').click(function () {
+            var $detachlink = $(this);
+            $.ajax({
+                url: '{{ url_for('action-detach-account') }}',
+                type: 'POST',
+                data: {'account': $detachlink.attr('data-account')},
+                dataType: 'text',
+                success: function(data) {
+                    $detachlink.removeClass('spinning');
+                    $detachlink.parents('.account').removeClass('attached');
+                },
+                error: function(xhr) {
+                    $detachlink.removeClass('spinning');
+                }
+            })
+
             return false;
         });
     });

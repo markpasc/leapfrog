@@ -19,7 +19,7 @@ import httplib2
 import oauth2 as oauth
 import typd.objecttypes
 
-from rhino.models import Person
+from rhino.models import Person, Account
 from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
@@ -246,6 +246,13 @@ def complete_typepad(request):
 
         person.user.backend = 'django.contrib.auth.backends.ModelBackend'
         login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
 
     account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
     account.save()
@@ -294,6 +301,16 @@ def complete_flickr(request):
                 random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
             person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
             person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
 
     account.authinfo = token
     account.save()
@@ -528,5 +545,41 @@ def favorite_flickr(request):
         except Exception, exc:
             log.warning("Error favoriting photo %s for Flickr user %s: %s", photo_id, account.display_name, str(exc))
             return HttpResponse('Error favoriting photo: %s' % str(exc), status=400, content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
+def detach_account(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
+
+    # Which account is that?
+    try:
+        account_pk = request.POST['account']
+    except KeyError:
+        return HttpResponse("Parameter 'account' is required", status=400, content_type='text/plain')
+    try:
+        account = Account.objects.get(pk=account_pk)
+    except Account.DoesNotExist:
+        return HttpResponse("Parameter 'account' must be a valid account ID", status=400, content_type='text/plain')
+    if account.person.pk != person.pk:
+        return HttpResponse("Parameter 'account' must be a valid account ID", status=400, content_type='text/plain')
+
+    # Put this account on a different person. (It probably has data attached, so we don't delete it.)
+    account.person = Person(
+        display_name=account.display_name,
+    )
+    account.person.save()
+    account.save()
 
     return HttpResponse('OK', content_type='text/plain')
