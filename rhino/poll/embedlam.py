@@ -12,6 +12,7 @@ import httplib2
 from mimeparse import parse_mime_type
 
 from rhino.models import Account, Object, Person, Media
+import rhino.poll.flickr
 import rhino.poll.twitter
 import rhino.poll.typepad
 
@@ -222,7 +223,7 @@ class Page(object):
         self.content = ''
 
         # These we can already ask about by URL, so don't bother fetching about them.
-        if re.match(r'http:// (?: flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http:// (?: [^/]* flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return
 
         # Fetch the resource and soupify it.
@@ -284,8 +285,8 @@ class Page(object):
     def to_object(self):
         url = self.url
 
-        if re.match(r'http:// .* \.flickr\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-            return object_from_oembed('http://www.flickr.com/services/oembed/', url)
+        if re.match(r'http:// [^/]* flickr\.com/photos/[^/]+/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return rhino.poll.flickr.object_from_url(url)
         if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return rhino.poll.twitter.object_from_twitpic_url(url)
         if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):

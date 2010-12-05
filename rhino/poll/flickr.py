@@ -4,6 +4,7 @@ from datetime import datetime
 from hashlib import md5
 import json
 import logging
+import re
 from urllib import urlencode
 from urlparse import urlunparse
 
@@ -99,8 +100,74 @@ def photo_url_for_photo(photodata):
     return 'http://farm%(farm)s.static.flickr.com/%(server)s/%(id)s_%(secret)s_b.jpg' % photodata
 
 
+def object_from_photo_data(photodata):
+    try:
+        obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
+        log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
+        return obj
+    except Object.DoesNotExist:
+        pass
+    log.debug("Creating new object for %s's Flickr photo #%s", photodata['owner'], photodata['id'])
+
+    # We aren't supposed to be able to ask for the dimensions, but we can, so use 'em.
+    try:
+        height, width = [int(photodata[key]) for key in ('o_height', 'o_width')]
+    except KeyError:
+        # Didn't get those, so we need to get the biggest size we can see.
+        photosizes = call_flickr('flickr.photos.getSizes', photo_id=photodata['id'])
+        largest = max(photosizes['sizes']['size'], key=lambda x: int(x['width']) * int(x['height']))
+        height, width = [int(largest[key]) for key in ('height', 'width')]
+        photourl = largest['source']
+    else:
+        photourl = photo_url_for_photo(photodata)
+
+    if height > width:
+        width = int(1024 * width / height)
+        height = 1024
+    else:
+        height = int(1024 * height / width)
+        width = 1024
+
+    image = Media(
+        image_url=photourl,
+        width=width,
+        height=height,
+    )
+    image.save()
+
+    try:
+        owner_nsid = photodata['owner']['nsid']
+    except TypeError:
+        owner_nsid = photodata['owner']
+    try:
+        phototitle = photodata['title']['_content']
+    except TypeError:
+        phototitle = photodata['title']
+
+    obj = Object(
+        service='flickr.com',
+        foreign_id=photodata['id'],
+        render_mode='image',
+        title=phototitle,
+        #body=,
+        image=image,
+        time=datetime.utcfromtimestamp(int(photodata.get('dateupload', photodata['dateuploaded']))),
+        permalink_url='http://www.flickr.com/photos/%s/%s/' % (owner_nsid, photodata['id']),
+        author=account_for_flickr_id(owner_nsid),
+    )
+    obj.save()
+
+    return obj
+
+
 def object_from_url(url):
-    raise NotImplementedError
+    mo = re.match(r'http:// [^/]* flickr\.com/ photos/ [^/]+/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
+    photo_id = mo.group(1)
+
+    resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims')
+    photodata = resp['photo']
+    obj = object_from_photo_data(photodata)
+    return obj
 
 
 def poll_flickr(account):
@@ -111,42 +178,7 @@ def poll_flickr(account):
     recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo, extras='date_upload,o_dims')
     for photodata in recent['photos']['photo']:
         try:
-            try:
-                obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
-            except Object.DoesNotExist:
-                log.debug("Creating new object for %s's Flickr photo #%s", photodata['owner'], photodata['id'])
-
-                # We aren't supposed to be able to ask for the dimensions, but we can, so use 'em.
-                height, width = [int(photodata[key]) for key in ('o_height', 'o_width')]
-                if height > width:
-                    width = int(1024 * width / height)
-                    height = 1024
-                else:
-                    height = int(1024 * height / width)
-                    width = 1024
-
-                image = Media(
-                    image_url=photo_url_for_photo(photodata),
-                    width=width,
-                    height=height,
-                )
-                image.save()
-
-                obj = Object(
-                    service='flickr.com',
-                    foreign_id=photodata['id'],
-                    render_mode='image',
-                    title=photodata['title'],
-                    #body=,
-                    image=image,
-                    time=datetime.utcfromtimestamp(int(photodata['dateupload'])),
-                    permalink_url='http://www.flickr.com/photos/%(owner)s/%(id)s/' % photodata,
-                    author=account_for_flickr_id(photodata['owner']),
-                )
-                obj.save()
-            else:
-                log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
-
+            obj = object_from_photo_data(photodata)
             UserStream.objects.get_or_create(user=user, obj=obj,
                 defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
         except Exception, exc:
