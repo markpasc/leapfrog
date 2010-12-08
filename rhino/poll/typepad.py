@@ -34,7 +34,7 @@ def account_for_typepad_user(tp_user, person=None):
                 )
             avatar.save()
             person = Person(
-                display_name=tp_user.display_name,
+                display_name=tp_user.display_name or tp_user.preferred_username,
                 avatar=avatar,
                 permalink_url=tp_user.profile_page_url,
             )
