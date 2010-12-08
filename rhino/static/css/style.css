@@ -401,6 +401,10 @@ a:visited {
     margin-top: -20px;
 }
 
+.item-content pre {
+    white-space: pre-wrap;
+}
+
 .item .item-image-compact {
     line-height: 0;
     display: inline-block;
