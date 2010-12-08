@@ -9,6 +9,7 @@ import typd
 from tidylib import tidy_fragment
 
 from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
+import rhino.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -49,6 +50,18 @@ def account_for_typepad_user(tp_user, person=None):
     return account
 
 
+def remove_reblog_boilerplate_from_obj(obj):
+    # Remove reblog boilerplate too.
+    soup = BeautifulSoup(obj.body)
+    maybe_quote = soup.first()
+    if maybe_quote.name == 'blockquote':
+        maybe_quote.extract()
+        maybe_p = soup.first()
+        if maybe_p.name == 'p' and maybe_p.find(name='small'):
+            maybe_p.extract()
+        obj.body = unicode(soup)
+
+
 def object_for_typepad_object(tp_obj):
     try:
         obj = Object.objects.get(service='typepad.com', foreign_id=tp_obj.url_id)
@@ -80,16 +93,19 @@ def object_for_typepad_object(tp_obj):
         obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
     elif getattr(tp_obj, 'reblog_of', None) is not None:
         obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
+        remove_reblog_boilerplate_from_obj(obj)
+    elif getattr(tp_obj, 'reblog_of_url', None) is not None:
+        reblog_url = tp_obj.reblog_of_url
+        try:
+            in_reply_to = rhino.poll.embedlam.object_for_url(reblog_url)
+        except ValueError, exc:
+            in_reply_to = None
+            log.error("Error making object from referent %s of %s's post %s", reblog_url, author.display_name, tp_obj.url_id)
+            log.exception(exc)
 
-        # Remove reblog boilerplate too.
-        soup = BeautifulSoup(obj.body)
-        maybe_quote = soup.first()
-        if maybe_quote.name == 'blockquote':
-            maybe_quote.extract()
-            maybe_p = soup.first()
-            if maybe_p.name == 'p' and maybe_p.find(name='small'):
-                maybe_p.extract()
-            obj.body = unicode(soup)
+        if in_reply_to is not None:
+            obj.in_reply_to = in_reply_to
+            remove_reblog_boilerplate_from_obj(obj)
 
     if tp_obj.object_type == 'Photo':
         height, width = tp_obj.image_link.height, tp_obj.image_link.width
@@ -208,9 +224,9 @@ def poll_typepad(account):
                 actor = account_for_typepad_user(note.actor)
                 why_verb = {
                     'AddedFavorite': 'like',
-                    'NewAsset': 'post',
+                    'NewAsset': 'post' if obj is root else 'share',
                     'Comment': 'reply',
-                    'Reblog': 'reply',
+                    'Reblog': 'share',
                 }[note.verb]
                 UserStream.objects.create(user=user, obj=root,
                     time=note.published,
