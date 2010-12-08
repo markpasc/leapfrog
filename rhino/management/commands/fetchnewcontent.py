@@ -3,6 +3,7 @@ import logging
 from optparse import make_option
 
 from django.core.management.base import NoArgsCommand, CommandError
+from sentry.client.base import SentryClient
 
 from rhino.models import *
 from rhino.poll import twitter
@@ -28,7 +29,7 @@ class Command(NoArgsCommand):
         ),
     )
 
-    def handle_noargs(self, **options):
+    def fetch_new_content(self, **options):
         update_horizon = datetime.now() - timedelta(minutes=15)
 
         users = User.objects.all()
@@ -59,4 +60,12 @@ class Command(NoArgsCommand):
                 try:
                     poller(account)
                 except Exception, exc:
-                    log.exception(exc)
+                    SentryClient().create_from_exception(view='%s.%s' % (__name__, account.service))
+                    #log.exception(exc)
+
+    def handle_noargs(self, **options):
+        try:
+            self.fetch_new_content(**options)
+        except Exception, exc:
+            SentryClient().create_from_exception(view=__name__)
+

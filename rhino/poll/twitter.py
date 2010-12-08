@@ -398,4 +398,5 @@ def poll_twitter(account):
                 supertweet = supertweet.in_reply_to
 
         except Exception, exc:
-            log.exception(exc)
+            from sentry.client.base import SentryClient
+            SentryClient().create_from_exception(view=__name__)
