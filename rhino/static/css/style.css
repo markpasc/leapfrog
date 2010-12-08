@@ -244,6 +244,11 @@ a:visited {
     -moz-border-radius: 0 0 5px 5px;
 }
 
+.item-has-whyline .item-image-compact .title {
+    border-radius: 0;
+    -moz-border-radius: 0;
+}
+
 .item .item-content .body {
     position: relative;
 }
