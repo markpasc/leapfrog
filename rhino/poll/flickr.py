@@ -144,6 +144,10 @@ def object_from_photo_data(photodata):
     except TypeError:
         phototitle = photodata['title']
 
+    timestr = photodata.get('dateupload', photodata.get('dateuploaded'))
+    if timestr is None:
+        raise ValueError("Couldn't find an upload date (neither dateupload nor dateuploaded) in photodata %r" % photodata)
+
     obj = Object(
         service='flickr.com',
         foreign_id=photodata['id'],
@@ -151,7 +155,7 @@ def object_from_photo_data(photodata):
         title=phototitle,
         #body=,
         image=image,
-        time=datetime.utcfromtimestamp(int(photodata.get('dateupload', photodata['dateuploaded']))),
+        time=datetime.utcfromtimestamp(int(timestr)),
         permalink_url='http://www.flickr.com/photos/%s/%s/' % (owner_nsid, photodata['id']),
         author=account_for_flickr_id(owner_nsid),
     )
