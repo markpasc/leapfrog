@@ -1,6 +1,6 @@
 {% extends "rhino/base.jj" %}
 
-{% block htmltitle %}Sign in{% endblock %}
+{% block htmltitle %}Leapfrog{% endblock %}
 
 {% block htmlhead %}
     {{ super() }}
