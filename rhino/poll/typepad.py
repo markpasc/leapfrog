@@ -74,9 +74,16 @@ def object_for_typepad_object(tp_obj):
     log.debug("Making new object for TypePad post %s by %s", tp_obj.url_id, tp_obj.author.display_name)
 
     author = account_for_typepad_user(tp_obj.author)
-    body = tp_obj.rendered_content or tp_obj.content or ''
+    body = tp_obj.rendered_content
+    if not body and tp_obj.content:
+        if tp_obj.text_format == 'html_convert_linebreaks':
+            body = '\n\n'.join(u'<p>%s</p>' % t for t in tp_obj.content.split('\n\n'))
+        else:
+            body = tp_obj.content
     if body:
         body, errors = tidy_fragment(body)
+    else:
+        body = ''
 
     obj = Object(
         service='typepad.com',
