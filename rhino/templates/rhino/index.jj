@@ -177,14 +177,19 @@
             });
         }
 
-        $(document).ready(function () {
-            setUpPaginateLink();
-            setUpResponseLinks();
-            //setTimeout(60000, "checkForUpdates()");
-
+        function updateTimestamps() {
             $('.relativedatestamp').each(function (i, val) {
                 $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
             });
+        }
+
+        $(document).ready(function () {
+            setUpPaginateLink();
+            setUpResponseLinks();
+            //setTimeout("checkForUpdates()", 60000);
+
+            updateTimestamps();
+            setInterval("updateTimestamps()", 60000);
 
             $('#cancel-reauthorize-twitter').click(function () {
                 $('#message-reauthorize-twitter').hide();
