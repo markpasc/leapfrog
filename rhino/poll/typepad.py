@@ -53,13 +53,22 @@ def account_for_typepad_user(tp_user, person=None):
 def remove_reblog_boilerplate_from_obj(obj):
     # Remove reblog boilerplate too.
     soup = BeautifulSoup(obj.body)
-    maybe_quote = soup.first()
-    if maybe_quote.name == 'blockquote':
+    top_two = soup.findAll(recursive=False, limit=2)
+    if len(top_two) < 2:
+        return
+    maybe_quote, maybe_p = top_two
+
+    # Regardless of what the first thing is, if the second is a <p><small>, toss 'em.
+    if maybe_p.name == 'p' and maybe_p.find(name='small'):
+        maybe_p.extract()
         maybe_quote.extract()
-        maybe_p = soup.first()
-        if maybe_p.name == 'p' and maybe_p.find(name='small'):
-            maybe_p.extract()
-        obj.body = unicode(soup)
+    # Well, there's no <p><small>, but let's remove a leading blockquote anyway.
+    elif maybe_quote.name == 'blockquote':
+        maybe_quote.extract()
+    else:
+        return
+
+    obj.body = unicode(soup)
 
 
 def object_for_typepad_object(tp_obj):
