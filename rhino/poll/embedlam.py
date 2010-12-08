@@ -221,6 +221,8 @@ class Page(object):
 
     def __init__(self, url):
         self.content = ''
+        self.orig_url = url
+        self.url = url
 
         # These we can already ask about by URL, so don't bother fetching about them.
         if re.match(r'http:// (?: [^/]* flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
@@ -266,7 +268,6 @@ class Page(object):
                 log.debug('Decided canonical URL for %s is %s, so using that', url, canon_url)
                 url = canon_url
 
-        self.orig_url = orig_url
         self.url = url
         self.content = content
         self.soup = soup
