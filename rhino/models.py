@@ -47,6 +47,9 @@ class Account(models.Model):
     def __unicode__(self):
         return u'%s at %s' % (self.display_name, self.service)
 
+    class Meta:
+        unique_together = (('service', 'ident'),)
+
 
 class Object(models.Model):
 
@@ -85,6 +88,9 @@ class Object(models.Model):
     def permalink_host(self):
         return urlparse(self.permalink_url).netloc
 
+    class Meta:
+        unique_together = (('service', 'foreign_id'),)
+
 
 class UserStream(models.Model):
 
@@ -102,6 +108,10 @@ class UserStream(models.Model):
 
     # index: (user, when) so we can query WHERE user ORDER BY when
 
+    class Meta:
+        unique_together = (('user', 'obj'),)
+
+
 class UserReplyStream(models.Model):
 
     user = models.ForeignKey(User, related_name='reply_stream_items')
@@ -111,3 +121,7 @@ class UserReplyStream(models.Model):
     reply_time = models.DateTimeField()
 
     # index: (user, root_when, reply_when) so we can query WHERE user, root_when <> ORDER BY reply_when
+
+    class Meta:
+        unique_together = (('user', 'reply'),)
+
