@@ -32,7 +32,7 @@
         {% set author = object.author.person %}
         {% if author and author.avatar %}
             {% set poster_rot = rot.next() %}
-            <a class="author" href="{{ author.permalink_url }}"
+            <a class="item-author" href="{{ author.permalink_url }}"
                 style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
                 ><span></span><img
                     src="{{ author.avatar.image_url }}"
@@ -155,7 +155,7 @@
         {% set author = reply.author.person %}
         {% if author and author.avatar %}
             {% set poster_rot = rot.next() %}
-            <a class="author" href="{{ author.permalink_url }}"
+            <a class="item-author" href="{{ author.permalink_url }}"
                 style="-webkit-transform: rotate({{ poster_rot }}deg); -moz-transform: rotate({{ poster_rot }}deg); transform: rotate({{ poster_rot }}deg)"
                 ><span></span><img
                     src="{{ author.avatar.image_url }}"

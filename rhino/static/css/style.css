@@ -196,7 +196,7 @@ a:visited {
     position: relative;
 }
 
-.item .author {
+.item a.item-author {
     line-height: 0;
 
     background: white;
@@ -212,13 +212,13 @@ a:visited {
     z-index: 3;
 }
 
-.item .author img {
+.item a.item-author img {
     width: 50px;
     height: auto;
     z-index: 1;
 }
 
-.item .author span {
+.item a.item-author span {
     position: absolute;
     display: inline-block;
     width: 100%;
