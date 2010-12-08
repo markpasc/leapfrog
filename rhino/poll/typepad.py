@@ -68,7 +68,7 @@ def remove_reblog_boilerplate_from_obj(obj):
     else:
         return
 
-    obj.body = unicode(soup)
+    obj.body = unicode(soup).strip()
 
 
 def object_for_typepad_object(tp_obj):
@@ -78,7 +78,7 @@ def object_for_typepad_object(tp_obj):
         pass
     else:
         log.debug("Reusing typepad object %r for asset %s", obj, tp_obj.url_id)
-        return obj
+        return False, obj
 
     log.debug("Making new object for TypePad post %s by %s", tp_obj.url_id, tp_obj.author.display_name)
 
@@ -106,10 +106,14 @@ def object_for_typepad_object(tp_obj):
     )
 
     if getattr(tp_obj, 'in_reply_to', None) is not None:
-        obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
+        # This post is in reply, so we don't care if our referent was
+        # really a share. Be transitively in reply to the shared obj.
+        really_a_share, obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
     elif getattr(tp_obj, 'reblog_of', None) is not None:
-        obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
+        really_a_share, obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
         remove_reblog_boilerplate_from_obj(obj)
+        if not obj.body:
+            return True, obj.in_reply_to
     elif getattr(tp_obj, 'reblog_of_url', None) is not None:
         reblog_url = tp_obj.reblog_of_url
         try:
@@ -122,6 +126,8 @@ def object_for_typepad_object(tp_obj):
         if in_reply_to is not None:
             obj.in_reply_to = in_reply_to
             remove_reblog_boilerplate_from_obj(obj)
+            if not obj.body:
+                return True, in_reply_to
 
     if tp_obj.object_type == 'Photo':
         height, width = tp_obj.image_link.height, tp_obj.image_link.width
@@ -149,7 +155,7 @@ def object_for_typepad_object(tp_obj):
 
     obj.save()
 
-    return obj
+    return False, obj
 
 
 def good_notes_for_notes(notes, t):
@@ -214,7 +220,8 @@ def object_from_url(url):
     except typd.NotFound, exc:
         raise ValueError("TypePad could not resolve URL %s: %s" % (url, str(exc)))
     if result.is_full_match and result.asset:
-        return object_for_typepad_object(result.asset)
+        really_a_share, obj = object_for_typepad_object(result.asset)
+        return obj
 
     raise ValueError("Could not identify TypePad asset for url %s" % url)
 
@@ -230,7 +237,7 @@ def poll_typepad(account):
 
     for note in good_notes_for_notes(reversed(notes.entries), t):
         try:
-            obj = object_for_typepad_object(note.object)
+            really_a_share, obj = object_for_typepad_object(note.object)
 
             root = obj
             while root.in_reply_to is not None:
@@ -240,7 +247,7 @@ def poll_typepad(account):
                 actor = account_for_typepad_user(note.actor)
                 why_verb = {
                     'AddedFavorite': 'like',
-                    'NewAsset': 'post' if obj is root else 'share',
+                    'NewAsset': 'post' if obj is root and not really_a_share else 'share',
                     'Comment': 'reply',
                     'Reblog': 'share',
                 }[note.verb]
