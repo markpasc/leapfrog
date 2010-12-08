@@ -13,6 +13,8 @@ admin.site.register(models.Account, AccountAdmin)
 
 class ObjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'render_mode', 'external_id')
+    list_filter = ('author', 'render_mode')
+    search_fields = ('title', 'author', 'external_id')
 
     def external_id(self, obj):
         if obj.service and obj.foreign_id:
