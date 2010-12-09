@@ -8,35 +8,59 @@
         {% endfor %}
 
         <div id="navigate">
-            <a href="#">Older</a>
+            <span><img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16"> Loading...</span>
         </div>
 
         <script type="text/javascript">
         var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
+        var showing_more = false;
 
-        function setUpPaginateLink() {
-            $('#navigate a').click(function () {
-                // TODO: show a spinner
+        function showMore() {
+            if (showing_more)
+                return;
+            showing_more = true;
 
-                var $nav = $('#navigate');
-                $.get('{{ url_for('stream') }}', { html: true, before: oldest_item_date }, function (data) {
+            var $nav = $('#navigate');
+            $.ajax({
+                url: '{{ url_for('stream') }}',
+                data: { html: true, before: oldest_item_date },
+                success: function (data) {
                     var $nextpage = $('<div/>');
                     $nav.before($nextpage);
 
                     var items = data['items'];
+                    var had_new = false;
                     $.each(items, function (i, val) {
                         if (!$('#item-' + val['id']).size()) {
                             $nextpage.append(val['html']);
+                            had_new = true;
                         }
                     });
+
+                    if (!had_new) {
+                        $('#navigate span').text('All done! No more items!');
+                        return;  // still "showing_more"
+                    }
+
                     oldest_item_date = items.slice(-1)[0]['time'];
+                    showing_more = false;
 
                     $nextpage.find('.relativedatestamp').each(function (i, val) {
                         $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
                     });
-                });
+                },
+                error: function (xhr) {
+                    $('#navigate span').text(xhr.responseText);
+                    showing_more = false;
+                }
+            });
+        }
 
-                return false;
+        function setUpPaginator() {
+            $(window).scroll(function () {
+                if ($(window).scrollTop() > $(document).height() - 3 * $(window).height()) {
+                    showMore();
+                }
             });
         }
 
@@ -151,7 +175,7 @@
         }
 
         $(document).ready(function () {
-            setUpPaginateLink();
+            setUpPaginator();
             setUpResponseLinks();
             //setTimeout("checkForUpdates()", 60000);
 

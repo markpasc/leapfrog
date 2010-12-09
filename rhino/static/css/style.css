@@ -105,6 +105,19 @@ a:visited {
     vertical-align: middle;
 }
 
+#navigate {
+    text-align: center;
+    margin: 60px auto;
+}
+
+#navigate span {
+    display: inline-block;
+    padding: 1ex 1em;
+    border-radius: 20px;
+    -moz-border-radius: 20px;
+    background: white;
+}
+
 .pkg:after {
     content: " ";
     display: block;
