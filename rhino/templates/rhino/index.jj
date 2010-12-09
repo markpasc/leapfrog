@@ -11,35 +11,6 @@
             <a href="#">Older</a>
         </div>
 
-        <div id="message-reauthorize-twitter">
-            <div class="item">
-                <div class="item-content">
-                    <h1 class="title">Funny story...</h1>
-
-                    <p>Because of <a href="http://code.google.com/p/twitter-api/issues/detail?id=669">how the Twitter
-                    API works</a>, you'll need to take some steps to be able to act on Twitter tweets from within
-                    Leapfrog.</p>
-
-                    <p>We need you to:</p>
-
-                    <ol>
-                        <li>Go to <a href="http://twitter.com/settings/connections" target="_new">the “Connections” page in your Twitter settings</a> (opens in new window).</li>
-                        <li>Find the “Leapfrog” app listed there.</li>
-                        <li>Click “Revoke Access” to clear your Twitter–Leapfrog settings.</li>
-                        <li>Come back to Leapfrog and <a href="{{ url_for('signin-twitter') }}">sign back in with your Twitter account</a>.</li>
-                    </ol>
-
-                    <p>This will let us ask Twitter for permission to tell it when you want to favorite and retweet from
-                    Leapfrog. We apologize for the inconvenience, and hope it's only a small one! (If you don't want to
-                    bother, you can <a id="cancel-reauthorize-twitter" href="#">go back to Leapfrog without
-                    reauthorizing</a>.)</p>
-
-                    <p style="text-align: right">–Your Leapfrog Team</p>
-
-                </div>
-            </div>
-        </div>
-
         <script type="text/javascript">
         var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
 
@@ -92,10 +63,8 @@
                     },
                     error: function (xhr) {
                         $favlink.removeClass('spinning');
-                        var data = xhr.responseText;
-                        if (data == 'Our Twitter token for that account is read-only') {
-                            $('#message-reauthorize-twitter').show();
-                        }
+                        $favlink.addClass('nogo');
+                        $favlink.text(xhr.responseText);
                     }
                 });
 
@@ -117,10 +86,8 @@
                     },
                     error: function (data) {
                         $favlink.removeClass('spinning');
-                        var data = xhr.responseText;
-                        if (data == 'Our Twitter token for that account is read-only') {
-                            $('#message-reauthorize-twitter').show();
-                        }
+                        $favlink.addClass('nogo');
+                        $favlink.text(xhr.responseText);
                     }
                 });
 
@@ -190,11 +157,6 @@
 
             updateTimestamps();
             setInterval("updateTimestamps()", 60000);
-
-            $('#cancel-reauthorize-twitter').click(function () {
-                $('#message-reauthorize-twitter').hide();
-                return false;
-            });
         });
         </script>
     {% else %}
