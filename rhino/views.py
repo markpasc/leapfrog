@@ -4,7 +4,7 @@ import logging
 from random import choice
 import string
 from urllib import urlencode, quote
-from urlparse import parse_qsl, urlunparse
+from urlparse import parse_qsl, parse_qs, urlunparse
 
 from django.conf import settings
 from django.contrib.auth import login
@@ -22,6 +22,7 @@ import typd.objecttypes
 from rhino.models import Person, Account
 from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
+from rhino.poll.facebook import account_for_facebook_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
 
 
@@ -255,6 +256,77 @@ def complete_typepad(request):
         account.person = person
 
     account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
+
+
+def signin_facebook(request):
+    redirect_uri = request.build_absolute_uri(reverse('complete-facebook'))
+
+    query = {
+        'client_id': settings.FACEBOOK_CONSUMER[0],
+        'redirect_uri': redirect_uri,
+        'scope': 'read_stream,offline_access',
+    }
+
+    url = urlunparse(('http', 'graph.facebook.com', 'oauth/authorize', None, urlencode(query), None))
+
+    return HttpResponseRedirect(url)
+
+
+def complete_facebook(request):
+    redirect_uri = request.build_absolute_uri(reverse('complete-facebook'))
+    code = request.GET["code"]
+
+    query = {
+        'client_id': settings.FACEBOOK_CONSUMER[0],
+        'redirect_uri': redirect_uri,
+        'code': code,
+        'client_secret': settings.FACEBOOK_CONSUMER[1],
+    }
+
+    url = urlunparse(('https', 'graph.facebook.com', 'oauth/access_token', None, urlencode(query), None))
+    h = httplib2.Http()
+    resp, content = h.request(url, method='GET')
+    # response is urlencoded
+    data = parse_qs(content)
+    access_token = data["access_token"][0]
+
+    # Now find out who this user is
+    me_query = { 'access_token': access_token }
+    me_url = urlunparse(('https', 'graph.facebook.com', 'me', None, urlencode(me_query), None))
+    resp, content = h.request(me_url, method='GET')
+    fb_user = json.loads(content)
+
+    if "error" in fb_user:
+        raise Exception("Facebook returned %s: %s" % (fb_user["error"]["type"], fb_user["error"]["message"]))
+
+    person = None
+    if not request.user.is_anonymous():
+        person = request.user.person
+    account = account_for_facebook_user(fb_user, person=person)
+    if request.user.is_anonymous():
+        person = account.person
+        if person.user is None:
+            # AGH
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
+
+    account.authinfo = access_token
     account.save()
 
     return HttpResponseRedirect(reverse('home'))
