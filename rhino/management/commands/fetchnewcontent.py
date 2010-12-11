@@ -9,12 +9,14 @@ from rhino.models import *
 from rhino.poll import twitter
 from rhino.poll import typepad
 from rhino.poll import flickr
+from rhino.poll import facebook
 
 
 pollers = {
     "twitter.com": twitter.poll_twitter,
     "typepad.com": typepad.poll_typepad,
     "flickr.com": flickr.poll_flickr,
+    "facebook.com": facebook.poll_facebook,
 }
 
 
