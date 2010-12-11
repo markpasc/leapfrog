@@ -64,6 +64,21 @@
                             <a href="{{ url_for('signin-flickr') }}">Add Flickr account</a>
                         </span>
                     </p>
+
+                    <p class="account{% if 'facebook.com' in accounts %} attached{% endif %}">
+                        <span class="label">Facebook</span>
+                        {% if 'facebook.com' in accounts %}
+                            {% set account = accounts['facebook.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
+                            <a href="{{ url_for('signin-facebook') }}">Add Facebook account</a>
+                        </span>
+                    </p>
                 </div>
             {% endblock %}
         </div>
