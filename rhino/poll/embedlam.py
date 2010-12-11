@@ -213,6 +213,33 @@ def object_from_page_content(content, url):
     return obj
 
 
+def object_from_photo_url(url, width, height):
+    try:
+        return Object.objects.get(service='', foreign_id=url)
+    except Object.DoesNotExist:
+        pass
+
+    log.debug("Treating %s as a photo URL and making an image object from it", url)
+    image = Media(
+        image_url=url,
+        width=width,
+        height=height,
+    )
+    image.save()
+    obj = Object(
+        service='',
+        foreign_id=url,
+        render_mode='image',
+        title='',
+        image=image,
+        author=None,
+        time=datetime.now(),
+        permalink_url=url,
+    )
+    obj.save()
+    return obj
+
+
 def value_for_meta_elems(elems, default=None, base_url=None):
     for elem in elems:
         if elem is None:
@@ -247,6 +274,7 @@ class Page(object):
         self.content = ''
         self.orig_url = url
         self.url = url
+        self.type = 'html'
 
         # These we can already ask about by URL, so don't bother fetching about them.
         if re.match(r'http:// (?: [^/]* flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
@@ -266,6 +294,11 @@ class Page(object):
         url = resp['content-location']
 
         content_type = parse_mime_type(resp['content-type'])
+        if content_type[0] == 'image':
+            log.debug("This seems to be an image")
+            self.type = 'image'
+            return
+        
         if content_type[0:2] != ('text', 'html'):
             # hmm
             raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
@@ -309,6 +342,11 @@ class Page(object):
 
     def to_object(self):
         url = self.url
+
+        # If this URL points directly at an image then let's make a photo object
+        if self.type == "image":
+            # TODO: Inspect the image header to find out what size the image is
+            return object_from_photo_url(url, None, None)
 
         if re.match(r'http:// [^/]* flickr\.com/photos/[^/]+/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return rhino.poll.flickr.object_from_url(url)
