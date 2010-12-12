@@ -10,7 +10,6 @@ from urlparse import urlparse, urljoin
 from BeautifulSoup import BeautifulSoup
 import httplib2
 from mimeparse import parse_mime_type
-import readability  # from git://github.com/gfxmonk/python-readability.git
 
 from rhino.models import Account, Object, Person, Media
 import rhino.poll.flickr
@@ -185,30 +184,6 @@ def object_from_feed_entry(feed_url, item_url):
         return None
 
     obj.time = datetime(*object_time[:6])
-    obj.save()
-
-    return obj
-
-
-def object_from_page_content(content, url):
-    log.debug("Trying to extract content from %s with readability", url)
-    doc = readability.Document(content, url=url)
-    try:
-        title = doc.title()
-        summary = doc.summary()
-    except readability.Unparseable:
-        log.debug("Failed to extract %s content with readability", url)
-        return None
-
-    obj = Object(
-        service='',
-        foreign_id=url,
-        render_mode='mixed',
-        title=title,
-        body=summary,
-        permalink_url=url,
-        time=datetime.now(),
-    )
     obj.save()
 
     return obj
@@ -389,12 +364,6 @@ class Page(object):
             if object:
                 log.debug('Found object for %s through the feed', url)
                 return object
-
-        # Try to extract the content with readability
-        readable_obj = object_from_page_content(self.content, url)
-        if readable_obj:
-            log.debug("Found object for %s by scraping with readability", url)
-            return readable_obj
 
         log.debug('Finding object for %s from the existing HTML head data', url)
         return object_from_html_head(url, self.orig_url, head)
