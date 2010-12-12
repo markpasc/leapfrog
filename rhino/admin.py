@@ -12,7 +12,7 @@ admin.site.register(models.Account, AccountAdmin)
 
 
 class ObjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'render_mode', 'external_id')
+    list_display = ('title', 'author', 'render_mode', 'external_id', 'time')
     list_filter = ('author', 'render_mode')
     search_fields = ('title', 'author', 'external_id')
 
