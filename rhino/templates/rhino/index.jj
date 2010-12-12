@@ -48,6 +48,7 @@
                     $nextpage.find('.relativedatestamp').each(function (i, val) {
                         $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
                     });
+                    setUpResponseLinks($nextpage);
                 },
                 error: function (xhr) {
                     $('#navigate span').text(xhr.responseText);
@@ -70,8 +71,11 @@
             });
         }
 
-        function setUpResponseLinks() {
-            $('.response-twitter .favorite').click(function () {
+        function setUpResponseLinks($root) {
+            if (!$root)
+                $root = $(document);
+
+            $root.find('.response-twitter .favorite').click(function () {
                 var $favlink = $(this);
                 $favlink.addClass('spinning');
 
@@ -94,7 +98,7 @@
 
                 return false;
             });
-            $('.response-twitter .retweet').click(function () {
+            $root.find('.response-twitter .retweet').click(function () {
                 var $favlink = $(this);
                 $favlink.addClass('spinning');
 
@@ -117,7 +121,7 @@
 
                 return false;
             });
-            $('.response-typepad .favorite').click(function () {
+            $root.find('.response-typepad .favorite').click(function () {
                 var $favlink = $(this);
                 if ($favlink.hasClass('nogo')) {
                     return false;
@@ -145,7 +149,7 @@
 
                 return false;
             });
-            $('.response-flickr .favorite').click(function () {
+            $root.find('.response-flickr .favorite').click(function () {
                 var $favlink = $(this);
                 $favlink.addClass('spinning');
 
