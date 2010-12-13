@@ -10,6 +10,7 @@ from rhino.poll import twitter
 from rhino.poll import typepad
 from rhino.poll import flickr
 from rhino.poll import facebook
+from rhino.poll import vimeo
 
 
 pollers = {
@@ -18,6 +19,7 @@ pollers = {
     "flickr.com": flickr.poll_flickr,
     "facebook.com": facebook.poll_facebook,
 }
+pollers = {'vimeo.com': vimeo.poll_vimeo}
 
 
 class Command(NoArgsCommand):

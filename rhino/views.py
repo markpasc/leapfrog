@@ -24,6 +24,7 @@ from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.facebook import account_for_facebook_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
+from rhino.poll.vimeo import account_for_vimeo_id, call_vimeo
 
 
 log = logging.getLogger(__name__)
@@ -390,6 +391,79 @@ def complete_flickr(request):
     return HttpResponseRedirect(reverse('home'))
 
 
+def signin_vimeo(request):
+    csr = oauth.Consumer(*settings.VIMEO_CONSUMER)
+    client = oauth.Client(csr)
+
+    oauth_callback = quote(request.build_absolute_uri(reverse('complete-vimeo')))
+    resp, content = client.request('http://vimeo.com/oauth/request_token?oauth_callback=%s' % oauth_callback)
+    if resp.status != 200:
+        raise ValueError('Unexpected response asking for Vimeo request token: %d %s' % (resp.status, resp.reason))
+
+    request_token = dict(parse_qsl(content))
+    request.session['vimeo_request_token'] = request_token
+
+    return HttpResponseRedirect('http://vimeo.com/oauth/authorize?oauth_token=%s&permission=write' % (request_token['oauth_token'],))
+
+
+def complete_vimeo(request):
+    try:
+        request_token = request.session['vimeo_request_token']
+    except KeyError:
+        raise ValueError("Can't complete Vimeo authentication without a request token in the session")
+
+    try:
+        verifier = request.GET['oauth_verifier']
+    except KeyError:
+        raise ValueError("Can't complete Vimeo authentication without a verifier")
+
+    csr = oauth.Consumer(*settings.VIMEO_CONSUMER)
+    token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
+    client = oauth.Client(csr, token)
+
+    body = urlencode({'oauth_verifier': verifier})
+    resp, content = client.request('http://vimeo.com/oauth/access_token?oauth_verifier=%s' % verifier)
+    if resp.status != 200:
+        raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.reason))
+
+    access_token_data = dict(parse_qsl(content))
+    del request.session['vimeo_request_token']
+
+    # But who is it?
+    access_token = oauth.Token(access_token_data['oauth_token'], access_token_data['oauth_token_secret'])
+    userdata = call_vimeo('vimeo.test.login', token=access_token)
+    user_id = userdata['user']['id']
+
+    person = None
+    if not request.user.is_anonymous():
+        person = request.user.person
+    account = account_for_vimeo_id(user_id, person=person)
+    if request.user.is_anonymous():
+        person = account.person
+        if person.user is None:
+            # AGH
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
+
+    account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
+
+
 def redirect_home(request):
     return HttpResponseRedirect(reverse('home'))
 
@@ -648,10 +722,11 @@ def detach_account(request):
         return HttpResponse("Parameter 'account' must be a valid account ID", status=400, content_type='text/plain')
 
     # Put this account on a different person. (It probably has data attached, so we don't delete it.)
-    account.person = Person(
+    new_person = Person(
         display_name=account.display_name,
     )
-    account.person.save()
+    new_person.save()
+    account.person = new_person
     account.save()
 
     return HttpResponse('OK', content_type='text/plain')

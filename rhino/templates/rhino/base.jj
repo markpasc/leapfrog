@@ -65,6 +65,21 @@
                         </span>
                     </p>
 
+                    <p class="account{% if 'vimeo.com' in accounts %} attached{% endif %}">
+                        <span class="label">Vimeo</span>
+                        {% if 'vimeo.com' in accounts %}
+                            {% set account = accounts['vimeo.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
+                            <a href="{{ url_for('signin-vimeo') }}">Add Vimeo account</a>
+                        </span>
+                    </p>
+
                     <p class="account{% if 'facebook.com' in accounts %} attached{% endif %}">
                         <span class="label">Facebook</span>
                         {% if 'facebook.com' in accounts %}
@@ -122,7 +137,7 @@
 
     $(document).ready(function () {
         $('#gearbox').click(function () {
-            $('#settings').animate({'height': $('#settings').height() ? '0px' : '200px'}, 'slow');
+            $('#settings').animate({'height': $('#settings').height() ? '0px' : '250px'}, 'slow');
             spinGear(0);
             return false;
         });

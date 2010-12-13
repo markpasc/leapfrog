@@ -24,6 +24,7 @@
                 <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
                 <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
                 <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
                 <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
             </div>
         </div>

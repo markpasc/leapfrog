@@ -22,6 +22,8 @@ urlpatterns += patterns('',
     url(r'^complete/flickr$', 'rhino.views.complete_flickr', name='complete-flickr'),
     url(r'^signin/facebook$', 'rhino.views.signin_facebook', name='signin-facebook'),
     url(r'^complete/facebook$', 'rhino.views.complete_facebook', name='complete-facebook'),
+    url(r'^signin/vimeo$', 'rhino.views.signin_vimeo', name='signin-vimeo'),
+    url(r'^complete/vimeo$', 'rhino.views.complete_vimeo', name='complete-vimeo'),
 
     url(r'^action/twitter/favorite$', 'rhino.views.favorite_twitter', name='action-twitter-favorite'),
     url(r'^action/twitter/retweet$', 'rhino.views.retweet_twitter', name='action-twitter-retweet'),
