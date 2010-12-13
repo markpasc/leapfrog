@@ -19,7 +19,7 @@ import httplib2
 import oauth2 as oauth
 import typd.objecttypes
 
-from rhino.models import Person, Account
+from rhino.models import Person, Account, UserSetting
 from rhino.poll.twitter import account_for_twitter_user
 from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.facebook import account_for_facebook_user
@@ -86,11 +86,18 @@ def home(request):
         accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
     stream_items = stream_items_for_user(user)
+    try:
+        pagecolor_obj = UserSetting.objects.get(user=user, key='pagecolor')
+    except UserSetting.DoesNotExist:
+        pagecolor = 'orange'
+    else:
+        pagecolor = pagecolor_obj.value
 
     data = {
         'stream_items': stream_items,
         'page_title': "%s's neighborhood" % display_name,
         'accounts': accounts,
+        'pagecolor': pagecolor,
     }
 
     template = 'rhino/index.jj'
@@ -728,5 +735,23 @@ def detach_account(request):
     new_person.save()
     account.person = new_person
     account.save()
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
+@login_required
+def save_setting(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = 'POST'
+        return resp
+
+    key, value = request.POST['key'], request.POST['value']
+
+    setting, created = UserSetting.objects.get_or_create(user=request.user, key=key,
+        defaults={'value': value})
+    if not created:
+        setting.value = value
+        setting.save()
 
     return HttpResponse('OK', content_type='text/plain')

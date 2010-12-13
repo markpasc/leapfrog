@@ -125,3 +125,12 @@ class UserReplyStream(models.Model):
     class Meta:
         unique_together = (('user', 'reply'),)
 
+
+class UserSetting(models.Model):
+
+    user = models.ForeignKey(User)
+    key = models.CharField(max_length=50)
+    value = models.CharField(max_length=250)
+
+    class Meta:
+        unique_together = (('user', 'key'),)

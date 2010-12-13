@@ -10,6 +10,8 @@ body {
     font-size: 1em;
     line-height: 1.5em;
     min-height: 100%;
+
+    background-attachment: fixed;
 }
 
 a:link, a:hover, a:focus, a:active {
@@ -84,6 +86,47 @@ a:visited {
     display: none;
 }
 
+#page-color .color-swatch {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    margin-right: 20px;
+    border: 2px solid #666;
+    cursor: pointer;
+}
+
+#page-color .color-swatch-selected {
+    border-color: white;
+}
+
+#page-color .color-swatch-orange, body {
+    background-color: #B73D12;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#eb6333), to(#B73D12));
+    background-image: -moz-linear-gradient(left, right, from(#eb6333), to(#B73D12));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#eb6333, endColorstr=#B73D12, GradientType=0);
+}
+
+#page-color .color-swatch-blue, body.page-color-blue {
+    background-color: #69b1cc;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#69b1cc), to(#357f9a));
+    background-image: -moz-linear-gradient(left, right, from(#69b1cc), to(#357f9a));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#69b1cc, endColorstr=#357f9a, GradientType=0);
+}
+
+#page-color .color-swatch-green, body.page-color-green {
+    background-color: #b1cc69;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#b1cc69), to(#7f9a35));
+    background-image: -moz-linear-gradient(left, right, from(#b1cc69), to(#7f9a35));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#b1cc69, endColorstr=#7f9a35, GradientType=0);
+}
+
+#page-color .color-swatch-beige, body.page-color-beige {
+    background-color: #ECE1BD;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ECE1BD), to(#e1cf95));
+    background-image: -moz-linear-gradient(left, right, from(#ECE1BD), to(#e1cf95));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#ECE1BD, endColorstr=#e1cf95, GradientType=0);
+}
+
 #content {
     width: 700px;
     margin: 16px auto;
@@ -97,8 +140,15 @@ a:visited {
 }
 
 #settings-inner {
+    display: block;
     width: 700px;
     margin: 16px auto;
+}
+
+#settings-inner .column {
+    float: left;
+    width: 350px;
+    margin: 0;
 }
 
 #settings img {
