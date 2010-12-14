@@ -1,3 +1,4 @@
+from base64 import b64encode
 from datetime import datetime
 import json
 import logging
@@ -5,12 +6,15 @@ from random import choice
 import string
 from urllib import urlencode, quote
 from urlparse import parse_qsl, parse_qs, urlunparse
+from xml.etree import ElementTree
 
+from Crypto.Cipher import Blowfish
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -20,10 +24,11 @@ import oauth2 as oauth
 import typd.objecttypes
 
 from rhino.models import Person, Account, UserSetting
-from rhino.poll.twitter import account_for_twitter_user
-from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.facebook import account_for_facebook_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
+from rhino.poll.tumblr import account_for_tumblelog_element
+from rhino.poll.twitter import account_for_twitter_user
+from rhino.poll.typepad import account_for_typepad_user
 from rhino.poll.vimeo import account_for_vimeo_id, call_vimeo
 
 
@@ -466,6 +471,90 @@ def complete_vimeo(request):
         account.person = person
 
     account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
+
+
+class TumblrForm(forms.Form):
+
+    email = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput())
+
+
+def signin_tumblr(request, form=None):
+    pagecolor = 'orange'
+    if request.user.is_authenticated():
+        try:
+            pagecolor_obj = UserSetting.objects.get(user=request.user, key='pagecolor')
+        except UserSetting.DoesNotExist:
+            pass
+        else:
+            pagecolor = pagecolor_obj.value
+
+    if form is None:
+        form = TumblrForm()
+
+    data = {
+        'form': form,
+        'pagecolor': pagecolor,
+    }
+    template = 'rhino/signin_tumblr.jj'
+    return render_to_response(template, data,
+        context_instance=RequestContext(request))
+
+
+def complete_tumblr(request):
+    if request.method != 'POST':
+        return HttpResponseRedirect(reverse('signin-tumblr'))
+
+    form = TumblrForm(request.POST)
+    if not form.is_valid():
+        return signin_tumblr(request, form=form)
+
+    h = httplib2.Http()
+    body = urlencode(form.cleaned_data)
+    resp, cont = h.request('http://www.tumblr.com/api/authenticate', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    if resp.status == 403:
+        form._errors['password'] = form.error_class(['Password is not correct.'])
+        return signin_tumblr(request, form=form)
+    if resp.status != 200:
+        raise ValueError("Unexpected HTTP response %d %s authenticating to Tumblr as %s: %r" % (resp.status, resp.reason, form.cleaned_data['email'], cont))
+
+    doc = ElementTree.fromstring(cont)
+    blognodes = [blognode for blognode in doc.findall('./tumblelog') if blognode.attrib['is-primary'] == 'yes']
+    blognode = blognodes[0]
+
+    person = None
+    if not request.user.is_anonymous():
+        person = request.user.person
+    account = account_for_tumblelog_element(blognode, person=person)
+    if request.user.is_anonymous():
+        person = account.person
+        if person.user is None:
+            # AGH
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
+
+    # Encrypt the password for later.
+    password = form.cleaned_data['password']
+    cr = Blowfish.new(settings.SECRET_KEY, Blowfish.MODE_CFB)
+    password = b64encode(cr.encrypt(password))
+
+    account.authinfo = ':'.join((form.cleaned_data['email'], password))
     account.save()
 
     return HttpResponseRedirect(reverse('home'))

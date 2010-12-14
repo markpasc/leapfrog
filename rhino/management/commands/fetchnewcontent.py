@@ -11,15 +11,17 @@ from rhino.poll import typepad
 from rhino.poll import flickr
 from rhino.poll import facebook
 from rhino.poll import vimeo
+from rhino.poll import tumblr
 
 
 pollers = {
-    "twitter.com": twitter.poll_twitter,
-    "typepad.com": typepad.poll_typepad,
-    "flickr.com": flickr.poll_flickr,
-    "facebook.com": facebook.poll_facebook,
+    'facebook.com': facebook.poll_facebook,
+    'flickr.com': flickr.poll_flickr,
+    'tumblr.com': tumblr.poll_tumblr,
+    'twitter.com': twitter.poll_twitter,
+    'typepad.com': typepad.poll_typepad,
+    'vimeo.com': vimeo.poll_vimeo,
 }
-pollers = {'vimeo.com': vimeo.poll_vimeo}
 
 
 class Command(NoArgsCommand):
@@ -72,4 +74,3 @@ class Command(NoArgsCommand):
             self.fetch_new_content(**options)
         except Exception, exc:
             SentryClient().create_from_exception(view=__name__)
-

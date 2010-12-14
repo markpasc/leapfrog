@@ -118,6 +118,7 @@
                                 <span class="response response-flickr" data-photo="{{ object.foreign_id }}">
                                     <a class="favorite" href="#">Favorite</a>
                                 </span>
+                            {# TODO: add tumblr "Like"s #}
                             {% endif %}
                         {% endif %}
 

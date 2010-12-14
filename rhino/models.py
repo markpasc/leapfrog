@@ -71,7 +71,7 @@ class Object(models.Model):
 
     render_mode = models.CharField(max_length=15, blank=True, default='', choices=RENDER_MODE_CHOICES)
 
-    time = models.DateTimeField(db_index=True)
+    time = models.DateTimeField(db_index=True, default=datetime.utcnow)
     permalink_url = models.CharField(max_length=255, blank=True, null=True)
 
     in_reply_to = models.ForeignKey("Object", related_name='replies', null=True, blank=True)
@@ -102,7 +102,7 @@ class UserStream(models.Model):
 
     obj = models.ForeignKey(Object, related_name='stream_items')
     user = models.ForeignKey(User, related_name='stream_items')
-    time = models.DateTimeField(default=datetime.now)
+    time = models.DateTimeField(default=datetime.utcnow)
     why_account = models.ForeignKey(Account, related_name='stream_items_caused')
     why_verb = models.CharField(max_length=20, choices=VERB_CHOICES)
 

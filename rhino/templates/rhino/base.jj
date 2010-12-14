@@ -93,6 +93,21 @@
                             <a href="{{ url_for('signin-facebook') }}">Add Facebook account</a>
                         </span>
                     </p>
+
+                    <p id="signin-tumblr" class="account {% if 'tumblr.com' in accounts %}attached{% else %}hidden{% endif %}">
+                        <span class="label">Tumblr</span>
+                        {% if 'tumblr.com' in accounts %}
+                            {% set account = accounts['tumblr.com'] %}
+                            <span class="detach">
+                                {{ account.display_name }}
+                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                            </span>
+                        {% endif %}
+                        <span class="attach-link">
+                            <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+                            <a href="{{ url_for('signin-tumblr') }}">Add Tumblr account</a>
+                        </span>
+                    </p>
                 </div>
 
                 <div id="page-color" class="column">
@@ -152,7 +167,7 @@
 
     $(document).ready(function () {
         $('#gearbox').click(function () {
-            $('#settings').animate({'height': $('#settings').height() ? '0px' : '250px'}, 'slow');
+            $('#settings').animate({'height': $('#settings').height() ? '0px' : '275px'}, 'slow');
             spinGear(0);
             return false;
         });
@@ -194,6 +209,14 @@
                     alert(xhr.responseText);
                 }
             })
+        });
+
+        var konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65, 13];
+        $(window).keyup(function (evt) {
+            if (konami.length && konami[0] == evt.which)
+                konami.shift();
+            if (!konami.length)
+                $('#signin-tumblr').removeClass('hidden');
         });
     });
     </script>
