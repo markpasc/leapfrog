@@ -54,7 +54,7 @@ def stream_items_for_user(user, before=None, after=None):
     elif after is not None:
         stream_items = stream_items.filter(time__gte=after)
     stream_items = stream_items.order_by("-time").select_related()
-    stream_items = list(stream_items[:50])
+    stream_items = list(stream_items[:20])
 
     # Put the stream items' replies on the items.
     try:
@@ -64,7 +64,7 @@ def stream_items_for_user(user, before=None, after=None):
         pass
     else:
         #replies = user.reply_stream_items.filter(root_time__range=(last_stream_item.time, first_stream_item.time)).select_related()
-        replies = user.reply_stream_items.all().order_by('-pk')[:100]
+        replies = user.reply_stream_items.all().order_by('-pk')[:40]
         reply_by_item = dict()
         for reply in replies:
             item_replies = reply_by_item.setdefault(reply.root_id, set())
