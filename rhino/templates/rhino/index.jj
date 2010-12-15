@@ -243,7 +243,6 @@
                 return;
 
             var newIndex = keyedPostIndex;
-
             if (evt.charCode == 106 || evt.charCode == 110) {  // j, n
                 newIndex += 1;
             }
@@ -253,6 +252,13 @@
             }
             else if (evt.charCode == 116 || evt.charCode == 117) {  // t, u
                 newIndex = 0;
+            }
+            else if (evt.charCode == 98) {
+                var $thisItem = $($('#content').find('.item').get(newIndex));
+                var $permalink = $thisItem.find('a.permalink');
+                window.open($permalink.attr('href'));
+                window.focus();
+                return;
             }
             else {
                 return;
