@@ -152,6 +152,8 @@ def object_for_typepad_object(tp_obj):
 
         obj.image = image
         obj.render_mode = 'image'
+    elif tp_obj.object_type == 'Video':
+        obj.body = '\n\n'.join((tp_obj.video_link.embed_code, obj.body))
 
     obj.save()
 
