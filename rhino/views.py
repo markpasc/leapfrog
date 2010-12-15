@@ -823,6 +823,7 @@ def detach_account(request):
     )
     new_person.save()
     account.person = new_person
+    account.authinfo = ''
     account.save()
 
     return HttpResponse('OK', content_type='text/plain')
