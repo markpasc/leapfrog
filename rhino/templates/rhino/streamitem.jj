@@ -118,7 +118,10 @@
                                 <span class="response response-flickr" data-photo="{{ object.foreign_id }}">
                                     <a class="favorite" href="#">Favorite</a>
                                 </span>
-                            {# TODO: add tumblr "Like"s #}
+                            {% elif object.service == 'tumblr.com' %}
+                                <span class="response response-tumblr" data-post="{{ object.foreign_id }}">
+                                    <a class="favorite" href="#">Like</a>
+                                </span>
                             {% endif %}
                         {% endif %}
 

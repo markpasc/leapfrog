@@ -170,9 +170,12 @@
                     },
                     error: function (xhr) {
                         $favlink.removeClass('spinning');
+                        $favlink.addClass('nogo');
                         if (xhr.responseText == "Can't favorite Group assets") {
-                            $favlink.addClass('nogo');
                             $favlink.text("Can't favorite posts from TypePad Groups :(");
+                        }
+                        else {
+                            $favlink.text(xhr.responseText);
                         }
                     }
                 });
@@ -195,6 +198,31 @@
                     },
                     error: function (xhr) {
                         $favlink.removeClass('spinning');
+                        $favlink.addClass('nogo');
+                        $favlink.text(xhr.responseText);
+                    }
+                });
+
+                return false;
+            });
+            $root.find('.response-tumblr .favorite').click(function () {
+                var $favlink = $(this);
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-tumblr-like') }}',
+                    type: 'POST',
+                    data: {'post': $favlink.parent('.response-tumblr').attr('data-post')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('favorited');
+                        $favlink.text("Liked it!");
+                    },
+                    error: function (xhr) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('nogo');
+                        $favlink.text(xhr.responseText);
                     }
                 });
 

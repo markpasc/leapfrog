@@ -5,7 +5,7 @@ import logging
 from random import choice
 import string
 from urllib import urlencode, quote
-from urlparse import parse_qsl, parse_qs, urlunparse
+from urlparse import parse_qsl, parse_qs, urlparse, urlunparse
 from xml.etree import ElementTree
 
 from django.conf import settings
@@ -22,7 +22,7 @@ import httplib2
 import oauth2 as oauth
 import typd.objecttypes
 
-from rhino.models import Person, Account, UserSetting
+from rhino.models import Person, Account, UserSetting, Object
 from rhino.poll.facebook import account_for_facebook_user
 from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
 from rhino.poll.tumblr import account_for_tumblelog_element
@@ -823,6 +823,67 @@ def favorite_flickr(request):
         except Exception, exc:
             log.warning("Error favoriting photo %s for Flickr user %s: %s", photo_id, account.display_name, str(exc))
             return HttpResponse('Error favoriting photo: %s' % str(exc), status=400, content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
+def like_tumblr(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
+
+    try:
+        account = person.accounts.get(service='tumblr.com')
+    except Account.DoesNotExist:
+        return HttpResponse('Tumblr account is required to respond on Tumblr', status=400, content_type='text/plain')
+    if not account.authinfo:
+        return HttpResponse('Tumblr account we can use with the API is required to respond on Tumblr', status=400, content_type='text/plain')
+
+    try:
+        post_id = request.POST['post']
+    except KeyError:
+        post_id = False
+    if not post_id:
+        return HttpResponse("Parameter 'post' is required", status=400, content_type='text/plain')
+
+    # Ugggh now get the original object because Tumblr makes us use the API
+    # on the object's own Tumblr domain to get the reblog key.
+    try:
+        obj = Object.objects.get(service='tumblr.com', foreign_id=post_id)
+    except Object.DoesNotExist:
+        return HttpResponse('No local record of Tumblr post #%d' % post_id, status=400, content_type='text/plain')
+
+    obj_urlparts = urlparse(obj.permalink_url)
+    api_url = urlunparse(('http', obj_urlparts.netloc, '/api/read', None, urlencode({'id': post_id}), None))
+
+    h = httplib2.Http()
+    resp, cont = h.request(api_url)
+    if resp.status != 200:
+        return HttpResponse("Unexpected HTTP response finding reblog key for Tumblr post #%s: %d %s"
+            % (post_id, resp.status, resp.reason), status=400, content_type='text/plain')
+
+    doc = ElementTree.fromstring(cont)
+    post_el = doc.find('./posts/post')
+    reblog_key = post_el.attrib['reblog-key']
+
+    csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
+    token = oauth.Token(*account.authinfo.split(':', 1))
+    client = oauth.Client(csr, token)
+
+    body = urlencode({'post-id': post_id, 'reblog-key': reblog_key})
+    resp, cont = client.request('http://www.tumblr.com/api/like', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    if resp.status != 200:
+        return HttpResponse("Unexpected HTTP response 'liking' Tumblr post #%s: %d %s"
+            % (post_id, resp.status, resp.reason), status=400, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')
 
