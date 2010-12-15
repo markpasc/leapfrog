@@ -588,10 +588,6 @@ a:visited {
     background: transparent no-repeat top left;
 }
 
-.item-content .metadata .response .spinning {
-    background-image: url(../img/loadinfo.net.gif);
-}
-
 .item-content .metadata .response .favorite {
     background-image: url(../img/star-grey.png);
 }
@@ -606,6 +602,10 @@ a:visited {
 
 .item-content .metadata .response .retweeted {
     background-image: url(../img/asterisk.png);
+}
+
+.item-content .metadata .response .spinning {
+    background-image: url(../img/loadinfo.net.gif);
 }
 
 .item-content .metadata .response .nogo, .item-content .metadata .response .nogo:hover {
