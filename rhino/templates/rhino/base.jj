@@ -12,120 +12,119 @@
     {% endblock %}
 </head><body{% if pagecolor %} class="page-color-{{ pagecolor }}"{% endif %}>
 
+    {% block settings %}
     {% if not user.is_anonymous() %}
     <div id="settings">
         <div id="settings-inner" class="pkg">
-            {% block settings %}
-                <div id="signin-services" class="column">
-                    <h2>Your accounts</h2>
+            <div id="signin-services" class="column">
+                <h2>Your accounts</h2>
 
-                    <p class="account{% if 'twitter.com' in accounts %} attached{% endif %}">
-                        <span class="label">Twitter</span>
-                        {% if 'twitter.com' in accounts %}
-                            {% set account = accounts['twitter.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
-                            <a href="{{ url_for('signin-twitter') }}">Add Twitter account</a>
+                <p class="account{% if 'twitter.com' in accounts %} attached{% endif %}">
+                    <span class="label">Twitter</span>
+                    {% if 'twitter.com' in accounts %}
+                        {% set account = accounts['twitter.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
+                        <a href="{{ url_for('signin-twitter') }}">Add Twitter account</a>
+                    </span>
+                </p>
 
-                    <p class="account{% if 'typepad.com' in accounts %} attached{% endif %}">
-                        <span class="label">TypePad</span>
-                        {% if 'typepad.com' in accounts %}
-                            {% set account = accounts['typepad.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
-                            <a href="{{ url_for('signin-typepad') }}">Add TypePad account</a>
+                <p class="account{% if 'typepad.com' in accounts %} attached{% endif %}">
+                    <span class="label">TypePad</span>
+                    {% if 'typepad.com' in accounts %}
+                        {% set account = accounts['typepad.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
+                        <a href="{{ url_for('signin-typepad') }}">Add TypePad account</a>
+                    </span>
+                </p>
 
-                    <p class="account{% if 'flickr.com' in accounts %} attached{% endif %}">
-                        <span class="label">Flickr</span>
-                        {% if 'flickr.com' in accounts %}
-                            {% set account = accounts['flickr.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
-                            <a href="{{ url_for('signin-flickr') }}">Add Flickr account</a>
+                <p class="account{% if 'flickr.com' in accounts %} attached{% endif %}">
+                    <span class="label">Flickr</span>
+                    {% if 'flickr.com' in accounts %}
+                        {% set account = accounts['flickr.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                        <a href="{{ url_for('signin-flickr') }}">Add Flickr account</a>
+                    </span>
+                </p>
 
-                    <p class="account{% if 'vimeo.com' in accounts %} attached{% endif %}">
-                        <span class="label">Vimeo</span>
-                        {% if 'vimeo.com' in accounts %}
-                            {% set account = accounts['vimeo.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
-                            <a href="{{ url_for('signin-vimeo') }}">Add Vimeo account</a>
+                <p class="account{% if 'vimeo.com' in accounts %} attached{% endif %}">
+                    <span class="label">Vimeo</span>
+                    {% if 'vimeo.com' in accounts %}
+                        {% set account = accounts['vimeo.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
+                        <a href="{{ url_for('signin-vimeo') }}">Add Vimeo account</a>
+                    </span>
+                </p>
 
-                    <p class="account{% if 'facebook.com' in accounts %} attached{% endif %}">
-                        <span class="label">Facebook</span>
-                        {% if 'facebook.com' in accounts %}
-                            {% set account = accounts['facebook.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
-                            <a href="{{ url_for('signin-facebook') }}">Add Facebook account</a>
+                <p class="account{% if 'facebook.com' in accounts %} attached{% endif %}">
+                    <span class="label">Facebook</span>
+                    {% if 'facebook.com' in accounts %}
+                        {% set account = accounts['facebook.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
+                        <a href="{{ url_for('signin-facebook') }}">Add Facebook account</a>
+                    </span>
+                </p>
 
-                    <p id="signin-tumblr" class="account {% if 'tumblr.com' in accounts %}attached{% else %}hidden{% endif %}">
-                        <span class="label">Tumblr</span>
-                        {% if 'tumblr.com' in accounts %}
-                            {% set account = accounts['tumblr.com'] %}
-                            <span class="detach">
-                                {{ account.display_name }}
-                                <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                            </span>
-                        {% endif %}
-                        <span class="attach-link">
-                            <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
-                            <a href="{{ url_for('signin-tumblr') }}">Add Tumblr account</a>
+                <p id="signin-tumblr" class="account {% if 'tumblr.com' in accounts %}attached{% else %}hidden{% endif %}">
+                    <span class="label">Tumblr</span>
+                    {% if 'tumblr.com' in accounts %}
+                        {% set account = accounts['tumblr.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
                         </span>
-                    </p>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+                        <a href="{{ url_for('signin-tumblr') }}">Add Tumblr account</a>
+                    </span>
+                </p>
+            </div>
+
+            <div id="page-color" class="column">
+                <h2>Your page color</h2>
+
+                <div class="color-swatch color-swatch-orange{% if not pagecolor or pagecolor == 'orange' %} color-swatch-selected{% endif %}" data-color="orange">
                 </div>
 
-                <div id="page-color" class="column">
-                    <h2>Your page color</h2>
-
-                    <div class="color-swatch color-swatch-orange{% if not pagecolor or pagecolor == 'orange' %} color-swatch-selected{% endif %}" data-color="orange">
-                    </div>
-
-                    <div class="color-swatch color-swatch-blue{% if pagecolor == 'blue' %} color-swatch-selected{% endif %}" data-color="blue">
-                    </div>
-
-                    <div class="color-swatch color-swatch-green{% if pagecolor == 'green' %} color-swatch-selected{% endif %}" data-color="green">
-                    </div>
-
-                    <div class="color-swatch color-swatch-beige{% if pagecolor == 'beige' %} color-swatch-selected{% endif %}" data-color="beige">
-                    </div>
+                <div class="color-swatch color-swatch-blue{% if pagecolor == 'blue' %} color-swatch-selected{% endif %}" data-color="blue">
                 </div>
-            {% endblock %}
+
+                <div class="color-swatch color-swatch-green{% if pagecolor == 'green' %} color-swatch-selected{% endif %}" data-color="green">
+                </div>
+
+                <div class="color-swatch color-swatch-beige{% if pagecolor == 'beige' %} color-swatch-selected{% endif %}" data-color="beige">
+                </div>
+            </div>
         </div>
     </div>
 
@@ -135,6 +134,7 @@
         </div>
     </div>
     {% endif %}
+    {% endblock %}
 
     <div id="content">
         {% block content %}{% endblock %}

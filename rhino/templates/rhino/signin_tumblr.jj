@@ -1,16 +1,6 @@
-{% extends "rhino/base.jj" %}
+{% extends "rhino/signin.jj" %}
 
-{% block htmltitle %}Leapfrog{% endblock %}
-
-{% block htmlhead %}
-    {{ super() }}
-    {% if typekit_code %}
-        <script type="text/javascript" src="http://use.typekit.com/{{ typekit_code }}.js"></script>
-        <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
-    {% endif %}
-{% endblock %}
-
-{% block settings %}{% endblock %}
+{% block htmltitle %}Sign in with Tumblr &middot; {{ super() }}{% endblock %}
 
 {% block content %}
 
