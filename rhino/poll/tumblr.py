@@ -11,6 +11,7 @@ from xml.etree import ElementTree
 from Crypto.Cipher import Blowfish
 from django.conf import settings
 import httplib2
+import oauth2 as oauth
 
 from rhino.models import Object, Account, Media, Person, UserStream, UserReplyStream
 import rhino.poll.embedlam
@@ -165,15 +166,11 @@ def poll_tumblr(account):
     if user is None:
         return
 
-    email, password = account.authinfo.split(':', 1)
-
-    # Decrypt the password.
-    cr = Blowfish.new(settings.SECRET_KEY, Blowfish.MODE_CFB)
-    password = cr.decrypt(b64decode(password))
-
-    body = urlencode({'email': email, 'password': password, 'num': 30})
-    h = httplib2.Http()
-    resp, cont = h.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
+    token = oauth.Token(*account.authinfo.split(':', 1))
+    client = oauth.Client(csr, token)
+    body = urlencode({'num': 30})
+    resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, email))
 

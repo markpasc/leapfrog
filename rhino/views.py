@@ -476,50 +476,81 @@ def complete_vimeo(request):
     return HttpResponseRedirect(reverse('home'))
 
 
-class TumblrForm(forms.Form):
-
-    email = forms.CharField()
-    password = forms.CharField(widget=forms.PasswordInput())
-
-
 def signin_tumblr(request, form=None):
-    pagecolor = 'orange'
-    if request.user.is_authenticated():
-        try:
-            pagecolor_obj = UserSetting.objects.get(user=request.user, key='pagecolor')
-        except UserSetting.DoesNotExist:
-            pass
-        else:
-            pagecolor = pagecolor_obj.value
+    csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
+    client = oauth.Client(csr)
+    oauth_callback = quote(request.build_absolute_uri(reverse('complete-tumblr')))
 
-    if form is None:
-        form = TumblrForm()
+    http_url = 'http://www.tumblr.com/oauth/request_token'
+    oauth_request = oauth.Request.from_consumer_and_token(csr, None,
+        http_method='POST', http_url=http_url)
+    oauth_request['oauth_callback'] = request.build_absolute_uri(reverse('complete-tumblr'))
+    oauth_sign_method = oauth.SignatureMethod_HMAC_SHA1()
+    oauth_request.sign_request(oauth_sign_method, csr, None)
+    oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, None)
+    body = oauth_request.to_postdata()
 
-    data = {
-        'form': form,
-        'pagecolor': pagecolor,
-    }
-    template = 'rhino/signin_tumblr.jj'
-    return render_to_response(template, data,
-        context_instance=RequestContext(request))
+    h = httplib2.Http()
+    h.follow_redirects = 0
+    normal_url = oauth_request.normalized_url
+    log.debug('Making request to URL %r', normal_url)
+    resp, content = h.request(normal_url, method=oauth_request.method, body=body,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+    if resp.status != 200:
+        raise ValueError('Unexpected response asking for Tumblr request token: %d %s' % (resp.status, resp.reason))
+
+    request_token = dict(parse_qsl(content))
+    request.session['tumblr_request_token'] = request_token
+
+    return HttpResponseRedirect('http://www.tumblr.com/oauth/authorize?oauth_token=%s&oauth_access_type=write' % (request_token['oauth_token'],))
 
 
 def complete_tumblr(request):
-    if request.method != 'POST':
-        return HttpResponseRedirect(reverse('signin-tumblr'))
+    try:
+        request_token = request.session['tumblr_request_token']
+    except KeyError:
+        raise ValueError("Can't complete Tumblr authentication without a request token for this session")
 
-    form = TumblrForm(request.POST)
-    if not form.is_valid():
-        return signin_tumblr(request, form=form)
+    try:
+        verifier = request.GET['oauth_verifier']
+    except KeyError:
+        raise ValueError("Can't complete Tumblr authentication without a verifier")
+
+    csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
+    token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
+
+    http_url = 'http://www.tumblr.com/oauth/access_token'
+    oauth_request = oauth.Request.from_consumer_and_token(csr, token,
+        http_method='POST', http_url=http_url)
+    oauth_request['oauth_verifier'] = verifier
+    oauth_sign_method = oauth.SignatureMethod_HMAC_SHA1()
+    oauth_request.sign_request(oauth_sign_method, csr, token)
+    oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, token)
+    body = oauth_request.to_postdata()
 
     h = httplib2.Http()
-    body = urlencode(form.cleaned_data)
-    resp, cont = h.request('http://www.tumblr.com/api/authenticate', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
-    if resp.status == 403:
-        form._errors['password'] = form.error_class(['Password is not correct.'])
-        return signin_tumblr(request, form=form)
+    h.follow_redirects = 0
+    normal_url = oauth_request.normalized_url
+    log.debug('Making request to URL %r', normal_url)
+    resp, content = h.request(normal_url, method=oauth_request.method, body=body,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'})
     if resp.status != 200:
-        raise ValueError("Unexpected HTTP response %d %s authenticating to Tumblr as %s: %r" % (resp.status, resp.reason, form.cleaned_data['email'], cont))
+        raise ValueError("Unexpected response exchanging for Tumblr access token: %d %s" % (resp.status, resp.reason))
+
+    access_token_data = dict(parse_qsl(content))
+    del request.session['tumblr_request_token']
+    #request.session['access_token'] = access_token
+
+    access_token = oauth.Token(access_token_data['oauth_token'], access_token_data['oauth_token_secret'])
+    oauth_request = oauth.Request.from_consumer_and_token(csr, access_token,
+        http_method='POST', http_url='http://www.tumblr.com/api/authenticate')
+    oauth_request.sign_request(oauth_sign_method, csr, access_token)
+
+    resp, cont = h.request(oauth_request.normalized_url, method=oauth_request.method,
+        body=oauth_request.to_postdata(), headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    if resp.status != 200:
+        raise ValueError("Unexpected response checking Tumblr access token: %d %s" % (resp.status, resp.reason))
 
     doc = ElementTree.fromstring(cont)
     blognodes = [blognode for blognode in doc.findall('./tumblelog') if blognode.attrib['is-primary'] == 'yes']
@@ -549,12 +580,7 @@ def complete_tumblr(request):
         # associating that account, but that's appropriate.)
         account.person = person
 
-    # Encrypt the password for later.
-    password = form.cleaned_data['password']
-    cr = Blowfish.new(settings.SECRET_KEY, Blowfish.MODE_CFB)
-    password = b64encode(cr.encrypt(password))
-
-    account.authinfo = ':'.join((form.cleaned_data['email'], password))
+    account.authinfo = ':'.join((access_token_data['oauth_token'], access_token_data['oauth_token_secret']))
     account.save()
 
     return HttpResponseRedirect(reverse('home'))

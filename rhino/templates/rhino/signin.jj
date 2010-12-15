@@ -26,7 +26,7 @@
                 <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
                 <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
                 <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
-                <a id="signin-tumblr" class="hidden" href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+                <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
             </div>
         </div>
     </div>

@@ -94,7 +94,7 @@
                     </span>
                 </p>
 
-                <p id="signin-tumblr" class="account {% if 'tumblr.com' in accounts %}attached{% else %}hidden{% endif %}">
+                <p id="signin-tumblr" class="account{% if 'tumblr.com' in accounts %} attached{% endif %}">
                     <span class="label">Tumblr</span>
                     {% if 'tumblr.com' in accounts %}
                         {% set account = accounts['tumblr.com'] %}
@@ -209,14 +209,6 @@
                     alert(xhr.responseText);
                 }
             })
-        });
-
-        var konami = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65, 13];
-        $(window).keyup(function (evt) {
-            if (konami.length && konami[0] == evt.which)
-                konami.shift();
-            if (!konami.length)
-                $('#signin-tumblr').removeClass('hidden');
         });
     });
     </script>
