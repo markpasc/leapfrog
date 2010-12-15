@@ -137,6 +137,8 @@ def object_from_post_element(post_el, tumblelog_el):
 def object_from_url(url):
     urlparts = urlparse(url)
     mo = re.match(r'/post/(\d+)', urlparts.path)  # the path, not the whole url
+    if mo is None:
+        return
     tumblr_id = mo.group(1)
 
     # We might try to short-circuit to the Object table here, but the link
