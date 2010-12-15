@@ -28,7 +28,7 @@
         <script type="text/javascript">
         var maxstreamitem = {{ maxstreamitem }};
         var maxreplyitem = {{ maxreplyitem }};
-        var pagetitle = '{{ page_title|e }}';
+        var pagetitle = '{{ page_title|replace("'", "\\'") }}';
 
         var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
         var showing_more = false;
