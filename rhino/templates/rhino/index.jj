@@ -236,13 +236,47 @@
             });
         }
 
+        var keyedPostIndex = -1;
+
+        function keyshort(evt) {
+            if (document.activeElement.localName.toLowerCase() == 'input' || document.activeElement.localName.toLowerCase() == 'textarea')
+                return;
+
+            var newIndex = keyedPostIndex;
+
+            if (evt.charCode == 106 || evt.charCode == 110) {  // j, n
+                newIndex += 1;
+            }
+            else if (evt.charCode == 107 || evt.charCode == 112) {  // k, p
+                if (newIndex > 0)
+                    newIndex -= 1;
+            }
+            else if (evt.charCode == 116 || evt.charCode == 117) {  // t, u
+                newIndex = 0;
+            }
+            else {
+                return;
+            }
+
+            keyedPostIndex = newIndex;
+            var $newItem = $($('#content').find('.item').get(newIndex));
+            if (!$newItem.size())
+                return;
+            var $page = $("html:not(:animated),body:not(:animated)");
+            if (!$page.size())
+                return;
+
+            var newPos = $newItem.offset().top - 30;
+            $page.animate({ scrollTop: newPos }, 100);
+        }
+
         $(document).ready(function () {
             setUpPaginator();
             setUpResponseLinks();
             setInterval("checkForUpdates()", 3 * 60 * 1000);
-
             updateTimestamps();
             setInterval("updateTimestamps()", 60 * 1000);
+            $(window).keypress(keyshort);
         });
         </script>
     {% else %}
