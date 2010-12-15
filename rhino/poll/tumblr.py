@@ -126,6 +126,9 @@ def object_from_post_element(post_el, tumblelog_el):
 
         obj.title = post_el.find('./link-text').text
         obj.body = post_el.find('./link-description').text
+    # TODO: handle audio posts
+    # TODO: handle quote posts
+    # TODO: handle chat posts (i guess)
     else:
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
         return
