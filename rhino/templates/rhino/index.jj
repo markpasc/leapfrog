@@ -236,7 +236,7 @@
             });
         }
 
-        var keyedPostIndex = -1;
+        var keyedPostIndex = 0;
 
         function keyshort(evt) {
             if (document.activeElement.localName.toLowerCase() == 'input' || document.activeElement.localName.toLowerCase() == 'textarea')
@@ -272,7 +272,7 @@
             if (!$page.size())
                 return;
 
-            var newPos = $newItem.offset().top - 30;
+            var newPos = newIndex ? $newItem.offset().top - 30 : 0;
             $page.animate({ scrollTop: newPos }, 100);
         }
 
