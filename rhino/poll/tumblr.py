@@ -8,7 +8,6 @@ from urllib import urlencode
 from urlparse import urlparse
 from xml.etree import ElementTree
 
-from Crypto.Cipher import Blowfish
 from django.conf import settings
 import httplib2
 import oauth2 as oauth

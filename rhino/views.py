@@ -8,7 +8,6 @@ from urllib import urlencode, quote
 from urlparse import parse_qsl, parse_qs, urlunparse
 from xml.etree import ElementTree
 
-from Crypto.Cipher import Blowfish
 from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
