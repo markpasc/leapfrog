@@ -7,6 +7,7 @@ from django.http import HttpResponse
 urlpatterns = patterns('rhino.views',
     url(r'^$', 'home', name='home'),
     url(r'^setting/save$', 'save_setting', name='save-setting'),
+    url(r'^newitems$', 'new_items', name='new-items'),
 )
 
 urlpatterns += patterns('',

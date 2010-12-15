@@ -1,5 +1,19 @@
 {% extends "rhino/base.jj" %}
 
+{% block settings %}
+    {{ super() }}
+
+    {% if stream_items %}
+        <div id="new-updates" class="hidden">
+            <a href="{{ url_for('home') }}">
+                <span class="items"></span>
+                <span class="and">and</span>
+                <span class="replies"></span>
+            </a>
+        </div>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 
     {% if stream_items %}
@@ -12,6 +26,10 @@
         </div>
 
         <script type="text/javascript">
+        var maxstreamitem = {{ maxstreamitem }};
+        var maxreplyitem = {{ maxreplyitem }};
+        var pagetitle = '{{ page_title|e }}';
+
         var oldest_item_date = '{{ stream_items[-1].time.strftime('%Y-%m-%dT%H:%M:%S') }}';
         var showing_more = false;
 
@@ -66,8 +84,20 @@
         }
 
         function checkForUpdates() {
-            $.getJSON('{{ url_for('stream') }}?after={{ stream_items[0].time.strftime('%Y-%m-%dT%H:%M:%S') }}', function (data) {
-                // muh
+            $.getJSON('{{ url_for('new-items') }}', {maxstreamitem: maxstreamitem, maxreplyitem: maxreplyitem}, function (data) {
+                var totalnew = data['streamitems'] + data['replyitems'];
+                if (totalnew) {
+                    document.title = '(' + totalnew + ') ' + pagetitle;
+
+                    var $nupdates = $('#new-updates');
+                    if (data['streamitems'])
+                        $nupdates.find('.items').text(data['streamitems'] + ' new ' + (data['streamitems'] > 1 ? 'items' : 'item')).show();
+                    if (data['replyitems'])
+                        $nupdates.find('.replies').text(data['replyitems'] + ' new ' + (data['replyitems'] > 1 ? 'replies' : 'reply')).show();
+                    if (data['streamitems'] && data['replyitems'])
+                        $nupdates.find('.and').show();
+                    $nupdates.show();
+                }
             });
         }
 
@@ -181,10 +211,10 @@
         $(document).ready(function () {
             setUpPaginator();
             setUpResponseLinks();
-            //setTimeout("checkForUpdates()", 60000);
+            setInterval("checkForUpdates()", 3 * 60 * 1000);
 
             updateTimestamps();
-            setInterval("updateTimestamps()", 60000);
+            setInterval("updateTimestamps()", 60 * 1000);
         });
         </script>
     {% else %}

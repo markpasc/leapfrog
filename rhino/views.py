@@ -97,11 +97,22 @@ def home(request):
     else:
         pagecolor = pagecolor_obj.value
 
+    try:
+        maxstreamitem = request.user.stream_items.values_list('id', flat=True).order_by('-id')[0]
+    except IndexError:
+        maxstreamitem = 0
+    try:
+        maxreplyitem = request.user.reply_stream_items.values_list('id', flat=True).order_by('-id')[0]
+    except IndexError:
+        maxreplyitem = 0
+
     data = {
         'stream_items': stream_items,
         'page_title': "%s's neighborhood" % display_name,
         'accounts': accounts,
         'pagecolor': pagecolor,
+        'maxstreamitem': maxstreamitem,
+        'maxreplyitem': maxreplyitem,
     }
 
     template = 'rhino/index.jj'
@@ -814,6 +825,20 @@ def favorite_flickr(request):
             return HttpResponse('Error favoriting photo: %s' % str(exc), status=400, content_type='text/plain')
 
     return HttpResponse('OK', content_type='text/plain')
+
+
+@login_required
+def new_items(request):
+    maxstreamitem = int(request.GET.get('maxstreamitem', 0))
+    maxreplyitem = int(request.GET.get('maxreplyitem', 0))
+
+    streamitems = request.user.stream_items.filter(id__gt=maxstreamitem).count()
+    replies = request.user.reply_stream_items.filter(id__gt=maxreplyitem).count()
+
+    return HttpResponse(json.dumps({
+        'streamitems': streamitems,
+        'replyitems': replies,
+    }), content_type='application/json')
 
 
 def detach_account(request):

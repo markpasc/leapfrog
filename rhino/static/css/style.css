@@ -172,6 +172,26 @@ a:visited {
     background: white;
 }
 
+#new-updates {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
+
+#new-updates a:link, #new-updates a:hover, #new-updates a:visited, #new-updates a:active, #new-updates a:focus {
+    display: inline-block;
+    background: #fffb95;
+    color: #00e;
+    padding: 1ex 1em;
+    border-radius: 0 0 20px 20px;
+    -moz-border-radius: 0 0 20px 20px;
+}
+
+#new-updates,
+#new-updates span.items, #new-updates span.replies, #new-updates span.and {
+    display: none;
+}
+
 .pkg:after {
     content: " ";
     display: block;
