@@ -5,7 +5,7 @@ from datetime import datetime
 import logging
 import re
 from urllib import urlencode
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse
 from xml.etree import ElementTree
 
 from django.conf import settings
@@ -136,13 +136,12 @@ def object_from_post_element(post_el, tumblelog_el):
 
 def object_from_url(url):
     urlparts = urlparse(url)
-    mo = re.match(r'/post/(\d+)', urlparts.path)
+    mo = re.match(r'/post/(\d+)', urlparts.path)  # the path, not the whole url
     tumblr_id = mo.group(1)
 
-    try:
-        return Object.objects.get(service='tumblr.com', foreign_id=tumblr_id)
-    except Object.DoesNotExist:
-        pass
+    # We might try to short-circuit to the Object table here, but the link
+    # might just share an existing Tumblr post ID. Let's always go to the
+    # API here, just to make sure.
 
     query = urlencode({'id': tumblr_id})
     api_url = urlunparse(('http', urlparts.netloc, '/api/read', None, query, None))
@@ -150,7 +149,7 @@ def object_from_url(url):
     client = httplib2.Http()
     resp, cont = client.request(api_url)
     if resp.status != 200:
-        raise ValueError("Unexpected response asking for Tumblr post #%d: %d %s"
+        raise ValueError("Unexpected response asking about Tumblr post #%d: %d %s"
             % (tumblr_id, resp.status, resp.reason))
 
     doc = ElementTree.fromstring(cont)

@@ -13,6 +13,7 @@ from mimeparse import parse_mime_type
 
 from rhino.models import Account, Object, Person, Media
 import rhino.poll.flickr
+import rhino.poll.tumblr
 import rhino.poll.twitter
 import rhino.poll.typepad
 
@@ -330,6 +331,14 @@ class Page(object):
             return rhino.poll.twitter.object_from_twitpic_url(url)
         if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return rhino.poll.twitter.object_from_url(url)
+
+        # If it looks like a Tumblr URL, try asking Tumblr about it.
+        if re.match(r'http://[^/]+/post/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            try:
+                return rhino.poll.tumblr.object_from_url(url)
+            except ValueError:
+                # Keep trying the regular way.
+                pass
 
         # If the site mentions TypePad, try asking TypePad about it.
         is_typepad_url = re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
