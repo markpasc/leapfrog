@@ -361,8 +361,12 @@ class Page(object):
         except Object.DoesNotExist:
             pass  # time to make the donuts
 
+        try:
+            head = self.soup.head
+        except AttributeError:
+            raise ValueError("Thought URL %s would be handled specially but it wasn't" % self.url)
+
         # Does it support OEmbed?
-        head = self.soup.head
         oembed_node = head.find(rel='alternate', type='application/json+oembed')
         # TODO: support xml?
         if oembed_node is not None:
