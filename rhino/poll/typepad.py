@@ -110,7 +110,11 @@ def object_for_typepad_object(tp_obj):
         # really a share. Be transitively in reply to the shared obj.
         really_a_share, obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
     elif getattr(tp_obj, 'reblog_of', None) is not None:
-        really_a_share, obj.in_reply_to = object_for_typepad_object(tp_obj.reblog_of)
+        # Assets are public so it's okay if we use an anonymous typd here.
+        t = typd.TypePad(endpoint='https://api.typepad.com/')
+        reblog_of = t.assets.get(tp_obj.reblog_of.url_id)
+
+        really_a_share, obj.in_reply_to = object_for_typepad_object(reblog_of)
         remove_reblog_boilerplate_from_obj(obj)
         if not obj.body:
             return True, obj.in_reply_to
@@ -192,11 +196,8 @@ def good_notes_for_notes(notes, t):
 
             elif getattr(obj, 'reblog_of', None) is not None:
                 note.verb = 'Reblog'
-
-                reblog = obj
-                while getattr(reblog, 'reblog_of', None) is not None:
-                    reblog.reblog_of = t.assets.get(obj.reblog_of.url_id)
-                    reblog = reblog.reblog_of
+            elif getattr(obj, 'reblog_of_url', None) is not None:
+                note.verb = 'Reblog'
 
         if note.verb == 'NewAsset':
             okay_types = ['Post']
