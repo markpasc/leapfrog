@@ -173,18 +173,24 @@ a:visited {
 }
 
 #new-updates {
-    position: absolute;
+    position: fixed;
     width: 100%;
+    height: 0;
     text-align: center;
+    font-size: 0.8em;
+    z-index: 9001;
 }
 
 #new-updates a:link, #new-updates a:hover, #new-updates a:visited, #new-updates a:active, #new-updates a:focus {
     display: inline-block;
     background: #fffb95;
     color: #00e;
-    padding: 1ex 1em;
+    padding: 0.5ex 1em;
     border-radius: 0 0 20px 20px;
     -moz-border-radius: 0 0 20px 20px;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
 }
 
 #new-updates,
