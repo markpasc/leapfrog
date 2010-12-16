@@ -188,6 +188,9 @@ def object_from_tweet_id(tweet_id, client=None):
 
     resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json?include_entities=1'
         % tweet_id)
+    if resp.status == 404:
+        # Hmm, no such tweet, I guess.
+        return False, None
     if resp.status != 200:
         raise ValueError("Unexpected %d %s response fetching tweet #%s"
             % (resp.status, resp.reason, tweet_id))
