@@ -270,7 +270,10 @@ class Page(object):
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
         url = resp['content-location']
 
-        content_type = parse_mime_type(resp['content-type'])
+        content_type_str = resp.get('content-type')
+        if content_type_str is None or '/' not in content_type_str:
+            content_type_str = 'application/x-unknown'
+        content_type = parse_mime_type(content_type_str)
         if content_type[0] == 'image':
             log.debug("This seems to be an image")
             self.type = 'image'
