@@ -82,14 +82,14 @@ def poll_facebook(account):
                 obj = obj.in_reply_to
 
             log.debug("Creating a UserStream row for object %r which is a %s by %r", obj, why_verb, actor)
-            UserStream.objects.get_or_create(user=user, obj=obj,
+            streamitem, created = UserStream.objects.get_or_create(user=user, obj=obj,
                 defaults={'why_account': actor, 'why_verb': why_verb, 'time': orig_obj.time})
 
             # Now walk up again creating UserReplyStream rows as necessary
             reply_obj = orig_obj
             while reply_obj.in_reply_to is not None:
                 UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply_obj,
-                    defaults={'root_time': obj.time, 'reply_time': reply_obj.time})
+                    defaults={'root_time': streamitem.time, 'reply_time': reply_obj.time})
                 reply_obj = reply_obj.in_reply_to
 
 

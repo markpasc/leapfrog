@@ -246,7 +246,9 @@ def poll_typepad(account):
             while root.in_reply_to is not None:
                 root = root.in_reply_to
 
-            if not UserStream.objects.filter(user=user, obj=root).exists():
+            try:
+                streamitem = UserStream.objects.get(user=user, obj=root)
+            except UserStream.DoesNotExist:
                 actor = account_for_typepad_user(note.actor)
                 why_verb = {
                     'AddedFavorite': 'like',
@@ -254,14 +256,13 @@ def poll_typepad(account):
                     'Comment': 'reply',
                     'Reblog': 'share',
                 }[note.verb]
-                UserStream.objects.create(user=user, obj=root,
-                    time=note.published,
-                    why_account=actor, why_verb=why_verb)
+                streamitem = UserStream.objects.create(user=user, obj=root,
+                    time=note.published, why_account=actor, why_verb=why_verb)
 
             superobj = obj
             while superobj.in_reply_to is not None:
                 UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
-                    defaults={'root_time': root.time, 'reply_time': superobj.time})
+                    defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
                 superobj = superobj.in_reply_to
 
         except Exception, exc:

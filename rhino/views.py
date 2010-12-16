@@ -62,8 +62,7 @@ def stream_items_for_user(user, before=None, after=None):
         # No stream items?
         pass
     else:
-        #replies = user.reply_stream_items.filter(root_time__range=(last_stream_item.time, first_stream_item.time)).select_related()
-        replies = user.reply_stream_items.all().order_by('-pk')[:40]
+        replies = user.reply_stream_items.filter(root_time__range=(last_stream_item.time, first_stream_item.time)).select_related()
         reply_by_item = dict()
         for reply in replies:
             item_replies = reply_by_item.setdefault(reply.root_id, set())

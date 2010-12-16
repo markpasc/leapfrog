@@ -389,7 +389,7 @@ def poll_twitter(account):
                 log.debug('Walking up from %r to %r', root, root.in_reply_to)
                 root = root.in_reply_to
 
-            UserStream.objects.get_or_create(user=user, obj=root,
+            streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
                 # TODO: is tweet.time the right time here or do we need the "why time" from orig_tweetdata?
                 defaults={'why_account': why_account, 'why_verb': why_verb, 'time': tweet.time})
 
@@ -397,7 +397,7 @@ def poll_twitter(account):
             supertweet = tweet
             while supertweet.in_reply_to is not None:
                 UserReplyStream.objects.get_or_create(user=user, root=root, reply=supertweet,
-                    defaults={'root_time': root.time, 'reply_time': supertweet.time})
+                    defaults={'root_time': streamitem.time, 'reply_time': supertweet.time})
                 supertweet = supertweet.in_reply_to
 
         except Exception, exc:

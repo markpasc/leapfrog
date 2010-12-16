@@ -193,11 +193,11 @@ def poll_tumblr(account):
             root = root.in_reply_to
             why_verb = 'reply'
 
-        UserStream.objects.get_or_create(user=user, obj=root,
+        streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
             defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': why_verb})
 
         superobj = obj
         while superobj.in_reply_to is not None:
             UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
-                defaults={'root_time': root.time, 'reply_time': superobj.time})
+                defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
             superobj = superobj.in_reply_to
