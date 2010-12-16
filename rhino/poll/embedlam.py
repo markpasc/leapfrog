@@ -255,7 +255,7 @@ class Page(object):
         self.type = 'html'
 
         # These we can already ask about by URL, so don't bother fetching about them.
-        if re.match(r'http:// (?: [^/]* flickr\.com/ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return
 
         # Fetch the resource and soupify it.
