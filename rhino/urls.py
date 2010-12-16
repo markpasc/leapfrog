@@ -46,7 +46,3 @@ urlpatterns += patterns('',
 urlpatterns += patterns('',
     url(r'^stream\.json$', 'rhino.views.json_stream', name='stream'),
 )
-
-urlpatterns += patterns('',
-    url(r'^favicon\.ico$', lambda r: HttpResponse('', status=404, content_type='text/plain')),
-)
