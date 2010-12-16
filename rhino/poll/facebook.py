@@ -143,16 +143,13 @@ def account_for_facebook_uid(fb_uid, requesting_account=None, person=None):
         resp, content = h.request(url, method='GET')
         fb_user = json.loads(content)
 
-        print fb_user
-
         # If requesting_account doesn't have access to this account
         # then it'll come back without a link. In this case we
         # pretend the content was anonymous to avoid creating an
         # incomplete account record. This should never happen in
         # practice because content shouldn't show up in your feed
         # unless you have access to see its author.
-
-        if "link" not in fb_user:
+        if not isinstance(fb_user, dict) or 'link' not in fb_user:
             log.debug("Current user doesn't have access to the author user. Let's just pretend the author is anon.")
             return None
 
