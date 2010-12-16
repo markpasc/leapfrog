@@ -111,7 +111,7 @@ def object_for_typepad_object(tp_obj):
         really_a_share, obj.in_reply_to = object_for_typepad_object(tp_obj.in_reply_to)
     elif getattr(tp_obj, 'reblog_of', None) is not None:
         # Assets are public so it's okay if we use an anonymous typd here.
-        t = typd.TypePad(endpoint='https://api.typepad.com/')
+        t = typd.TypePad(endpoint='http://api.typepad.com/')
         reblog_of = t.assets.get(tp_obj.reblog_of.url_id)
 
         really_a_share, obj.in_reply_to = object_for_typepad_object(reblog_of)
