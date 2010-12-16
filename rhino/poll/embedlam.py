@@ -278,7 +278,7 @@ class Page(object):
             log.debug("This seems to be an image")
             self.type = 'image'
             return
-        
+
         if content_type[0:2] != ('text', 'html'):
             # hmm
             raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
