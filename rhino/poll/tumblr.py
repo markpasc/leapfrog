@@ -127,7 +127,9 @@ def object_from_post_element(post_el, tumblelog_el):
             obj.in_reply_to = in_reply_to
 
         obj.title = post_el.find('./link-text').text
-        obj.body = post_el.find('./link-description').text
+        desc_el = post_el.find('./link-description')
+        if desc_el is not None:
+            obj.body = desc_el.text
     # TODO: handle audio posts
     # TODO: handle quote posts
     # TODO: handle chat posts (i guess)
