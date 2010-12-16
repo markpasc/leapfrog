@@ -82,7 +82,9 @@ def object_from_post_element(post_el, tumblelog_el):
 
     post_type = post_el.attrib['type']
     if post_type == 'regular':
-        obj.title = post_el.find('./regular-title').text
+        title_el = post_el.find('./regular-title')
+        if title_el is not None:
+            obj.title = title_el.text
         obj.body = post_el.find('./regular-body').text
     elif post_type == 'video':
         video_player = post_el.find('./video-player').text
