@@ -4,6 +4,7 @@ from HTMLParser import HTMLParseError
 import json
 import logging
 import re
+import socket
 from urllib import urlencode
 from urlparse import urlparse, urljoin
 
@@ -258,9 +259,11 @@ class Page(object):
             return
 
         # Fetch the resource and soupify it.
-        h = httplib2.Http(timeout=5)
+        h = httplib2.Http(timeout=10)
         try:
             resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
+        except socket.timeout:
+            raise ValueError("Request to %s timed out" % url)
         except httplib2.RedirectLimit:
             raise ValueError("%s redirected too many times" % url)
         except httplib2.ServerNotFoundError, exc:
