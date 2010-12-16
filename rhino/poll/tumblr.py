@@ -26,7 +26,7 @@ def account_for_tumblelog_element(tumblelog_elem, person=None):
     except Account.DoesNotExist:
         pass
 
-    display_name = tumblelog_elem.attrib['title']
+    display_name = tumblelog_elem.attrib.get('title', account_name)
     if person is None:
         try:
             host = tumblelog_elem.attrib['cname']
