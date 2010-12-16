@@ -255,7 +255,16 @@
             }
             else if (evt.charCode == 114) {  // r
                 // Update with new content... but we do that by reloading.
-                window.location.reload();
+                var $page = $("html:not(:animated),body:not(:animated)");
+                if ($page.size()) {
+                    $page.animate({ scrollTop: 0 }).queue(function (next) {
+                        window.location.reload();
+                        next();
+                    });
+                }
+                else {
+                    window.location.reload();
+                }
                 return;
             }
             else if (evt.charCode == 98) {
