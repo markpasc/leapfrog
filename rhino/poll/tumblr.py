@@ -154,7 +154,7 @@ def object_from_url(url):
     client = httplib2.Http()
     resp, cont = client.request(api_url)
     if resp.status != 200:
-        raise ValueError("Unexpected response asking about Tumblr post #%d: %d %s"
+        raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
 
     doc = ElementTree.fromstring(cont)
