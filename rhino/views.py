@@ -525,7 +525,8 @@ def complete_tumblr(request):
     try:
         verifier = request.GET['oauth_verifier']
     except KeyError:
-        raise ValueError("Can't complete Tumblr authentication without a verifier")
+        # The viewer clicked "Deny", which is okay.
+        return HttpResponseRedirect(reverse('home'))
 
     csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
     token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
