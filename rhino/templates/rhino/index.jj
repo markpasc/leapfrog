@@ -248,25 +248,17 @@
             if (document.activeElement.localName.toLowerCase() == 'input' || document.activeElement.localName.toLowerCase() == 'textarea')
                 return;
 
-            var newIndex = keyedPostIndex;
-            if (evt.charCode == 106 || evt.charCode == 110) {  // j, n
-                newIndex += 1;
-            }
-            else if (evt.charCode == 107 || evt.charCode == 112) {  // k, p
-                if (newIndex > 0)
-                    newIndex -= 1;
-            }
-            else if (evt.charCode == 116 || evt.charCode == 117) {  // t, u
-                newIndex = 0;
-            }
-            else if (evt.charCode == 114 || evt.charCode == 46) {  // r, .
+            // Let's do all the shortcuts that don't need a "this" item.
+            var $page = $('body');
+
+            // r, .: reload to get new items
+            if (evt.charCode == 114 || evt.charCode == 46) {
                 $('#new-updates a').hide();
                 $('#new-updates .loading').show();
                 $('#new-updates').show();
 
                 // Update with new content... but we do that by reloading.
-                var $page = $("html:not(:animated),body:not(:animated)");
-                if ($page.size() && $('body').scrollTop() > 0) {
+                if ($page.size() && $page.scrollTop() > 0) {
                     $page.animate({ scrollTop: 0 }).queue(function (next) {
                         window.location.reload();
                         next();
@@ -277,6 +269,25 @@
                 }
                 return;
             }
+            // t, u: scroll to top
+            else if (evt.charCode == 116 || evt.charCode == 117) {
+                keyedPostIndex = 0;
+                $page.animate({ scrollTop: 0 }, 100);
+                return;
+            }
+
+            // Skip out if it's not one of the other keys we handle.
+            if (-1 == $.inArray(evt.charCode, [106, 110, 107, 112, 98]))
+                return;
+
+            var newIndex = keyedPostIndex;
+            if (evt.charCode == 106 || evt.charCode == 110) {  // j, n
+                newIndex += 1;
+            }
+            else if (evt.charCode == 107 || evt.charCode == 112) {  // k, p
+                if (newIndex > 0)
+                    newIndex -= 1;
+            }
             else if (evt.charCode == 98) {  // b
                 var $thisItem = $($('#content').find('.item').get(newIndex));
                 var $permalink = $thisItem.find('a.permalink');
@@ -286,9 +297,6 @@
                 // immediately. Since this happens for a keypress,
                 // Chrome at least lets us.
                 window.focus();
-                return;
-            }
-            else {
                 return;
             }
 
