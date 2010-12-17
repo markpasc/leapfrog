@@ -461,9 +461,10 @@ a:visited {
     text-decoration: underline;
 }
 
-.item-content-link .item-body-image {
+.item .item-content-link img.item-body-image {
     float: left;
     margin: 0 1em 2ex 0;
+    max-width: 200px;
 }
 
 .item .item-content img {
