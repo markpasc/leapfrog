@@ -5,12 +5,14 @@
 
     {% if stream_items %}
         <div id="new-updates">
-            <a href="{{ url_for('home') }}">
-                <span class="items"></span>
-                <span class="and">and</span>
-                <span class="replies"></span>
-            </a>
-            <span class="loading">Reloading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt=""></span>
+            <div class="inner">
+                <a href="{{ url_for('home') }}">
+                    <span class="items"></span>
+                    <span class="and">and</span>
+                    <span class="replies"></span>
+                </a>
+                <span class="loading">Reloading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt=""></span>
+            </div>
         </div>
     {% endif %}
 {% endblock %}
