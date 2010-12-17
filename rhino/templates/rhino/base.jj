@@ -125,6 +125,10 @@
                 <div class="color-swatch color-swatch-beige{% if pagecolor == 'beige' %} color-swatch-selected{% endif %}" data-color="beige">
                 </div>
             </div>
+
+            <div id="keyboard-notice">
+                Keyboard shortcuts available (<code>?</code> for help)
+            </div>
         </div>
     </div>
 

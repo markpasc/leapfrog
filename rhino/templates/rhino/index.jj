@@ -15,6 +15,20 @@
             </div>
         </div>
     {% endif %}
+
+    <div id="keyboard-shortcuts" class="hidden">
+        <div class="inner">
+            <h3>Keyboard shortcuts</h3>
+            <div>
+                <code>r .</code> reload the page for new items<br>
+                <code>t u</code> scroll to top<br>
+                <code>j n</code> next item<br>
+                <code>k p</code> previous item<br>
+                <code>b ⏎</code> open the current item<br>
+                <code>  ?</code> close this guide
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block content %}
@@ -239,10 +253,27 @@
             });
         }
 
-        // TODO: Try and discover the top visible post, so we act on the
-        // real "current" item even if you've manually scrolled some.
-        // (Dunno if we can do that fast enough to stay responsive.)
-        var keyedPostIndex = 0;
+        function currentItem() {
+            var $items = $('#content .item');
+            var $page = $('body');
+            var chooseLine = $page.scrollTop() + 60;
+
+            // TODO: do something less naive than count through every item in the page
+            var $candidateItem;
+            var $nextItem;
+            $items.each(function (i, val) {
+                $candidateItem = $nextItem || $(val);
+                $nextItem = $(val);
+                return $nextItem.offset().top <= chooseLine;
+            });
+
+            return $candidateItem;
+        }
+
+        function scrollPageTo($page, pos) {
+            var posDiff = Math.abs($page.scrollTop() - pos);
+            return $page.animate({ scrollTop: pos }, posDiff < 100 ? posDiff : 100);
+        }
 
         function keyshort(evt) {
             if (document.activeElement.localName.toLowerCase() == 'input' || document.activeElement.localName.toLowerCase() == 'textarea')
@@ -259,7 +290,7 @@
 
                 // Update with new content... but we do that by reloading.
                 if ($page.size() && $page.scrollTop() > 0) {
-                    $page.animate({ scrollTop: 0 }, 100).queue(function (next) {
+                    scrollPageTo($page, 0).queue(function (next) {
                         window.location.reload();
                         next();
                     });
@@ -271,45 +302,63 @@
             }
             // t, u: scroll to top
             else if (evt.charCode == 116 || evt.charCode == 117) {
-                keyedPostIndex = 0;
-                $page.animate({ scrollTop: 0 }, 100);
+                scrollPageTo($page, 0);
+                return;
+            }
+            // /, ?: toggle shortcut help
+            else if (evt.charCode == 47 || evt.charCode == 63) {
+                $('#keyboard-shortcuts').toggle();
+                if ($('#keyboard-shortcuts:visible').size()) {
+                    var newleft = $('#keyboard-shortcuts').width() / 2 - $('#keyboard-shortcuts .inner').width() / 2;
+                    $('#keyboard-shortcuts .inner').css({ left: newleft + 'px' });
+                }
                 return;
             }
 
             // Skip out if it's not one of the other keys we handle.
-            if (-1 == $.inArray(evt.charCode, [106, 110, 107, 112, 98]))
+            if (-1 == $.inArray(evt.charCode, [106, 110, 107, 112, 98, 13])) {
+                alert(evt.charCode);
                 return;
+            }
 
-            var newIndex = keyedPostIndex;
-            if (evt.charCode == 106 || evt.charCode == 110) {  // j, n
-                newIndex += 1;
+            var $currentItem = currentItem();
+
+            // j, n: next item
+            if (evt.charCode == 106 || evt.charCode == 110) {
+                var $nextItem = $currentItem.next('.item');
+                if (!$nextItem.size())
+                    return;
+
+                var nextPos = $nextItem.offset().top - 30;
+                scrollPageTo($page, nextPos);
             }
-            else if (evt.charCode == 107 || evt.charCode == 112) {  // k, p
-                if (newIndex > 0)
-                    newIndex -= 1;
+            // k, p: previous item
+            else if (evt.charCode == 107 || evt.charCode == 112) {
+                // Assume we're really only going to the top of the current item.
+                var $prevItem = $currentItem;
+
+                // But if we're at the top of the current item, go to the previous.
+                var chooseLine = $page.scrollTop() - 60;
+                if ($currentItem.offset().top > chooseLine)
+                    $prevItem = $currentItem.prev('.item');
+
+                if (!$prevItem.size())
+                    return;
+
+                var prevPos = $prevItem.offset().top - 30;
+                scrollPageTo($page, prevPos);
             }
-            else if (evt.charCode == 98) {  // b
-                var $thisItem = $($('#content').find('.item').get(newIndex));
-                var $permalink = $thisItem.find('a.permalink');
+            // b, enter: open the current item in a background tab
+            else if (evt.charCode == 98 || evt.charCode == 13) {
+                var $permalink = $currentItem.find('a.permalink');
+
                 // If your browser doesn't open links in new tabs... sorry.
                 window.open($permalink.attr('href'));
                 // Open the link "in the background" by coming back
                 // immediately. Since this happens for a keypress,
                 // Chrome at least lets us.
                 window.focus();
-                return;
             }
-
-            keyedPostIndex = newIndex;
-            var $newItem = $($('#content').find('.item').get(newIndex));
-            if (!$newItem.size())
-                return;
-            var $page = $("html:not(:animated),body:not(:animated)");
-            if (!$page.size())
-                return;
-
-            var newPos = newIndex ? $newItem.offset().top - 30 : 0;
-            $page.animate({ scrollTop: newPos }, 100);
         }
 
         $(document).ready(function () {
