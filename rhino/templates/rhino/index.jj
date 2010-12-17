@@ -23,7 +23,7 @@
         {% endfor %}
 
         <div id="navigate">
-            <span><img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16"> Loading...</span>
+            <span>Loading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16"></span>
         </div>
 
         <script type="text/javascript">
