@@ -346,7 +346,7 @@
                 if (!$prevItem.size())
                     return;
 
-                var prevPos = $prevItem.offset().top - 30;
+                var prevPos = $prevItem.prev('.item').size() ? $prevItem.offset().top - 30 : 0;
                 scrollPageTo($page, prevPos);
             }
             // b, enter: open the current item in a background tab
