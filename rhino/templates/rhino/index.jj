@@ -84,6 +84,8 @@
                         $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
                     });
                     setUpResponseLinks($nextpage);
+
+                    $nextpage.children().unwrap();
                 },
                 error: function (xhr) {
                     $('#navigate span').text(xhr.responseText);
