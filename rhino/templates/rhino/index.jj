@@ -4,12 +4,13 @@
     {{ super() }}
 
     {% if stream_items %}
-        <div id="new-updates" class="hidden">
+        <div id="new-updates">
             <a href="{{ url_for('home') }}">
                 <span class="items"></span>
                 <span class="and">and</span>
                 <span class="replies"></span>
             </a>
+            <span class="loading">Reloading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt=""></span>
         </div>
     {% endif %}
 {% endblock %}
@@ -257,9 +258,13 @@
                 newIndex = 0;
             }
             else if (evt.charCode == 114 || evt.charCode == 46) {  // r, .
+                $('#new-updates a').hide();
+                $('#new-updates .loading').show();
+                $('#new-updates').show();
+
                 // Update with new content... but we do that by reloading.
                 var $page = $("html:not(:animated),body:not(:animated)");
-                if ($page.size()) {
+                if ($page.size() && $('body').scrollTop() > 0) {
                     $page.animate({ scrollTop: 0 }).queue(function (next) {
                         window.location.reload();
                         next();
