@@ -317,7 +317,6 @@
 
             // Skip out if it's not one of the other keys we handle.
             if (-1 == $.inArray(evt.charCode, [106, 110, 107, 112, 98, 13])) {
-                alert(evt.charCode);
                 return;
             }
 
