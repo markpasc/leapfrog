@@ -259,7 +259,7 @@
 
                 // Update with new content... but we do that by reloading.
                 if ($page.size() && $page.scrollTop() > 0) {
-                    $page.animate({ scrollTop: 0 }).queue(function (next) {
+                    $page.animate({ scrollTop: 0 }, 100).queue(function (next) {
                         window.location.reload();
                         next();
                     });
