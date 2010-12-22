@@ -165,6 +165,9 @@ def object_from_url(url):
     if resp.status != 200:
         raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
+    if not resp.get('content-type', '').startswith('text/xml'):
+        raise ValueError("Unexpected response of type %r asking about Tumblr post #%s"
+            % (resp.get('content-type', ''), tumblr_id))
 
     doc = ElementTree.fromstring(cont)
     tumblelog_el = doc.find('./tumblelog')
@@ -184,7 +187,9 @@ def poll_tumblr(account):
     body = urlencode({'num': 30})
     resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
     if resp.status != 200:
-        raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, email))
+        raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
+    if not resp.get('content-type', '').startswith('text/xml'):
+        raise ValueError("Unexpected response of type %r looking for dashboard for Tumblr user %s" % (resp.get('content-type', ''), account.ident))
 
     doc = ElementTree.fromstring(cont)
     for post_el in doc.findall('./posts/post'):
