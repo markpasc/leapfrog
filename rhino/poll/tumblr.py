@@ -87,9 +87,12 @@ def object_from_post_element(post_el, tumblelog_el):
             obj.title = title_el.text
         obj.body = post_el.find('./regular-body').text
     elif post_type == 'video':
-        video_player = post_el.find('./video-player').text
-        video_caption = post_el.find('./video-caption').text
-        obj.body = '\n\n'.join((video_player, video_caption))
+        body = post_el.find('./video-player').text
+        video_caption_el = post_el.find('./video-caption')
+        if video_caption_el is not None:
+            video_caption = video_caption_el.text
+            body = '\n\n'.join((body, video_caption))
+        obj.body = body
     elif post_type == 'photo':
         # TODO: if there's a photo-link-url, is this really a "photo reply"?
 
