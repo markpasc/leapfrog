@@ -517,6 +517,10 @@ a:visited {
     max-width: 580px;
 }
 
+.item-content p:last-child {
+    margin-bottom: 0;
+}
+
 .item-content blockquote {
     margin: 10px 40px;
 }
