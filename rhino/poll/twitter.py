@@ -265,9 +265,13 @@ def raw_object_for_tweet(tweetdata, client):
                 link_starts, link_ends = about_urldata['indices']
                 tweettext = tweettext[:link_starts] + tweettext[link_ends:]
                 tweettext = tweettext.lower()
-                if in_reply_to.title:
-                    tweettext = tweettext.replace(in_reply_to.title.lower(), '')
                 tweettext = re.sub(r'\s', '', tweettext)
+                if in_reply_to.title:
+                    log.debug("Tweet #%s in reply to %r has text %r before removing title %r", str(tweetdata['id']), in_reply_to, tweettext, in_reply_to.title)
+                    title = in_reply_to.title.lower()
+                    title = re.sub(r'\s', '', title)
+                    tweettext = tweettext.replace(title, '')
+                log.debug("Tweet #%s in reply to %r has remaining text %r", str(tweetdata['id']), in_reply_to, tweettext)
 
                 if not tweettext:
                     return True, in_reply_to
