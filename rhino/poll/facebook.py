@@ -175,7 +175,12 @@ def object_for_facebook_item(item, requesting_account=None):
         log.debug("Can't figure out who the author is, so ignoring this item %s", fb_id)
         return (None, None)
 
-    referent_url = item["link"]
+    try:
+        referent_url = item['link']
+    except KeyError:
+        # No URL means no item.
+        return None, None
+
     try:
         referent = rhino.poll.embedlam.object_for_url(referent_url)
     except ValueError, exc:
