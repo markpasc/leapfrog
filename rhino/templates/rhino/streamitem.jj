@@ -73,7 +73,7 @@
             <div class="item-content item-content-link">
                 <div class="body pkg">
                     {% if object.image %}
-                        <a href="{{ object.permalink_url }}"><img class="item-body-image" src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title or '' }}"></a>
+                        <a href="{{ object.permalink_url }}"><img class="item-body-image" src="{{ object.image.image_url }}"{% if object.image.width is not none %} width="{{ object.image.width }}"{% endif %}{% if object.image.height is not none %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title or '' }}"></a>
                     {% endif %}
 
                     <h1 class="title">
