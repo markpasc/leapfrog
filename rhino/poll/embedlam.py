@@ -92,8 +92,8 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     elif resource_type in ('photo', 'image'):
         image = Media(
             image_url=resource['url'],
-            width=resource['width'],
-            height=resource['height'],
+            width=resource.get('width'),
+            height=resource.get('height'),
         )
         image.save()
         obj = Object(
