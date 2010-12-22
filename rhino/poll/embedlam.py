@@ -59,8 +59,13 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     resp, cont = h.request(endpoint_url, headers={'User-Agent': 'rhino/1.0'})
     if resp.status != 200:
         raise ValueError("Unexpected response requesting OEmbed data %s: %d %s" % (endpoint_url, resp.status, resp.reason))
+    log.debug('JSON OEmbed endpoint %r returned resource of type %r', endpoint_url, resp['content-type'])
 
-    resource = json.loads(cont)
+    try:
+        resource = json.loads(cont)
+    except ValueError, exc:
+        log.error("Couldn't decode JSON from OEmbed endpoint %r", endpoint_url, exc_info=exc)
+        return
 
     try:
         resource_type = resource['type']
@@ -385,7 +390,8 @@ class Page(object):
         # TODO: support xml?
         if oembed_node is not None:
             log.debug('Finding object for %s through OEmbed', url)
-            return object_from_oembed(oembed_node['href'], url, discovered=True)
+            oembed_url = urljoin(url, oembed_node['href'])
+            return object_from_oembed(oembed_url, url, discovered=True)
 
         # Does it have a feed declared? If so, let's go hunting in the feed for
         # an entry corresponding to this page.
