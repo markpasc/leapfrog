@@ -119,6 +119,33 @@ def home(request):
         context_instance=RequestContext(request))
 
 
+@login_required()
+def mobile_home(request):
+    user = request.user
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        display_name = user.get_full_name()
+    else:
+        display_name = person.display_name
+
+    try:
+        pagecolor_obj = UserSetting.objects.get(user=user, key='pagecolor')
+    except UserSetting.DoesNotExist:
+        pagecolor = 'orange'
+    else:
+        pagecolor = pagecolor_obj.value
+
+    data = {
+        'page_title': "%s's neighborhood" % display_name,
+        'pagecolor': pagecolor,
+    }
+
+    template = 'rhino/mobile_index.jj'
+    return render_to_response(template, data,
+        context_instance=RequestContext(request))
+
+
 def signin_twitter(request):
     csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
     client = oauth.Client(csr)

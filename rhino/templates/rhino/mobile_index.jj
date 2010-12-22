@@ -1,0 +1,6 @@
+{% extends "rhino/mobile_base.jj" %}
+
+{% block content %}
+
+
+{% endblock %}

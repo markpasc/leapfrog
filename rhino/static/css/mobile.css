@@ -1,0 +1,480 @@
+
+
+/* FIXME: This is a hacked up version of the main CSS file.
+   Can we factor this out somehow so we can use it in both places? */
+
+body {
+    overflow: hidden;
+}
+
+.pkg:after {
+    content: " ";
+    display: block;
+    visibility: hidden;
+    clear: both;
+    height: 0.1px;
+    font-size: 0.1em;
+    line-height: 0;
+}
+.pkg { display: inline-block; }
+
+.x-fullscreen {
+    background-color: #B73D12;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#eb6333), to(#B73D12));
+    background-image: -moz-linear-gradient(left, right, from(#eb6333), to(#B73D12));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#eb6333, endColorstr=#B73D12, GradientType=0);
+}
+
+.page-color-blue .x-fullscreen {
+    background-color: #69b1cc;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#69b1cc), to(#357f9a));
+    background-image: -moz-linear-gradient(left, right, from(#69b1cc), to(#357f9a));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#69b1cc, endColorstr=#357f9a, GradientType=0);
+}
+
+.page-color-green .x-fullscreen {
+    background-color: #b1cc69;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#b1cc69), to(#7f9a35));
+    background-image: -moz-linear-gradient(left, right, from(#b1cc69), to(#7f9a35));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#b1cc69, endColorstr=#7f9a35, GradientType=0);
+}
+
+.page-color-beige .x-fullscreen {
+    background-color: #ECE1BD;
+    background-image: -webkit-gradient(linear, left top, left bottom, from(#ECE1BD), to(#e1cf95));
+    background-image: -moz-linear-gradient(left, right, from(#ECE1BD), to(#e1cf95));
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#ECE1BD, endColorstr=#e1cf95, GradientType=0);
+}
+
+.x-carousel-item {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.x-panel-body {
+    padding: 0;
+    margin: 0;
+}
+
+.itemholder {
+    margin: 0 30px;
+    margin-right: 15px;
+    font-size: 10px;
+}
+
+.item {
+    position: relative;
+
+    color: #000000;
+    margin: 20px 0 10px;
+    min-height: 82px;
+
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content {
+    background: white;
+    overflow: hidden;
+}
+
+.reply {
+    margin: 10px 0 10px 100px;
+}
+
+.item .whyline {
+    background: #fffb95;
+    padding: 5px 10px;
+    border-radius: 5px 5px 0 0;
+    -moz-border-radius: 5px 5px 0 0;
+
+    font-size: 0.8em;
+}
+
+.item .whyline p {
+    margin: 0;
+    padding: 0;
+}
+
+.item .title {
+    font-weight: normal;
+    margin: 0 0 1ex;
+}
+
+.item .title a:link,
+.item .title a:hover,
+.item .title a:visited,
+.item .title a:focus,
+.item .title a:active {
+    color: inherit;
+    text-decoration: none;
+}
+.item .title a:hover,
+.item .title a:focus,
+.item .title a:active {
+    text-decoration: underline;
+}
+
+.item .whyline a:link,
+.item .whyline a:hover,
+.item .whyline a:visited,
+.item .whyline a:focus,
+.item .whyline a:active,
+.item .metadata a:link,
+.item .metadata a:hover,
+.item .metadata a:visited,
+.item .metadata a:focus,
+.item .metadata a:active {
+    color: inherit;
+}
+
+.item .whyline img {
+    width: 20px;
+    height: auto;
+    vertical-align: middle;
+
+    border: 2px solid white;
+    -webkit-box-shadow: 0px 0px 2px #000;
+    -moz-box-shadow: 0px 0px 2px #000;
+    box-shadow: 0px 0px 2px #000;
+}
+
+.item .item-body {
+    position: relative;
+}
+
+.item a.item-author {
+    line-height: 0;
+
+    background: white;
+    border: 2px solid white;
+    border-width: 2px 2px 3px 2px;
+    -webkit-box-shadow: 0px 0px 4px #666;
+    -moz-box-shadow: 0px 0px 4px #666;
+    box-shadow: 0px 0px 4px #666;
+
+    position: absolute;
+    left: -25px;
+    top: 20px;
+    z-index: 3;
+}
+
+.item a.item-author img {
+    width: 25px;
+    height: auto;
+    z-index: 1;
+}
+
+.item a.item-author span {
+    position: absolute;
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+
+    -webkit-box-shadow: inset 0px 0px 6px #666;
+    -moz-box-shadow: inset 0px 0px 6px #666;
+    box-shadow: inset 0px 0px 6px #666;
+}
+
+.item .item-content {
+    padding: 10px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-has-whyline .item-content,
+.item-has-whyline .item-content-status .item-inner,
+.item-has-whyline .item-content-status .status-shade,
+.item-has-whyline .item-image-compact img {
+    border-radius: 0 0 5px 5px;
+    -moz-border-radius: 0 0 5px 5px;
+}
+
+.item-has-whyline .item-image-compact .title {
+    border-radius: 0;
+    -moz-border-radius: 0;
+}
+
+.item .item-content .body {
+    position: relative;
+}
+
+.item .metadata {
+    display: block;
+    font-size: 0.8em;
+    color: #999;
+}
+
+.item .metadata .authorname {
+    float: left;
+}
+
+.item .metadata .timestamp {
+    float: right;
+}
+
+.item h2 {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+}
+.item .byline {
+    margin: 0;
+    font-size: 0.9em;
+    color: #222222;
+}
+
+
+/* item styles */
+
+.item .item-content-status,
+.item .item-image-compact {
+    padding: 0;
+    position: relative;
+}
+
+.item-content-status .status-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content-status .item-inner {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content-status .status {
+    position: relative;
+    background: white;
+    padding: 10px;
+    margin: 10px;
+
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-content .status .summary {
+    margin: 0;
+    padding: 0;
+    font-size: 1.2em;
+    line-height: 1.2em;
+}
+
+.item .aboutlink {
+    background: #ddd;
+    border-radius: 10px;
+    font-size: 0.8em;
+    font-weight: bold;
+    padding: 2px 8px;
+}
+
+.item-content-link .title {
+    font-size: 1.2em;
+    margin: 0;
+}
+
+.item .item-content-link .title a {
+    color: #00e;
+    text-decoration: underline;
+}
+
+.item .item-content-link .title a:visited {
+    color: #551a8b;
+}
+
+.item .item-content-link .title a.link, .item .item-content-link .title a.link:hover {
+    text-decoration: none;
+}
+
+.item-content-link .link-host {
+    margin: 0 0 1ex;
+    font-size: 1em;
+}
+
+.item-content-link .link-host a {
+    color: #999;
+    text-decoration: none;
+}
+
+.item-content-link .link-host a:hover {
+    text-decoration: underline;
+}
+
+.item .item-content-link img.item-body-image {
+    float: left;
+    margin: 0 1em 2ex 0;
+    max-width: 200px;
+}
+
+.item .item-content img {
+    max-width: 100%;
+    height: auto;
+}
+.item .item-content blockquote img, .item .item-content div.highlight img {
+    max-width: 100%;
+}
+
+.item-content blockquote {
+    margin: 10px 40px;
+}
+.item-content blockquote p {
+    font-size: 0.9em;
+    line-height: 1.5em;
+}
+.item-content blockquote+p small {
+    margin-left: 40px;
+    font-style: oblique;
+    color: #666;
+}
+
+.item-content blockquote:before, .item-content blockquote:after {
+    display: inline-block;
+    position: absolute;
+    font-size: 5em;
+    font-weight: bold;
+    color: #ccc;
+}
+.item-content blockquote:before {
+    left: -5px;
+    content: "â€œ";
+    margin: 20px 0 0 0;
+}
+.item-content blockquote:after {
+    right: 0;
+    content: "â€";
+    margin-top: -20px;
+}
+
+.item-content pre {
+    white-space: pre-wrap;
+}
+
+.item .item-image-compact {
+    line-height: 0;
+    display: inline-block;
+}
+
+.item .item-image-compact img {
+    max-width: 700px;
+}
+
+.item .item-image-compact,
+.item-has-whyline .item-image-compact {
+    background: transparent;
+    border-radius: 0;
+    -moz-border-radius: 0;
+}
+
+.item-image-compact img {
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+}
+
+.item-image-compact .title, .item-image-compact .metadata {
+    display: block;
+    position: absolute;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    line-height: 1em;
+    background: rgba(128, 128, 128, 0.8);
+}
+
+.item-image-compact .title {
+    top: 0;
+    left: 0;
+    z-index: 1;
+    color: white;
+    border-radius: 5px 5px 0 0;
+}
+
+.item-image-compact .title a {
+    display: inline-block;
+    padding: 20px;
+}
+
+.item .item-content-image .body {
+    display: block;
+}
+
+.item .item-image-compact .body {
+    position: absolute;
+    display: inline-block;
+    bottom: 20px;
+    text-shadow: black 0 0 3px;
+    margin: 0;
+    z-index: 1;
+    line-height: 1em;
+    padding: 10px;
+    color: white;
+}
+
+.item-image-compact .metadata {
+    bottom: 0;
+    border-width: 0;
+    z-index: 7;
+    color: #ddd;
+    border-radius: 0 0 5px 5px;
+}
+
+.item-image-compact .metadata .metadata-inner {
+    padding: 10px;
+}
+
+.item-image-compact .metadata .authorname {
+    float: none;
+}
+
+.item-image-compact .metadata .timestamp {
+    float: none;
+    margin-left: 1em;
+}
+
+
+/* response styles */
+
+.item-content .metadata .response a {
+    margin-left: 1em;
+    padding-left: 18px;
+    min-height: 16px;
+    background: transparent no-repeat top left;
+}
+
+.item-content .metadata .response .favorite {
+    background-image: url(../img/star-grey.png);
+}
+
+.item-content .metadata .response .retweet {
+    background-image: url(../img/asterisk-grey.png);
+}
+
+.item-content .metadata .response .favorited {
+    background-image: url(../img/star.png);
+}
+
+.item-content .metadata .response .retweeted {
+    background-image: url(../img/asterisk.png);
+}
+
+.item-content .metadata .response .spinning {
+    background-image: url(../img/loadinfo.net.gif);
+}
+
+.item-image-compact .metadata .response .spinning {
+    background-image: url(../img/loadinfo-grey.gif);
+}
+
+.item-content .metadata .response .nogo, .item-content .metadata .response .nogo:hover {
+    background-image: url(../img/nogo-grey.png);
+    text-decoration: none;
+    cursor: normal;
+}
+

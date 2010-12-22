@@ -6,6 +6,7 @@ from django.http import HttpResponse
 
 urlpatterns = patterns('rhino.views',
     url(r'^$', 'home', name='home'),
+    url(r'^mobile$', 'mobile_home', name='mobile-home'),
     url(r'^setting/save$', 'save_setting', name='save-setting'),
     url(r'^newitems$', 'new_items', name='new-items'),
 )
