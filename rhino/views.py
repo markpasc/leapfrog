@@ -563,7 +563,7 @@ def complete_tumblr(request):
         raise ValueError("Unexpected response checking Tumblr access token: %d %s" % (resp.status, resp.reason))
 
     doc = ElementTree.fromstring(cont)
-    blognodes = [blognode for blognode in doc.findall('./tumblelog') if blognode.attrib['is-primary'] == 'yes']
+    blognodes = [blognode for blognode in doc.findall('./tumblelog') if blognode.attrib.get('is-primary') == 'yes']
     blognode = blognodes[0]
 
     person = None
