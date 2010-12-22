@@ -101,7 +101,8 @@
 
         {% else %}
 
-            <div class="item-content item-content-{{ object.render_mode }}{% if object.image.width and object.image.width >= 700 %} item-image-compact{% endif %}">
+            {% set compact_mode = object.render_mode == 'image' and not object.body and object.image.width and object.image.width >= 700 %}
+            <div class="item-content item-content-{{ object.render_mode }}{% if compact_mode %} item-image-compact{% endif %}">
 
                 <div class="metadata pkg">
                     <div class="metadata-inner">
