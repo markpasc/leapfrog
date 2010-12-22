@@ -3,6 +3,7 @@ from __future__ import division
 from datetime import datetime
 import json
 import logging
+import re
 from urllib import urlencode
 
 from django.conf import settings
@@ -117,6 +118,17 @@ def object_from_video_data(videodata):
     obj.save()
 
     return obj
+
+
+def object_from_url(url):
+    mo = re.match(r'http://vimeo\.com/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
+    if mo is None:
+        return
+    video_id = mo.group(1)
+
+    videoresp = call_vimeo('vimeo.videos.getInfo', video_id=video_id)
+    videodata = videoresp['video'][0]
+    return object_from_video_data(videodata)
 
 
 def poll_vimeo(account):

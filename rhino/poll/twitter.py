@@ -205,6 +205,8 @@ def object_from_tweet_id(tweet_id, client=None):
 
 def object_from_url(url):
     mo = re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
+    if mo is None:
+        return
     tweet_id = mo.group(1)
     really_a_share, tweet_obj = object_from_tweet_id(int(tweet_id))
     return tweet_obj

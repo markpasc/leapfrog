@@ -17,6 +17,7 @@ import rhino.poll.flickr
 import rhino.poll.tumblr
 import rhino.poll.twitter
 import rhino.poll.typepad
+import rhino.poll.vimeo
 
 
 log = logging.getLogger(__name__)
@@ -255,7 +256,7 @@ class Page(object):
         self.type = 'html'
 
         # These we can already ask about by URL, so don't bother fetching about them.
-        if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) | vimeo\.com/ \d+ )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return
 
         # Fetch the resource and soupify it.
@@ -337,6 +338,8 @@ class Page(object):
             return rhino.poll.twitter.object_from_twitpic_url(url)
         if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return rhino.poll.twitter.object_from_url(url)
+        if re.match(r'http://vimeo\.com/ \d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            return rhino.poll.vimeo.object_from_url(url)
 
         # If it looks like a Tumblr URL, try asking Tumblr about it.
         if re.match(r'http://[^/]+/post/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
