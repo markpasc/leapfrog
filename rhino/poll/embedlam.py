@@ -134,8 +134,19 @@ def object_from_html_head(url, orig_url, head):
         image.save()
 
     render_mode = 'link'
-    if re.match(r'http:// (?: instagr\.am | yfrog\.com ) /', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+    if re.match(r'http://instagr\.am/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
         render_mode = 'image'
+        # Use the same text as the Twitter crosspost for the title.
+        if summary and ' at ' in title:
+            place = title.split(' at ', 1)[1]
+            title = '%s @ %s' % (summary, place)
+        elif summary:
+            title = summary
+        summary = ''
+    elif re.match(r'http://yfrog\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        render_mode = 'image'
+        title = ''
+        # TODO: use yfrog xmlInfo call to get the poster's twitter username (if any)
 
     obj = Object(
         service='',
