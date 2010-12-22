@@ -170,7 +170,7 @@ def object_from_html_head(url, orig_url, head):
 
 def object_from_feed_entry(feed_url, item_url):
     feed = feedparser.parse(feed_url)
-    matching_entries = [ entry for entry in feed.entries if entry.link == item_url ]
+    matching_entries = [entry for entry in feed.entries if getattr(entry, 'link', None) == item_url]
     if len(matching_entries) > 0:
         entry = matching_entries[0]
     else:
