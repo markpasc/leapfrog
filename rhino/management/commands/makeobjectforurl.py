@@ -1,7 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
-from rhino.models import *
 
+from rhino.models import *
 from rhino.poll.embedlam import object_for_url
+
 
 class Command(BaseCommand):
 
