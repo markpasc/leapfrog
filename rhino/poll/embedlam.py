@@ -24,7 +24,10 @@ log = logging.getLogger(__name__)
 
 
 def account_for_embed_resource(resource):
-    url = resource['author_url']
+    try:
+        url = resource['author_url']
+    except KeyError:
+        return None
     try:
         return Account.objects.get(service='', ident=url)
     except Account.DoesNotExist:
