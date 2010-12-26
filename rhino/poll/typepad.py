@@ -190,8 +190,19 @@ def good_notes_for_notes(notes, t):
                 while getattr(superobj, 'in_reply_to', None) is not None:
                     if superobj.root.object_type == 'Comment':
                         superobj.root, superobj.in_reply_to = superobj.in_reply_to, superobj.root
-                    superobj.in_reply_to = t.assets.get(superobj.in_reply_to.url_id)
-                    superobj = superobj.in_reply_to
+                    try:
+                        superobj.in_reply_to = t.assets.get(superobj.in_reply_to.url_id)
+                    except typd.Forbidden:
+                        # Can we skip to the thread root?
+                        if superobj.in_reply_to.url_id != superobj.root.url_id:
+                            # Yep, try this superobj again with the root.
+                            superobj.in_reply_to = superobj.root
+                        else:
+                            # No, the root itself is private. Guess we'll have to present the comment as top level.
+                            break
+                    else:
+                        # Continuing walking up through the newly filled-in object.
+                        superobj = superobj.in_reply_to
 
             elif getattr(obj, 'reblog_of', None) is not None:
                 note.verb = 'Reblog'
