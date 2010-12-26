@@ -137,7 +137,7 @@
                 {% endif %}
 
                 {% if object.render_mode == 'image' %}
-                    <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}" width="{{ object.image.width }}" height="{{ object.image.height }}" alt="{{ object.title }}"></a>
+                    <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}"{% if object.image.width %} width="{{ object.image.width }}"{% endif %}{% if object.image.height %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title }}"></a>
                 {% endif %}
 
                 {% if object.body %}
