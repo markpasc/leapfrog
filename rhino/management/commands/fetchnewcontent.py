@@ -66,11 +66,12 @@ class Command(NoArgsCommand):
                 try:
                     poller(account)
                 except Exception, exc:
+                    log.exception(exc)
                     SentryClient().create_from_exception(view='%s.%s' % (__name__, account.service))
-                    #log.exception(exc)
 
     def handle_noargs(self, **options):
         try:
             self.fetch_new_content(**options)
         except Exception, exc:
+            log.exception(exc)
             SentryClient().create_from_exception(view=__name__)
