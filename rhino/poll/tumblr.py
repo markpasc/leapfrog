@@ -206,6 +206,9 @@ def object_from_url(url):
     return object_from_post_element(post_el, tumblelog_el)
 
 
+object_for_url = object_from_url
+
+
 def poll_tumblr(account):
     user = account.person.user
     if user is None:

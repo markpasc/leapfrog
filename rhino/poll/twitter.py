@@ -36,10 +36,9 @@ def account_for_twitter_user(userdata, person=None):
             ident=str(userdata['id']),
             display_name=userdata['name'],
             person=person,
-
-            status_background_color=userdata['profile_background_color'],
-            status_background_image_url=userdata['profile_background_image_url'],
-            status_background_tile=userdata['profile_background_tile'],
+            status_background_color=userdata.get('profile_background_color') or '',
+            status_background_image_url=userdata.get('profile_background_image_url') or '',
+            status_background_tile=userdata.get('profile_background_tile') or '',
         )
         account.save()
 
