@@ -37,8 +37,8 @@ def poll_facebook(account):
     resp, content = h.request(url, method='GET')
     feed = json.loads(content)
 
-    if "error" in feed:
-        log.error("Facebook returned %s: %s", fb_user["error"]["type"], fb_user["error"]["message"])
+    if 'error' in feed:
+        log.error("Facebook returned %s: %s", feed['error']['type'], feed['error']['message'])
         return
 
     items = feed["data"]
