@@ -42,7 +42,7 @@ def account_for_typepad_user(tp_user, person=None):
         account = Account(
             service='typepad.com',
             ident=tp_user.url_id,
-            display_name=tp_user.display_name,
+            display_name=tp_user.display_name or tp_user.preferred_username,
             person=person,
         )
         account.save()
