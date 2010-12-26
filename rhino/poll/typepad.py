@@ -51,7 +51,6 @@ def account_for_typepad_user(tp_user, person=None):
 
 
 def remove_reblog_boilerplate_from_obj(obj):
-    # Remove reblog boilerplate too.
     soup = BeautifulSoup(obj.body)
     top_two = soup.findAll(recursive=False, limit=2)
     if len(top_two) < 2:

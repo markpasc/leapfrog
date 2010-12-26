@@ -60,6 +60,22 @@ def account_for_tumblelog_element(tumblelog_elem, person=None):
     return account
 
 
+def remove_reblog_boilerplate_from_obj(obj):
+    soup = BeautifulSoup(obj.body)
+    top_two = soup.findAll(recursive=False, limit=2)
+    if len(top_two) < 2:
+        return
+    maybe_p, maybe_quote = top_two
+
+    if maybe_quote.name == 'blockquote' and maybe_p.name == 'p' and maybe_p.find(name='a', attrs={'class': 'tumblr_blog'}):
+        maybe_p.extract()
+        maybe_quote.extract()
+    else:
+        return
+
+    obj.body = unicode(soup).strip()
+
+
 def object_from_post_element(post_el, tumblelog_el):
     tumblr_id = post_el.attrib['id']
     try:
@@ -77,8 +93,6 @@ def object_from_post_element(post_el, tumblelog_el):
         time=datetime.strptime(post_el.attrib['date-gmt'], '%Y-%m-%d %H:%M:%S GMT'),
         author=account_for_tumblelog_element(tumblelog_el),
     )
-
-    # TODO: handle reblogs (there'll be reblogged-from-url and reblogged-root-url attributes)
 
     post_type = post_el.attrib['type']
     if post_type == 'regular':
@@ -142,6 +156,20 @@ def object_from_post_element(post_el, tumblelog_el):
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
         return
 
+    if 'reblogged-from-url' in post_el.attrib:
+        orig_url = post_el.attrib['reblogged-from-url']
+        log.debug("Post #%s is a reblog of %s; let's try walking up", tumblr_id, orig_url)
+        try:
+            orig_obj = object_from_url(orig_url)
+        except ValueError, exc:
+            # meh
+            log.debug("Couldn't walk up to reblog reference %s: %s", orig_url, str(exc))
+        else:
+            obj.in_reply_to = orig_obj
+            remove_reblog_boilerplate_from_obj(obj)
+    else:
+        log.debug("Post #%s is not a reblog, leave it alone", tumblr_id)
+
     obj.save()
     return obj
 
@@ -165,6 +193,8 @@ def object_from_url(url):
     if resp.status != 200:
         raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
+    else:
+        log.debug(cont.decode('utf8').encode('ascii', 'replace'))
     if not resp.get('content-type', '').startswith('text/xml'):
         raise ValueError("Unexpected response of type %r asking about Tumblr post #%s"
             % (resp.get('content-type', ''), tumblr_id))
