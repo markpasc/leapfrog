@@ -61,10 +61,7 @@ def account_for_tumblelog_element(tumblelog_elem, person=None):
     return account
 
 
-def remove_reblog_boilerplate_from_obj(obj):
-    if obj.in_reply_to is None:
-        return
-
+def remove_reblog_boilerplate_from_obj(obj, in_reply_to):
     soup = BeautifulSoup(obj.body)
     top_two = soup.findAll(recursive=False, limit=2)
     if len(top_two) < 2:
@@ -77,10 +74,10 @@ def remove_reblog_boilerplate_from_obj(obj):
     if maybe_p.name != 'p':
         log.debug('First element is a %s, not a p', maybe_p.name)
         return
-    maybe_blog_link = maybe_p.find(name='a', attrs={'href': obj.in_reply_to.permalink})
+    maybe_blog_link = maybe_p.find(name='a', attrs={'href': in_reply_to.permalink_url})
     if not maybe_blog_link:
         log.debug("First element doesn't link to reply target %s in its HTML: %s",
-            obj.in_reply_to.permalink, unicode(maybe_p).encode('utf8', 'ignore'))
+            in_reply_to.permalink_url, unicode(maybe_p).encode('utf8', 'ignore'))
         return
 
     maybe_p.extract()
@@ -91,7 +88,7 @@ def remove_reblog_boilerplate_from_obj(obj):
 def object_from_post_element(post_el, tumblelog_el):
     tumblr_id = post_el.attrib['id']
     try:
-        return Object.objects.get(service='tumblr.com', foreign_id=tumblr_id)
+        return False, Object.objects.get(service='tumblr.com', foreign_id=tumblr_id)
     except Object.DoesNotExist:
         pass
 
@@ -166,7 +163,7 @@ def object_from_post_element(post_el, tumblelog_el):
     # TODO: handle chat posts (i guess)
     else:
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
-        return
+        return None, None
 
     try:
         orig_url = post_el.attrib['reblogged-root-url']
@@ -182,11 +179,29 @@ def object_from_post_element(post_el, tumblelog_el):
             # meh
             log.debug("Couldn't walk up to reblog reference %s: %s", orig_url, str(exc))
         if orig_obj is not None:
+            # Patch up the upstream author's userpic if necessary, since we
+            # don't get those from /api/read, evidently.
+            if orig_obj.author.person.avatar is None and 'reblogged-root-avatar-url-64' in post_el.attrib:
+                avatar = Media(
+                    image_url=post_el.attrib['reblogged-root-avatar-url-64'],
+                    width=64,
+                    height=64,
+                )
+                avatar.save()
+
+                orig_obj.author.person.avatar = avatar
+                orig_obj.author.person.save()
+
+                log.debug("Fixed up post #%s's author's avatar to %s", orig_obj.foreign_id, avatar.image_url)
+
+            remove_reblog_boilerplate_from_obj(obj, orig_obj)
+            if not obj.body:
+                return True, orig_obj
+
             obj.in_reply_to = orig_obj
-            remove_reblog_boilerplate_from_obj(obj)
 
     obj.save()
-    return obj
+    return False, obj
 
 
 def object_from_url(url):
@@ -217,7 +232,8 @@ def object_from_url(url):
     tumblelog_el = doc.find('./tumblelog')
     post_el = doc.find('./posts/post')
 
-    return object_from_post_element(post_el, tumblelog_el)
+    really_a_share, obj = object_from_post_element(post_el, tumblelog_el)
+    return obj
 
 
 def poll_tumblr(account):
@@ -237,18 +253,20 @@ def poll_tumblr(account):
 
     doc = ElementTree.fromstring(cont)
     for post_el in doc.findall('./posts/post'):
-        obj = object_from_post_element(post_el, post_el.find('./tumblelog'))
+        tumblelog_el = post_el.find('./tumblelog')
+        really_a_share, obj = object_from_post_element(post_el, tumblelog_el)
         if obj is None:
             continue
+        why_account = account_for_tumblelog_element(tumblelog_el) if really_a_share else obj.author
 
         root = obj
-        why_verb = 'post'
+        why_verb = 'share' if really_a_share else 'post'
         while root.in_reply_to is not None:
             root = root.in_reply_to
-            why_verb = 'reply'
+            why_verb = 'share' if really_a_share else 'reply'
 
         streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
-            defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': why_verb})
+            defaults={'time': obj.time, 'why_account': why_account, 'why_verb': why_verb})
 
         superobj = obj
         while superobj.in_reply_to is not None:
