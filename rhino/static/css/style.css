@@ -73,10 +73,6 @@ a:visited {
     width: 5em;
 }
 
-#signin-services a:link, #signin-services a:hover, #signin-services a:visited, #signin-services a:active, #signin-services a:focus {
-    color: #99f;
-}
-
 #signin-services .detach,
 #signin-services .attached .attach-link {
     display: none;
@@ -149,6 +145,10 @@ a:visited {
     height: 0;
     overflow: hidden;
     z-index: 9002;
+}
+
+#settings a:link, #settings a:hover, #settings a:visited, #settings a:active, #settings a:focus {
+    color: #ccf;
 }
 
 #settings-inner {

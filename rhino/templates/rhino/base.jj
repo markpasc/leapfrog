@@ -127,6 +127,9 @@
             </div>
 
             <div id="keyboard-notice">
+                {% if uservoice %}
+                    <a href="#" id="uservoice-link">Share feedback?</a><br>
+                {% endif %}
                 Keyboard shortcuts available (<code>?</code> for help)
             </div>
         </div>
@@ -263,28 +266,21 @@
 
 {% if uservoice %}
 <script type="text/javascript">
-var uservoiceOptions = {
-  /* required */
-  key: '{{ uservoice.key }}',
-  host: '{{ uservoice.host }}',
-  forum: '{{ uservoice.forum }}',
-  showTab: true,
-  /* optional */
-  alignment: 'left',
-  background_color:'black',
-  text_color: 'white',
-  hover_color: '#063',
-  lang: 'en'
-};
+    var uservoiceOptions = {
+        key: '{{ uservoice.key }}',
+        host: '{{ uservoice.host }}',
+        forum: '{{ uservoice.forum }}',
+        lang: 'en',
+        showTab: false
+    };
 
-function _loadUserVoice() {
-  var s = document.createElement('script');
-  s.setAttribute('type', 'text/javascript');
-  s.setAttribute('src', ("https:" == document.location.protocol ? "https://" : "http://") + "cdn.uservoice.com/javascripts/widgets/tab.js");
-  document.getElementsByTagName('head')[0].appendChild(s);
-}
-_loadSuper = window.onload;
-window.onload = (typeof window.onload != 'function') ? _loadUserVoice : function() { _loadSuper(); _loadUserVoice(); };
+    $(document).ready(function () {
+        $('head').append($('<script/>').attr('type', 'text/javascript').attr('src', '//cdn.uservoice.com/javascripts/widgets/tab.js'));
+        $('#uservoice-link').click(function () {
+            UserVoice.Popin.show(uservoiceOptions);
+            return false;
+        });
+    });
 </script>
 {% endif %}
 
