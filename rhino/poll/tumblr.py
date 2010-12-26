@@ -8,6 +8,7 @@ from urllib import urlencode
 from urlparse import urlparse, urlunparse
 from xml.etree import ElementTree
 
+from BeautifulSoup import BeautifulSoup
 from django.conf import settings
 import httplib2
 import oauth2 as oauth
@@ -61,18 +62,29 @@ def account_for_tumblelog_element(tumblelog_elem, person=None):
 
 
 def remove_reblog_boilerplate_from_obj(obj):
+    if obj.in_reply_to is None:
+        return
+
     soup = BeautifulSoup(obj.body)
     top_two = soup.findAll(recursive=False, limit=2)
     if len(top_two) < 2:
         return
     maybe_p, maybe_quote = top_two
 
-    if maybe_quote.name == 'blockquote' and maybe_p.name == 'p' and maybe_p.find(name='a', attrs={'class': 'tumblr_blog'}):
-        maybe_p.extract()
-        maybe_quote.extract()
-    else:
+    if maybe_quote.name != 'blockquote':
+        log.debug('Second element is a %s, not a blockquote', maybe_quote.name)
+        return
+    if maybe_p.name != 'p':
+        log.debug('First element is a %s, not a p', maybe_p.name)
+        return
+    maybe_blog_link = maybe_p.find(name='a', attrs={'href': obj.in_reply_to.permalink})
+    if not maybe_blog_link:
+        log.debug("First element doesn't link to reply target %s in its HTML: %s",
+            obj.in_reply_to.permalink, unicode(maybe_p).encode('utf8', 'ignore'))
         return
 
+    maybe_p.extract()
+    maybe_quote.extract()
     obj.body = unicode(soup).strip()
 
 
@@ -156,19 +168,22 @@ def object_from_post_element(post_el, tumblelog_el):
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
         return
 
-    if 'reblogged-from-url' in post_el.attrib:
-        orig_url = post_el.attrib['reblogged-from-url']
+    try:
+        orig_url = post_el.attrib['reblogged-root-url']
+    except KeyError:
+        log.debug("Post #%s is not a reblog, leave it alone", tumblr_id)
+    else:
         log.debug("Post #%s is a reblog of %s; let's try walking up", tumblr_id, orig_url)
+
+        orig_obj = None
         try:
             orig_obj = object_from_url(orig_url)
         except ValueError, exc:
             # meh
             log.debug("Couldn't walk up to reblog reference %s: %s", orig_url, str(exc))
-        else:
+        if orig_obj is not None:
             obj.in_reply_to = orig_obj
             remove_reblog_boilerplate_from_obj(obj)
-    else:
-        log.debug("Post #%s is not a reblog, leave it alone", tumblr_id)
 
     obj.save()
     return obj
@@ -178,6 +193,7 @@ def object_from_url(url):
     urlparts = urlparse(url)
     mo = re.match(r'/post/(\d+)', urlparts.path)  # the path, not the whole url
     if mo is None:
+        log.debug("URL %r did not match Tumblr URL pattern", url)
         return
     tumblr_id = mo.group(1)
 
@@ -193,8 +209,6 @@ def object_from_url(url):
     if resp.status != 200:
         raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
-    else:
-        log.debug(cont.decode('utf8').encode('ascii', 'replace'))
     if not resp.get('content-type', '').startswith('text/xml'):
         raise ValueError("Unexpected response of type %r asking about Tumblr post #%s"
             % (resp.get('content-type', ''), tumblr_id))
@@ -204,9 +218,6 @@ def object_from_url(url):
     post_el = doc.find('./posts/post')
 
     return object_from_post_element(post_el, tumblelog_el)
-
-
-object_for_url = object_from_url
 
 
 def poll_tumblr(account):
