@@ -11,6 +11,5 @@ urlpatterns = patterns('',
     # ...
     # your other urls, plus:
 
-    url(r'^', include('giraffe.aggregator.urls')),
-    url(r'^', include('giraffe.publisher.urls')),
+    url(r'^', include('leapfrog.urls')),
 )
