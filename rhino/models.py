@@ -19,6 +19,9 @@ class Media(models.Model):
         else:
             return "embed " + str(self.id)
 
+    class Meta:
+        db_table = 'leapfrog_media'
+
 
 class Person(models.Model):
 
@@ -29,6 +32,9 @@ class Person(models.Model):
 
     def __unicode__(self):
         return unicode(self.display_name)
+
+    class Meta:
+        db_table = 'leapfrog_person'
 
 
 class Account(models.Model):
@@ -49,6 +55,7 @@ class Account(models.Model):
 
     class Meta:
         unique_together = (('service', 'ident'),)
+        db_table = 'leapfrog_account'
 
 
 class Object(models.Model):
@@ -90,6 +97,7 @@ class Object(models.Model):
 
     class Meta:
         unique_together = (('service', 'foreign_id'),)
+        db_table = 'leapfrog_object'
 
 
 class UserStream(models.Model):
@@ -110,6 +118,7 @@ class UserStream(models.Model):
 
     class Meta:
         unique_together = (('user', 'obj'),)
+        db_table = 'leapfrog_userstream'
 
 
 class UserReplyStream(models.Model):
@@ -124,6 +133,7 @@ class UserReplyStream(models.Model):
 
     class Meta:
         unique_together = (('user', 'reply'),)
+        db_table = 'leapfrog_userreplystream'
 
 
 class UserSetting(models.Model):
@@ -134,3 +144,4 @@ class UserSetting(models.Model):
 
     class Meta:
         unique_together = (('user', 'key'),)
+        db_table = 'leapfrog_usersetting'
