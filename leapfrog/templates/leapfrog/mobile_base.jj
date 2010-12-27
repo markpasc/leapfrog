@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html><head>
+    <meta charset="utf-8">
+    <title>{% block htmltitle %}{{ page_title }}{% endblock %}</title>
+    {% block htmlhead %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('leapfrog-static', path="css/sencha-touch/sencha-touch.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('leapfrog-static', path="css/mobile.css") }}">
+
+        <script type="text/javascript" src="{{ url_for('leapfrog-static', path="js/sencha-touch-debug.js") }}"></script>
+        <script type="text/javascript" src="{{ url_for('leapfrog-static', path="js/leapfrog-mobile.js") }}"></script>
+
+        <base target="_blank">
+    {% endblock %}
+</head><body{% if pagecolor %} class="page-color-{{ pagecolor }}"{% endif %}>
+
+{% block content %}{% endblock %}
+
+</body></html>

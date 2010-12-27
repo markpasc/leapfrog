@@ -1,0 +1,6 @@
+{% extends "leapfrog/mobile_base.jj" %}
+
+{% block content %}
+
+
+{% endblock %}

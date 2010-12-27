@@ -8,8 +8,8 @@ import oauth2 as oauth
 import typd
 from tidylib import tidy_fragment
 
-from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
-import rhino.poll.embedlam
+from leapfrog.models import Object, Account, Person, UserStream, Media, UserReplyStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ def object_for_typepad_object(tp_obj):
     elif getattr(tp_obj, 'reblog_of_url', None) is not None:
         reblog_url = tp_obj.reblog_of_url
         try:
-            in_reply_to = rhino.poll.embedlam.object_for_url(reblog_url)
+            in_reply_to = leapfrog.poll.embedlam.object_for_url(reblog_url)
         except ValueError, exc:
             in_reply_to = None
             log.error("Error making object from referent %s of %s's post %s", reblog_url, author.display_name, tp_obj.url_id)

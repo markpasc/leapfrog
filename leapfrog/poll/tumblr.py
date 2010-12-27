@@ -13,8 +13,8 @@ from django.conf import settings
 import httplib2
 import oauth2 as oauth
 
-from rhino.models import Object, Account, Media, Person, UserStream, UserReplyStream
-import rhino.poll.embedlam
+from leapfrog.models import Object, Account, Media, Person, UserStream, UserReplyStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -153,7 +153,7 @@ def object_from_post_element(post_el, tumblelog_el):
         # of a reply?
         link_url = post_el.find('./link-url').text
         try:
-            in_reply_to = rhino.poll.embedlam.object_for_url(link_url)
+            in_reply_to = leapfrog.poll.embedlam.object_for_url(link_url)
         except ValueError:
             pass
         else:

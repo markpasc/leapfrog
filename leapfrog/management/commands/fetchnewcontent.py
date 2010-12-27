@@ -5,13 +5,13 @@ from optparse import make_option
 from django.core.management.base import NoArgsCommand, CommandError
 from sentry.client.base import SentryClient
 
-from rhino.models import *
-from rhino.poll import twitter
-from rhino.poll import typepad
-from rhino.poll import flickr
-from rhino.poll import facebook
-from rhino.poll import vimeo
-from rhino.poll import tumblr
+from leapfrog.models import *
+from leapfrog.poll import twitter
+from leapfrog.poll import typepad
+from leapfrog.poll import flickr
+from leapfrog.poll import facebook
+from leapfrog.poll import vimeo
+from leapfrog.poll import tumblr
 
 
 pollers = {

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from rhino import models
+from leapfrog import models
 
 
 class AccountAdmin(admin.ModelAdmin):

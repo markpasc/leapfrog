@@ -1,4 +1,4 @@
-{% extends "rhino/base.jj" %}
+{% extends "leapfrog/base.jj" %}
 
 {% block settings %}
     {{ super() }}
@@ -11,7 +11,7 @@
                     <span class="and">and</span>
                     <span class="replies"></span>
                 </a>
-                <span class="loading">Reloading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt=""></span>
+                <span class="loading">Reloading... <img src="{{ url_for('leapfrog-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt=""></span>
             </div>
         </div>
     {% endif %}
@@ -35,11 +35,11 @@
 
     {% if stream_items %}
         {% for item in stream_items %}
-            {% include "rhino/streamitem.jj" %}
+            {% include "leapfrog/streamitem.jj" %}
         {% endfor %}
 
         <div id="navigate">
-            <span>Loading... <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16"></span>
+            <span>Loading... <img src="{{ url_for('leapfrog-static', path='img/loadinfo.net.gif') }}" width="16" height="16"></span>
         </div>
 
         <script type="text/javascript">
@@ -377,7 +377,7 @@
                 <h1 class="title">Welcome!</h1>
                 <div>
                     We're looking for your stuff so check back in a minute.
-                    <img src="{{ url_for('rhino-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt="">
+                    <img src="{{ url_for('leapfrog-static', path='img/loadinfo.net.gif') }}" width="16" height="16" alt="">
                 </div>
             </div>
         </div>

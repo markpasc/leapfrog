@@ -10,8 +10,8 @@ import oauth2 as oauth
 from urllib import urlencode
 from urlparse import urlunparse
 
-from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
-import rhino.poll.embedlam
+from leapfrog.models import Object, Account, Person, UserStream, Media, UserReplyStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -182,7 +182,7 @@ def object_for_facebook_item(item, requesting_account=None):
         return None, None
 
     try:
-        referent = rhino.poll.embedlam.object_for_url(referent_url)
+        referent = leapfrog.poll.embedlam.object_for_url(referent_url)
     except ValueError, exc:
         log.error("Error making object from referent %s of Facebook item %s", referent_url, fb_id)
         log.exception(exc)

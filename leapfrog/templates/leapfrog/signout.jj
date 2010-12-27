@@ -1,4 +1,4 @@
-{% extends "rhino/base.jj" %}
+{% extends "leapfrog/base.jj" %}
 
 {% block htmltitle %}Signed out{% endblock %}
 

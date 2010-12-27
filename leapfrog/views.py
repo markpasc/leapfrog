@@ -22,13 +22,13 @@ import httplib2
 import oauth2 as oauth
 import typd.objecttypes
 
-from rhino.models import Person, Account, UserSetting, Object
-from rhino.poll.facebook import account_for_facebook_user
-from rhino.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
-from rhino.poll.tumblr import account_for_tumblelog_element
-from rhino.poll.twitter import account_for_twitter_user
-from rhino.poll.typepad import account_for_typepad_user
-from rhino.poll.vimeo import account_for_vimeo_id, call_vimeo
+from leapfrog.models import Person, Account, UserSetting, Object
+from leapfrog.poll.facebook import account_for_facebook_user
+from leapfrog.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
+from leapfrog.poll.tumblr import account_for_tumblelog_element
+from leapfrog.poll.twitter import account_for_twitter_user
+from leapfrog.poll.typepad import account_for_typepad_user
+from leapfrog.poll.vimeo import account_for_vimeo_id, call_vimeo
 
 
 log = logging.getLogger(__name__)
@@ -114,7 +114,7 @@ def home(request):
         'maxreplyitem': maxreplyitem,
     }
 
-    template = 'rhino/index.jj'
+    template = 'leapfrog/index.jj'
     return render_to_response(template, data,
         context_instance=RequestContext(request))
 
@@ -141,7 +141,7 @@ def mobile_home(request):
         'pagecolor': pagecolor,
     }
 
-    template = 'rhino/mobile_index.jj'
+    template = 'leapfrog/mobile_index.jj'
     return render_to_response(template, data,
         context_instance=RequestContext(request))
 
@@ -685,7 +685,7 @@ def json_stream(request):
         result = {'items': [{
             'id': item.id,
             'time': item.time.isoformat(),
-            'html': render_to_string('rhino/streamitem.jj', {
+            'html': render_to_string('leapfrog/streamitem.jj', {
                 'item': item,
                 'accounts': accounts,
             }, context_instance=rc),

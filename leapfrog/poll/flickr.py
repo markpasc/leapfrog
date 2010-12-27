@@ -11,7 +11,7 @@ from urlparse import urlunparse
 from django.conf import settings
 import httplib2
 
-from rhino.models import Account, Media, Person, Object, UserStream
+from leapfrog.models import Account, Media, Person, Object, UserStream
 
 
 log = logging.getLogger(__name__)

@@ -12,12 +12,12 @@ from BeautifulSoup import BeautifulSoup
 import httplib2
 from mimeparse import parse_mime_type
 
-from rhino.models import Account, Object, Person, Media
-import rhino.poll.flickr
-import rhino.poll.tumblr
-import rhino.poll.twitter
-import rhino.poll.typepad
-import rhino.poll.vimeo
+from leapfrog.models import Account, Object, Person, Media
+import leapfrog.poll.flickr
+import leapfrog.poll.tumblr
+import leapfrog.poll.twitter
+import leapfrog.poll.typepad
+import leapfrog.poll.vimeo
 
 
 log = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         endpoint_url = '%s?%s' % (endpoint_url, urlencode({'format': 'json', 'url': target_url}))
 
     h = httplib2.Http()
-    resp, cont = h.request(endpoint_url, headers={'User-Agent': 'rhino/1.0'})
+    resp, cont = h.request(endpoint_url, headers={'User-Agent': 'leapfrog/1.0'})
     if resp.status != 200:
         raise ValueError("Unexpected response requesting OEmbed data %s: %d %s" % (endpoint_url, resp.status, resp.reason))
     log.debug('JSON OEmbed endpoint %r returned resource of type %r', endpoint_url, resp['content-type'])
@@ -281,7 +281,7 @@ class Page(object):
         # Fetch the resource and soupify it.
         h = httplib2.Http(timeout=10)
         try:
-            resp, content = h.request(url, headers={'User-Agent': 'rhino/1.0'})
+            resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0'})
         except socket.timeout:
             raise ValueError("Request to %s timed out" % url)
         except httplib2.RedirectLimit:
@@ -352,18 +352,18 @@ class Page(object):
             return object_from_photo_url(url, None, None)
 
         if re.match(r'http:// [^/]* flickr\.com/photos/[^/]+/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-            return rhino.poll.flickr.object_from_url(url)
+            return leapfrog.poll.flickr.object_from_url(url)
         if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-            return rhino.poll.twitter.object_from_twitpic_url(url)
+            return leapfrog.poll.twitter.object_from_twitpic_url(url)
         if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-            return rhino.poll.twitter.object_from_url(url)
+            return leapfrog.poll.twitter.object_from_url(url)
         if re.match(r'http://vimeo\.com/ \d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
-            return rhino.poll.vimeo.object_from_url(url)
+            return leapfrog.poll.vimeo.object_from_url(url)
 
         # If it looks like a Tumblr URL, try asking Tumblr about it.
         if re.match(r'http://[^/]+/post/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             try:
-                return rhino.poll.tumblr.object_from_url(url)
+                return leapfrog.poll.tumblr.object_from_url(url)
             except ValueError:
                 # Keep trying the regular way.
                 pass
@@ -373,7 +373,7 @@ class Page(object):
         mentions_typepad = lambda: re.search(r'typepad', self.content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
         if is_typepad_url or mentions_typepad():
             try:
-                return rhino.poll.typepad.object_from_url(url)
+                return leapfrog.poll.typepad.object_from_url(url)
             except ValueError:
                 # Keep trying the regular way.
                 pass
@@ -412,7 +412,7 @@ class Page(object):
 
 
 def object_for_url(url):
-    """Returns a saved `rhino.models.Object` for the resource at the URL
+    """Returns a saved `leapfrog.models.Object` for the resource at the URL
     ``url``.
 
     If the resulting object has only a title (neither body content nor a

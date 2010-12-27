@@ -1,0 +1,34 @@
+{% extends "leapfrog/base.jj" %}
+
+{% block htmltitle %}Leapfrog{% endblock %}
+
+{% block htmlhead %}
+    {{ super() }}
+    {% if typekit_code %}
+        <script type="text/javascript" src="http://use.typekit.com/{{ typekit_code }}.js"></script>
+        <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+    {% endif %}
+{% endblock %}
+
+{% block settings %}{% endblock %}
+
+{% block content %}
+
+    <div id="signin" class="item">
+        <div id="signin-inner">
+            <h1 class="blamfx">leapfrog</h1>
+
+            <p>Read your friends better by signing in with one of these services:</p>
+
+            <div id="signin-services">
+                <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('leapfrog-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
+                <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('leapfrog-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
+                <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('leapfrog-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('leapfrog-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
+                <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('leapfrog-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
+                <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('leapfrog-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

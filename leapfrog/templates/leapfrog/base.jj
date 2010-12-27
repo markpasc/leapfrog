@@ -3,12 +3,12 @@
     <meta charset="utf-8">
     <title>{% block htmltitle %}{{ page_title }}{% endblock %}</title>
     {% block htmlhead %}
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/reset.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/text.css") }}">
-        <link rel="stylesheet" type="text/css" href="{{ url_for('rhino-static', path="css/style.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('leapfrog-static', path="css/reset.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('leapfrog-static', path="css/text.css") }}">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('leapfrog-static', path="css/style.css") }}">
 
         <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-        <script type="text/javascript" src="{{ url_for('rhino-static', path="jquery.relatize_date.js") }}"></script>
+        <script type="text/javascript" src="{{ url_for('leapfrog-static', path="jquery.relatize_date.js") }}"></script>
     {% endblock %}
 </head><body{% if pagecolor %} class="page-color-{{ pagecolor }}"{% endif %}>
 
@@ -29,7 +29,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('rhino-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
+                        <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('leapfrog-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
                         <a href="{{ url_for('signin-twitter') }}">Add Twitter account</a>
                     </span>
                 </p>
@@ -44,7 +44,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('rhino-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
+                        <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('leapfrog-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
                         <a href="{{ url_for('signin-typepad') }}">Add TypePad account</a>
                     </span>
                 </p>
@@ -59,7 +59,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('rhino-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
+                        <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('leapfrog-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
                         <a href="{{ url_for('signin-flickr') }}">Add Flickr account</a>
                     </span>
                 </p>
@@ -74,7 +74,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('rhino-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
+                        <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('leapfrog-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
                         <a href="{{ url_for('signin-vimeo') }}">Add Vimeo account</a>
                     </span>
                 </p>
@@ -89,7 +89,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('rhino-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
+                        <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('leapfrog-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
                         <a href="{{ url_for('signin-facebook') }}">Add Facebook account</a>
                     </span>
                 </p>
@@ -104,7 +104,7 @@
                         </span>
                     {% endif %}
                     <span class="attach-link">
-                        <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('rhino-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+                        <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('leapfrog-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
                         <a href="{{ url_for('signin-tumblr') }}">Add Tumblr account</a>
                     </span>
                 </p>

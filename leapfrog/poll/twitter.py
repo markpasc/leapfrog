@@ -7,8 +7,8 @@ from django.conf import settings
 import httplib2
 import oauth2 as oauth
 
-from rhino.models import Object, Account, Person, UserStream, Media, UserReplyStream
-import rhino.poll.embedlam
+from leapfrog.models import Object, Account, Person, UserStream, Media, UserReplyStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -219,7 +219,7 @@ def raw_object_for_tweet(tweetdata, client):
     that Object represents that tweet or the thing the tweet is sharing.
 
     This is returned as a tuple containing (a) whether the tweet is a
-    share, and (b) the ``rhino.models.Object`` reference for that tweet
+    share, and (b) the ``leapfrog.models.Object`` reference for that tweet
     data, in that order.
 
     """
@@ -249,7 +249,7 @@ def raw_object_for_tweet(tweetdata, client):
 
         about_page = None
         try:
-            about_page = rhino.poll.embedlam.Page(about_url)
+            about_page = leapfrog.poll.embedlam.Page(about_url)
         except ValueError, exc:
             log.error("Error making page data from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
             log.exception(exc)
@@ -307,7 +307,7 @@ def raw_object_for_tweet(tweetdata, client):
             if not url:
                 continue
             try:
-                url_page = rhino.poll.embedlam.Page(url)
+                url_page = leapfrog.poll.embedlam.Page(url)
             except ValueError:
                 # meh
                 continue
