@@ -159,7 +159,8 @@ def object_from_post_element(post_el, tumblelog_el):
         else:
             obj.in_reply_to = in_reply_to
 
-        obj.title = post_el.find('./link-text').text
+        title_el = post_el.find('./link-text')
+        obj.title = link_url if title_el is None else title_el.text
         desc_el = post_el.find('./link-description')
         if desc_el is not None:
             obj.body = desc_el.text
