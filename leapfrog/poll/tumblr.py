@@ -118,6 +118,24 @@ def object_from_post_element(post_el, tumblelog_el):
             video_caption = video_caption_el.text
             body = '\n\n'.join((body, video_caption))
         obj.body = body
+    elif post_type == 'audio':
+        title_el = post_el.find('./id3-title')
+        if title_el is not None:
+            obj.title = title_el.text
+        artist_el = post_el.find('./id3-artist')
+        if artist_el is not None:
+            obj.title = u'%s \u2013 %s' % (artist_el.text, obj.title)
+
+        body = post_el.find('./audio-player').text
+        audio_art_el = post_el.find('./id3-album-art')
+        if audio_art_el is not None:
+            audio_art_url = audio_art_el.text
+            body = u'\n\n'.join((u'<p><img src="%s"></p>' % audio_art_url, body))
+        audio_caption_el = post_el.find('./audio-caption')
+        if audio_caption_el is not None:
+            audio_caption = audio_caption_el.text
+            body = u'\n\n'.join((body, audio_caption))
+        obj.body = body
     elif post_type == 'photo':
         # TODO: if there's a photo-link-url, is this really a "photo reply"?
 
@@ -164,8 +182,10 @@ def object_from_post_element(post_el, tumblelog_el):
         desc_el = post_el.find('./link-description')
         if desc_el is not None:
             obj.body = desc_el.text
-    # TODO: handle audio posts
-    # TODO: handle quote posts
+    elif post_type == 'quote':
+        quote_text = post_el.find('./quote-text').text
+        quote_source = post_el.find('./quote-source').text
+        obj.body = u"""<blockquote><p>%s</p></blockquote>\n\n<p>\u2014%s</p>""" % (quote_text, quote_source)
     # TODO: handle chat posts (i guess)
     else:
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
