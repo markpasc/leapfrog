@@ -58,17 +58,17 @@ def tweet_html(tweetdata):
         classattr = 'class="%s" ' % urldata['class'] if 'class' in urldata else ''
         mutations.append({
             'indices': (start, end),
-            'html': """<a %shref="%s">%s</a>""" % (classattr, url, text),
+            'html': u"""<a %shref="%s">%s</a>""" % (classattr, url, text),
         })
     for mentiondata in tweetdata['entities'].get('user_mentions', ()):
         mutations.append({
             'indices': mentiondata['indices'],
-            'html': """@<a href="http://twitter.com/%(screen_name)s" title="%(name)s">%(screen_name)s</a>""" % mentiondata,
+            'html': u"""@<a href="http://twitter.com/%(screen_name)s" title="%(name)s">%(screen_name)s</a>""" % mentiondata,
         })
     for tagdata in tweetdata['entities'].get('hashtags', ()):
         mutations.append({
             'indices': tagdata['indices'],
-            'html': """<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
+            'html': u"""<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
         })
 
     # Mutate the tweet from the end, so the replacements don't invalidate the remaining indices.
