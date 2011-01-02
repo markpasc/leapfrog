@@ -182,6 +182,10 @@ def object_from_post_element(post_el, tumblelog_el):
         desc_el = post_el.find('./link-description')
         if desc_el is not None:
             obj.body = desc_el.text
+
+        # If we added no description, make this a share.
+        if obj.in_reply_to and not obj.body:
+            return True, obj.in_reply_to
     elif post_type == 'quote':
         quote_text = post_el.find('./quote-text').text
         quote_source = post_el.find('./quote-source').text
