@@ -188,8 +188,15 @@ def object_from_post_element(post_el, tumblelog_el):
             return True, obj.in_reply_to
     elif post_type == 'quote':
         quote_text = post_el.find('./quote-text').text
-        quote_source = post_el.find('./quote-source').text
-        obj.body = u"""<blockquote><p>%s</p></blockquote>\n\n<p>\u2014%s</p>""" % (quote_text, quote_source)
+        body = u"""<blockquote><p>%s</p></blockquote>""" % (quote_text,)
+
+        quote_source_el = post_el.find('./quote-source')
+        if quote_source_el is not None:
+            quote_source = quote_source_el.text
+            body = u'\n\n'.join((body, u"<p>\u2014%s</p>" % quote_source))
+
+        obj.body = body
+
     # TODO: handle chat posts (i guess)
     else:
         log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
