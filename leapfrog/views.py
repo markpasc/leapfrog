@@ -326,7 +326,11 @@ def signin_facebook(request):
 
 def complete_facebook(request):
     redirect_uri = request.build_absolute_uri(reverse('complete-facebook'))
-    code = request.GET["code"]
+    try:
+        code = request.GET["code"]
+    except KeyError:
+        # Guess they cancelled. That's cool.
+        return HttpResponseRedirect(reverse('home'))
 
     query = {
         'client_id': settings.FACEBOOK_CONSUMER[0],
