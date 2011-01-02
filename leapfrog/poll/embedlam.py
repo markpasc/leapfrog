@@ -76,13 +76,13 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         log.debug("wtf is %r", resource)
         raise ValueError("Resource from OEmbed request %s has no 'type'" % (endpoint_url,))
 
-    if resource_type == 'video':
+    if resource_type in ('video', 'rich'):
         obj = Object(
             service='',
             foreign_id=target_url,
             render_mode='mixed',
-            title=resource['title'],
-            body=resource['html'],
+            title=resource.get('title', ''),
+            body=resource.get('html', ''),
             author=account_for_embed_resource(resource),
             time=datetime.now(),
             permalink_url=target_url,
@@ -109,6 +109,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         obj.save()
         return obj
 
+    # TODO: handle 'link' type
     raise ValueError('Unknown OEmbed resource type %r' % resource_type)
 
 
