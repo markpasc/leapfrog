@@ -539,6 +539,8 @@ def signin_tumblr(request, form=None):
 
     if resp.status != 200:
         raise ValueError('Unexpected response asking for Tumblr request token: %d %s' % (resp.status, resp.reason))
+    if 'content-type' not in resp:
+        raise ValueError("Response asking for Tumblr request token unexpectedly had no content type (is Tumblr down?)")
 
     request_token = dict(parse_qsl(content))
     request.session['tumblr_request_token'] = request_token
