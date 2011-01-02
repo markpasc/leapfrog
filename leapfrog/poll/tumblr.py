@@ -139,14 +139,14 @@ def object_from_post_element(post_el, tumblelog_el):
     elif post_type == 'photo':
         # TODO: if there's a photo-link-url, is this really a "photo reply"?
 
+        photo_el = sorted(post_el.findall('./photo-url'), key=lambda x: int(x.attrib['max-width']), reverse=True)[0]
+        photo_el_width = int(photo_el.attrib['max-width'])
         try:
             width, height = post_el.attrib['width'], post_el.attrib['height']
         except KeyError:
             width, height = None, None
         else:
             width, height = int(width), int(height)
-            photo_el = sorted(post_el.findall('./photo-url'), key=lambda x: int(x.attrib['max-width']), reverse=True)[0]
-            photo_el_width = int(photo_el.attrib['max-width'])
             if width > photo_el_width:
                 height = photo_el_width * height / width
                 width = photo_el_width
