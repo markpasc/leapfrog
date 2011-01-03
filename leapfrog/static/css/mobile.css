@@ -46,10 +46,6 @@ body {
     filter: progid:DXImageTransform.Microsoft.gradient(enabled='true', startColorstr=#ECE1BD, endColorstr=#e1cf95, GradientType=0);
 }
 
-.x-carousel-item {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
 .x-panel-body {
     padding: 0;
     margin: 0;

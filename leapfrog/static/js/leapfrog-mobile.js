@@ -19,7 +19,7 @@ Ext.setup({
             fullscreen: true,
             ui: "light",
             items: [],
-            indicator: false,
+            indicator: false
         });
 
         loadItems(function (data) {
@@ -34,6 +34,7 @@ Ext.setup({
                 html = "<div class=\"itemholder\">"+item.html+"</div>";
                 var itemPanel = new Ext.Panel({
                     html: html,
+                    scroll: true
                 });
                 itemPanels.push(itemPanel);
             }
