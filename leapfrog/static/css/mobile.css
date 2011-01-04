@@ -71,6 +71,7 @@ body {
 .item-content {
     background: white;
     overflow: hidden;
+    max-width: 100%;
 }
 
 .reply {

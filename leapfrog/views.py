@@ -46,14 +46,14 @@ class LoginUrl(object):
 settings.LOGIN_URL = LoginUrl()
 
 
-def stream_items_for_user(user, before=None, after=None):
+def stream_items_for_user(user, before=None, after=None, limit=20):
     stream_items = user.stream_items
     if before is not None:
         stream_items = stream_items.filter(time__lte=before)
     elif after is not None:
         stream_items = stream_items.filter(time__gte=after)
     stream_items = stream_items.order_by("-time").select_related()
-    stream_items = list(stream_items[:20])
+    stream_items = list(stream_items[:limit])
 
     # Put the stream items' replies on the items.
     try:
@@ -647,7 +647,8 @@ def json_stream(request):
         accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
     before, after = (datetime.strptime(request.GET[field], '%Y-%m-%dT%H:%M:%S') if field in request.GET else None for field in ('before', 'after'))
-    stream_items = stream_items_for_user(user, before, after)
+    limit = request.GET.get('limit', 20)
+    stream_items = stream_items_for_user(user, before, after, limit=limit)
 
     def json_image_link(media):
         imagedata = {
