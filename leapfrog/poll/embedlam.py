@@ -145,6 +145,9 @@ def title_from_html_head(head):
 def object_from_html_head(url, orig_url, head):
     title = title_from_html_head(head)
 
+    old_facebook_video_elem = head.find('link', rel='video_src')
+    video_url = value_for_meta_elems((old_facebook_video_elem,), base_url=orig_url)
+
     og_image_elem = head.find("meta", property="og:image")
     old_facebook_image_elem = head.find("link", rel="image_src")
     image_url = value_for_meta_elems((og_image_elem, old_facebook_image_elem), base_url=orig_url)
@@ -152,12 +155,36 @@ def object_from_html_head(url, orig_url, head):
     og_summary_elem = head.find("meta", property="og:description")
     summary = value_for_meta_elems((og_summary_elem,), "")
 
-    if not image_url and not summary:
+    if not video_url and not image_url and not summary:
         log.debug("Found neither an image URL nor a summary for %s, so returning no object", url)
         return None
 
     image = None
-    if image_url:
+    if video_url:
+        embed_code_parts = ["<embed", 'src="%s"' % video_url, 'allowfullscreen="true" wmode="transparent"']
+
+        video_height_elem = head.find('meta', attrs={'name': 'video_height'})
+        video_height = value_for_meta_elems((video_height_elem,), '')
+        video_width_elem = head.find('meta', attrs={'name': 'video_width'})
+        video_width = value_for_meta_elems((video_width_elem,), '')
+        video_type_elem = head.find('meta', attrs={'name': 'video_type'})
+        video_type = value_for_meta_elems((video_type_elem,), '')
+
+        if video_height:
+            embed_code_parts.append('height="%s"' % video_height)
+        if video_width:
+            embed_code_parts.append('width="%s"' % video_width)
+
+        # Add type and closing bracket always.
+        embed_code_parts.append('type="%s">' % (video_type or 'application/x-shockwave-flash'))
+
+        image = Media(
+            embed_code=' '.join(embed_code_parts),
+            width=int(video_width) if video_width else None,
+            height=int(video_height) if video_height else None,
+        )
+        image.save()
+    elif image_url:
         image = Media()
         image.image_url = image_url
         # TODO: how big is this image?
