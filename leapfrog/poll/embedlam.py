@@ -108,8 +108,29 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         )
         obj.save()
         return obj
+    elif resource_type == 'link':
+        obj = Object(
+            service='',
+            # Even if the resource includes an 'url', we only tested if target_url exists, so keep using it.
+            foreign_id=target_url,
+            render_mode='link',
+            title=resource.get('title', ''),
+            body=resource.get('html', ''),
+            author=account_for_embed_resource(resource),
+            permalink_url=resource.get('url') or target_url,  # might be given anyway
+            time=datetime.now(),
+        )
+        if 'thumbnail_url' in resource:
+            image = Media(
+                image_url=resource['thumbnail_url'],
+                width=resource.get('thumbnail_width'),
+                height=resource.get('thumbnail_height'),
+            )
+            image.save()
+            obj.image = image
+        obj.save()
+        return obj
 
-    # TODO: handle 'link' type
     raise ValueError('Unknown OEmbed resource type %r' % resource_type)
 
 
