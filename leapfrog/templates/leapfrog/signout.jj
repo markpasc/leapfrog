@@ -2,10 +2,29 @@
 
 {% block htmltitle %}Signed out{% endblock %}
 
+{% block htmlhead %}
+    {{ super() }}
+    <style type="text/css">
+    .item {
+        background: white;
+        width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .item-inner {
+        position: relative;
+        padding: 20px;
+    }
+    .item p.last {
+        margin: 0;
+    }
+    </style>
+{% endblock %}
+
 {% block content %}
 
     <div id="signin" class="item">
-        <div id="signin-inner">
+        <div class="item-inner">
             <p>Thanks for using the web site today!</p>
             <p class="last"><a href="{{ url_for('home') }}">Return home.</a></p>
         </div>
