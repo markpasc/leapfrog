@@ -254,10 +254,10 @@ def object_from_url(url):
     # API here, just to make sure.
 
     query = urlencode({'id': tumblr_id})
-    api_url = urlunparse(('http', urlparts.netloc, '/api/read', None, query, None))
+    api_url = urlunparse(('http', 'tumblr.com', '/api/read', None, query, None))
 
     client = httplib2.Http()
-    resp, cont = client.request(api_url)
+    resp, cont = client.request(api_url, headers={'Host': urlparts.netloc})
     if resp.status != 200:
         raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
