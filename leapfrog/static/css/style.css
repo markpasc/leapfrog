@@ -679,49 +679,6 @@ a:visited {
 }
 
 
-/* signin page styles */
-
-#signin {
-    background: white;
-    width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-}
-#signin-inner {
-    position: relative;
-    padding: 20px;
-}
-
-#signin h1 {
-    font-weight: normal;
-    font-size: 3em;
-    line-height: 1em;
-}
-
-.signin-tumblr h1 {
-    overflow-x: -webkit-marquee;
-    -webkit-marquee-direction: backwards;
-    -webkit-marquee-style: scroll;
-    -webkit-marquee-speed: fast;
-    -webkit-marquee-increment: medium;
-}
-
-.signin-tumblr .protip {
-    font-style: oblique;
-    padding: 10px;
-    border: 1px solid #c00;
-    background: #fcc;
-}
-
-#signin input {
-    font-size: 1.5em;
-}
-
-#signin p.last {
-    margin: 0;
-}
-
-
 /* zendesk integration */
 
 #zendesk-dropbox {

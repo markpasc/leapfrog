@@ -8,6 +8,41 @@
         <script type="text/javascript" src="http://use.typekit.com/{{ typekit_code }}.js"></script>
         <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
     {% endif %}
+
+    <style type="text/css">
+        /* signin page styles */
+
+        .item {
+            background: white;
+            width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .item-inner {
+            position: relative;
+            padding: 20px;
+        }
+
+        .item h1, .item h2 {
+            font-weight: normal;
+            font-size: 3em;
+            line-height: 1em;
+        }
+        .item h2 {
+            font-size: 2em;
+        }
+
+        .item p.last {
+            margin: 0;
+        }
+
+        #what img {
+            float: right;
+        }
+        #what p {
+            clear: right;
+        }
+    </style>
 {% endblock %}
 
 {% block settings %}{% endblock %}
@@ -15,7 +50,7 @@
 {% block content %}
 
     <div id="signin" class="item">
-        <div id="signin-inner">
+        <div id="signin-inner" class="item-inner">
             <h1 class="blamfx">leapfrog</h1>
 
             <p>Read your friends better by signing in with one of these services:</p>
@@ -30,5 +65,48 @@
             </div>
         </div>
     </div>
+
+
+    <div id="what" class="item">
+        <div class="item-inner">
+            <h2 class="blamfx">What is leapfrog?</h2>
+
+            <p>Leapfrog is a way to read what your friends post on some social websites all together in one place. Inspired by longer form sites like LiveJournal and Vox, Leapfrog collects things that your friends share on Twitter, TypePad, Facebook and Tumblr into one “internet neighborhood” view.</p>
+
+            <p>
+                <a class="zoom" href="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dfdaf970b-pi"><img class="asset  asset-image at-xid-6a00d83451ce6b69e20147e03dfdaf970b" alt="Content-reply" title="Content-reply" src="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dfdaf970b-120wi" width="120" height="95"></a>
+                When it can, Leapfrog will pull pictures and blog posts linked from tweets and Tumblrs into the stream to view without clicking through.
+            </p>
+
+            <p>
+                <a class="zoom" href="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20134899a2768970c-pi"><img class="asset  asset-image at-xid-6a00d83451ce6b69e20134899a2768970c" alt="Top-level-share" title="Top-level-share" src="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20134899a2768970c-120wi" width="120" height="36"></a>
+                When it can't, Leapfrog will at least tell you what the link goes to.
+            </p>
+
+            <p>
+                <a class="zoom" style="float: right" href="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dff05970b-pi"><img class="asset  asset-image at-xid-6a00d83451ce6b69e20147e03dff05970b" alt="Dedupe" title="Dedupe" style="margin: 0 0 5px 5px" src="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dff05970b-120wi" width="120" height="82"></a>
+                When several of your friends post the same link, it's collected as one “thing” in your stream, so you only see it once.
+            </p>
+
+            <p class="last">Leapfrog is an experiment by <a href="http://markpasc.org/mark/">markpasc</a> &amp; friends. You can see <a href="http://markpasc.typepad.com/blog/leapfrog/">some things he wrote about it</a> or <a href="https://github.com/markpasc/leapfrog">the project on GitHub</a>, or click one of the service icons above to try it out!</p>
+        </div>
+    </div>
+
+    <div class="item">
+        <div class="item-inner">
+            <h2 class="blamfx">Uh, why does leapfrog want to write to my account?</h2>
+
+            <p>Leapfrog lets you mark things as favorites on some supported services. Unfortunately, none of the supported services let us ask for “favorite-only” access, so we have to ask for the same “write” level of access that lets us post and in some cases delete things from your account.</p>
+
+            <p class="last">Please remember that Leapfrog is an <strong>experimental</strong> service, and to <strong>never</strong> give a web site access to your accounts that you're not comfortable granting. (As much as we like Leapfrog, it's okay if you don't want to use it!)</p>
+        </div>
+    </div>
+
+    <!-- zoom zoom -->
+    <script src="http://neologasm.org/fancyzoom/js-global/FancyZoom.js" type="text/javascript"></script>
+    <script src="http://neologasm.org/fancyzoom/js-global/FancyZoomHTML.js" type="text/javascript"></script>
+    <script type="text/javascript">
+    $(document).ready(setupZoom);
+    </script>
 
 {% endblock %}
