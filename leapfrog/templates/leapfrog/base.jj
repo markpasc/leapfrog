@@ -234,6 +234,10 @@
   })();
 
 </script>
+<script type="text/javascript">
+var pageTracker = _gat.getTracker("{{ ganalytics_code }}");
+pageTracker._trackPageview();
+</script>
 {% endif %}
 
 {% if zendesk %}
