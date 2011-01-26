@@ -126,7 +126,7 @@
 
             $root.find('.response-twitter .favorite').click(function () {
                 {% if ganalytics_code %}
-                pageTracker._trackPageview('/goal/feedback/twitterfav');
+                _gaq.push(['_trackPageview', '/goal/feedback/twitterfav']);
                 {% endif %}
 
                 var $favlink = $(this);
@@ -153,7 +153,7 @@
             });
             $root.find('.response-twitter .retweet').click(function () {
                 {% if ganalytics_code %}
-                pageTracker._trackPageview('/goal/feedback/twitterrt');
+                _gaq.push(['_trackPageview', '/goal/feedback/twitterrt']);
                 {% endif %}
 
                 var $favlink = $(this);
@@ -180,7 +180,7 @@
             });
             $root.find('.response-typepad .favorite').click(function () {
                 {% if ganalytics_code %}
-                pageTracker._trackPageview('/goal/feedback/typepadfav');
+                _gaq.push(['_trackPageview', '/goal/feedback/typepadfav']);
                 {% endif %}
 
                 var $favlink = $(this);
@@ -215,7 +215,7 @@
             });
             $root.find('.response-flickr .favorite').click(function () {
                 {% if ganalytics_code %}
-                pageTracker._trackPageview('/goal/feedback/flickrfav');
+                _gaq.push(['_trackPageview', '/goal/feedback/flickrfav']);
                 {% endif %}
 
                 var $favlink = $(this);
@@ -242,7 +242,7 @@
             });
             $root.find('.response-tumblr .favorite').click(function () {
                 {% if ganalytics_code %}
-                pageTracker._trackPageview('/goal/feedback/tumblrlike');
+                _gaq.push(['_trackPageview', '/goal/feedback/tumblrlike']);
                 {% endif %}
 
                 var $favlink = $(this);
