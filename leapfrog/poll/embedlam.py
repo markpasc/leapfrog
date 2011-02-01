@@ -334,6 +334,8 @@ class Page(object):
             resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0'})
         except socket.timeout:
             raise ValueError("Request to %s timed out" % url)
+        except socket.error, exc:
+            raise ValueError("Request to %s could not complete: %s" % (url, str(exc)))
         except httplib2.RedirectLimit:
             raise ValueError("%s redirected too many times" % url)
         except httplib2.ServerNotFoundError, exc:
