@@ -344,6 +344,8 @@ class Page(object):
             raise ValueError("%s returned an empty response (probably)" % url)
         except httplib.IncompleteRead:
             raise ValueError("Got an incomplete read trying to load %s" % url)
+        except httplib.InvalidURL:
+            raise ValueError("Invalid URL %r according to httplib" % url)
 
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
