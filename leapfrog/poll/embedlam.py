@@ -1,6 +1,7 @@
 from datetime import datetime
 import feedparser
 from HTMLParser import HTMLParseError
+import httplib
 import json
 import logging
 import re
@@ -337,6 +338,8 @@ class Page(object):
             raise ValueError("%s redirected too many times" % url)
         except httplib2.ServerNotFoundError, exc:
             raise ValueError(str(exc))
+        except httplib.BadStatusLine:
+            raise ValueError("%s returned an empty response (probably)" % url)
 
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
