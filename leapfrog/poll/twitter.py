@@ -351,9 +351,14 @@ def poll_twitter(account):
     token = oauth.Token(*account.authinfo.split(':', 1))
     client = oauth.Client(csr, token)
     resp, content = client.request('http://api.twitter.com/1/statuses/home_timeline.json?include_entities=true', 'GET')
+    if resp.status == 503:
+        # Can't get Twitter results right now. Let's try again later.
+        return
+    if resp.status == 401:
+        raise ValueError("Token for Twitter user %s is no longer valid" % account.ident)
     if resp.status != 200:
         raise ValueError("Unexpected %d %s response fetching %s's twitter timeline"
-            % (resp.status, resp.reason, account.display_name))
+            % (resp.status, resp.reason, account.ident))
 
     tl = json.loads(content)
 
