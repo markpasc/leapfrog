@@ -332,7 +332,11 @@ class Page(object):
         # Fetch the resource and soupify it.
         h = httplib2.Http(timeout=10)
         try:
-            resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0'})
+            try:
+                resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0'})
+            except httplib2.FailedToDecompressContent:
+                # Try asking again with no compression.
+                resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0', 'Accept-Encoding': 'identity'})
         except socket.timeout:
             raise ValueError("Request to %s timed out" % url)
         except socket.error, exc:
