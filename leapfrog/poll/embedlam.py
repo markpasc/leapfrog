@@ -35,15 +35,21 @@ def account_for_embed_resource(resource):
     except Account.DoesNotExist:
         pass
 
+    if resource.get('author_name') is None:
+        author_url_parts = urlparse(url)
+        author_name = '/'.join((author_url_parts.netloc, author_url_parts.path))
+    else:
+        author_name = resource['author_name']
+
     # TODO: go find an avatar by way of ~~=<( MAGIC )>=~~
     person = Person(
-        display_name=resource['author_name'],
+        display_name=author_name,
     )
     person.save()
     acc = Account(
         service='',
         ident=url,
-        display_name=resource['author_name'],
+        display_name=author_name,
         person=person,
     )
     acc.save()
