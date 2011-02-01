@@ -6,6 +6,7 @@ import json
 import logging
 import re
 import socket
+import ssl
 from urllib import urlencode
 from urlparse import urlparse, urljoin
 
@@ -346,6 +347,8 @@ class Page(object):
             raise ValueError("Got an incomplete read trying to load %s" % url)
         except httplib.InvalidURL:
             raise ValueError("Invalid URL %r according to httplib" % url)
+        except ssl.SSLError, exc:
+            raise ValueError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
 
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
