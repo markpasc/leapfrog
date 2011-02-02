@@ -187,11 +187,8 @@ def object_from_tweet_id(tweet_id, client=None):
 
     resp, content = client.request('http://api.twitter.com/1/statuses/show/%d.json?include_entities=1'
         % tweet_id)
-    if resp.status == 404:
-        # Hmm, no such tweet, I guess.
-        return False, None
-    if resp.status == 403:
-        # Hmm, somebody's private tweet, I guess.
+    if resp.status in (403, 404, 500, 502, 503):
+        # Hmm, no such tweet, somebody's private tweet, or we just can't get it right now, I guess.
         return False, None
     if resp.status != 200:
         raise ValueError("Unexpected %d %s response fetching tweet #%s"
@@ -351,7 +348,7 @@ def poll_twitter(account):
     token = oauth.Token(*account.authinfo.split(':', 1))
     client = oauth.Client(csr, token)
     resp, content = client.request('http://api.twitter.com/1/statuses/home_timeline.json?include_entities=true', 'GET')
-    if resp.status == 503:
+    if resp.status in (500, 502, 503):
         # Can't get Twitter results right now. Let's try again later.
         return
     if resp.status == 401:
