@@ -211,11 +211,11 @@ def object_from_post_element(post_el, tumblelog_el):
 
         orig_obj = None
         try:
-            orig_obj = object_from_url(orig_url)
+            really_a_share, orig_obj = object_from_url(orig_url)
         except ValueError, exc:
             # meh
             log.debug("Couldn't walk up to reblog reference %s: %s", orig_url, str(exc))
-        if orig_obj is not None:
+        if not really_a_share and orig_obj is not None:
             # Patch up the upstream author's userpic if necessary, since we
             # don't get those from /api/read, evidently.
             if orig_obj.author.person.avatar is None and 'reblogged-root-avatar-url-64' in post_el.attrib:
@@ -272,8 +272,7 @@ def object_from_url(url):
     tumblelog_el = doc.find('./tumblelog')
     post_el = doc.find('./posts/post')
 
-    really_a_share, obj = object_from_post_element(post_el, tumblelog_el)
-    return obj
+    return object_from_post_element(post_el, tumblelog_el)
 
 
 def poll_tumblr(account):
