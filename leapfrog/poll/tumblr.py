@@ -258,6 +258,8 @@ def object_from_url(url):
 
     client = httplib2.Http()
     resp, cont = client.request(api_url, headers={'Host': urlparts.netloc})
+    if resp.status == 500:
+        raise ValueError("Server error asking about Tumblr post #%s (is Tumblr down?)" % tumblr_id)
     if resp.status != 200:
         raise ValueError("Unexpected response asking about Tumblr post #%s: %d %s"
             % (tumblr_id, resp.status, resp.reason))
@@ -285,6 +287,9 @@ def poll_tumblr(account):
     client = oauth.Client(csr, token)
     body = urlencode({'num': 30})
     resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    if resp.status == 500:
+        log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
+        return
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
     content_type = resp.get('content-type')
