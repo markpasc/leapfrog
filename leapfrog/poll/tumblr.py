@@ -263,7 +263,7 @@ def object_from_url(url):
             % (tumblr_id, resp.status, resp.reason))
     content_type = resp.get('content-type')
     if content_type is None:
-        raise ValueError("Response asking about Tumblr post #%s unexpectedly had no content type (is Tumblr down?)", tumblr_id)
+        raise ValueError("Response asking about Tumblr post #%s unexpectedly had no content type (is Tumblr down?)" % tumblr_id)
     if not content_type.startswith('text/xml'):
         raise ValueError("Unexpected response of type %r asking about Tumblr post #%s"
             % (content_type, tumblr_id))
@@ -289,7 +289,7 @@ def poll_tumblr(account):
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
     content_type = resp.get('content-type')
     if content_type is None:
-        raise ValueError("Response polling Tumblr user %s's dashboard had no content type (is Tumblr down?)", account.ident)
+        raise ValueError("Response polling Tumblr user %s's dashboard had no content type (is Tumblr down?)" % account.ident)
     if not content_type.startswith('text/xml'):
         raise ValueError("Unexpected response of type %r looking for dashboard for Tumblr user %s" % (content_type, account.ident))
 
