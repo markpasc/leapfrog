@@ -351,6 +351,8 @@ class Page(object):
             raise ValueError("%s redirected too many times" % url)
         except httplib2.ServerNotFoundError, exc:
             raise ValueError(str(exc))
+        except httplib2.RelativeURIError:
+            raise ValueError("httplib2 won't resolve relative URL %r" % url)
         except httplib.BadStatusLine:
             raise ValueError("%s returned an empty response (probably)" % url)
         except httplib.IncompleteRead:
