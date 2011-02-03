@@ -171,10 +171,25 @@ def object_from_post_element(post_el, tumblelog_el):
         # of a reply?
         link_url = post_el.find('./link-url').text
         try:
-            in_reply_to = leapfrog.poll.embedlam.object_for_url(link_url)
+            in_reply_to_page = leapfrog.poll.embedlam.Page(link_url)
         except ValueError:
             pass
         else:
+            try:
+                in_reply_to = in_reply_to_page.to_object()
+            except ValueError:
+                in_reply_to = None
+            if in_reply_to is None:
+                in_reply_to = Object(
+                    service='',
+                    foreign_id=in_reply_to_page.url,
+                    render_mode='link',
+                    title=in_reply_to_page.title,
+                    permalink_url=in_reply_to_page.url,
+                    time=datetime.now(),
+                )
+                in_reply_to.save()
+
             obj.in_reply_to = in_reply_to
 
         title_el = post_el.find('./link-text')
