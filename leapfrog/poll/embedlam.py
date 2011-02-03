@@ -369,7 +369,10 @@ class Page(object):
         content_type_str = resp.get('content-type')
         if content_type_str is None or '/' not in content_type_str:
             content_type_str = 'application/x-unknown'
-        content_type = parse_mime_type(content_type_str)
+        try:
+            content_type = parse_mime_type(content_type_str)
+        except ValueError:
+            raise ValueError("Could not parse purported mime type %r" % content_type_str)
         if content_type[0] == 'image':
             log.debug("This seems to be an image")
             self.type = 'image'
