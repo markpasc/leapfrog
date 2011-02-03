@@ -436,10 +436,12 @@ class Page(object):
         # If it looks like a Tumblr URL, try asking Tumblr about it.
         if re.match(r'http://[^/]+/post/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             try:
-                return leapfrog.poll.tumblr.object_from_url(url)
+                really_a_share, tumblr_obj = leapfrog.poll.tumblr.object_from_url(url)
             except ValueError:
                 # Keep trying the regular way.
                 pass
+            else:
+                return tumblr_obj
 
         # If the site mentions TypePad, try asking TypePad about it.
         is_typepad_url = re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
