@@ -148,7 +148,12 @@ def object_from_twitpic_url(url):
     h = httplib2.Http()
     resp, content = h.request('http://api.twitpic.com/2/media/show.json?id=%s' % twitpic_id)
 
-    picdata = json.loads(content)
+    try:
+        picdata = json.loads(content)
+    except ValueError:
+        # Couldn't get twitpic infos... probably because we're banned.
+        return None
+
     userdata = picdata['user']
     # ugh, why did they rename these
     userdata['id'] = userdata['twitter_id']
