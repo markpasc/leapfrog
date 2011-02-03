@@ -247,6 +247,11 @@ def poll_typepad(account):
     # Get that TypePad user's notifications.
     t = typd.TypePad(endpoint='http://api.typepad.com/')
     notes = t.users.get_notifications(account.ident)
+    try:
+        notes.entries
+    except typd.ServerError:
+        # Guess we can't get those notes right now.
+        return
 
     for note in good_notes_for_notes(reversed(notes.entries), t):
         try:
