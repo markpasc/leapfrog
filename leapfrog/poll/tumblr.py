@@ -224,7 +224,7 @@ def object_from_post_element(post_el, tumblelog_el):
     else:
         log.debug("Post #%s is a reblog of %s; let's try walking up", tumblr_id, orig_url)
 
-        orig_obj = None
+        really_a_share, orig_obj = False, None
         try:
             really_a_share, orig_obj = object_from_url(orig_url)
         except ValueError, exc:

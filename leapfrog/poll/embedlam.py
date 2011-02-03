@@ -375,7 +375,8 @@ class Page(object):
             self.type = 'image'
             return
 
-        if content_type[0:2] != ('text', 'html'):
+        major_minor_type = '/'.join(content_type[0:2])
+        if major_minor_type not in ('text/html', 'application/xhtml+xml'):
             # hmm
             raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
 
