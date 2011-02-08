@@ -29,6 +29,8 @@ urlpatterns += patterns('',
     url(r'^complete/vimeo$', 'leapfrog.views.complete_vimeo', name='complete-vimeo'),
     url(r'^signin/tumblr$', 'leapfrog.views.signin_tumblr', name='signin-tumblr'),
     url(r'^complete/tumblr$', 'leapfrog.views.complete_tumblr', name='complete-tumblr'),
+    url(r'^signin/mlkshk$', 'leapfrog.views.signin_mlkshk', name='signin-mlkshk'),
+    url(r'^complete/mlkshk$', 'leapfrog.views.complete_mlkshk', name='complete-mlkshk'),
 
     url(r'^action/twitter/favorite$', 'leapfrog.views.favorite_twitter', name='action-twitter-favorite'),
     url(r'^action/twitter/retweet$', 'leapfrog.views.retweet_twitter', name='action-twitter-retweet'),

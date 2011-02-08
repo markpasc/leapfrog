@@ -629,6 +629,41 @@ def complete_tumblr(request):
     return HttpResponseRedirect(reverse('home'))
 
 
+def signin_mlkshk(request):
+    auth_params = {
+        'response_type': 'code',
+        'client_id': settings.MLKSHK_CONSUMER[0],
+    }
+    auth_url = urlunparse(('https', 'mlkshk.com', 'api/authorize', None, urlencode(auth_params), None))
+
+    return HttpResponseRedirect(auth_url)
+
+
+def complete_mlkshk(request):
+    if 'error' in request.GET:
+        raise ValueError("Received error code %r getting authorization code: %s" % (request.GET['error'], request.GET.get('error_description', '(no description)')))
+
+    try:
+        auth_code = request.GET['code']
+    except KeyError:
+        raise ValueError("Received no authorization code in response")
+
+    token_params = {
+        'grant_type': 'authorization_code',
+        'code': auth_code,
+        'redirect_uri': request.build_absolute_uri(reverse('complete-mlkshk')),
+        'client_id': settings.MLKSHK_CONSUMER[0],
+        'client_secret': settings.MLKSHK_CONSUMER[1],
+    }
+    h = httplib2.Http()
+    resp, cont = h.request('https://mlkshk.com/api/token', method='POST', body=urlencode(token_params), headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    if resp.status != 200:
+        raise ValueError("Unexpected HTTP response requesting token: %d %s" % (resp.status, resp.reason))
+
+    token_data = json.loads(cont)
+    raise ValueError("Yay, here we would make an Account with access token %r" % token_data['access_token'])
+
+
 def redirect_home(request):
     return HttpResponseRedirect(reverse('home'))
 
