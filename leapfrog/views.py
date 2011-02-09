@@ -25,6 +25,7 @@ import typd.objecttypes
 from leapfrog.models import Person, Account, UserSetting, Object
 from leapfrog.poll.facebook import account_for_facebook_user
 from leapfrog.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
+from leapfrog.poll.mlkshk import account_for_mlkshk_userinfo, call_mlkshk
 from leapfrog.poll.tumblr import account_for_tumblelog_element
 from leapfrog.poll.twitter import account_for_twitter_user
 from leapfrog.poll.typepad import account_for_typepad_user
@@ -661,7 +662,42 @@ def complete_mlkshk(request):
         raise ValueError("Unexpected HTTP response requesting token: %d %s" % (resp.status, resp.reason))
 
     token_data = json.loads(cont)
-    raise ValueError("Yay, here we would make an Account with access token %r" % token_data['access_token'])
+    if 'access_token' not in token_data:
+        raise ValueError("Mlkshk token response contains no access token")
+
+    # Schweet. Try asking who this is.
+    authtoken = token_data['access_token'].encode('utf8')
+    authsecret = token_data['secret'].encode('utf8')
+    userinfo = call_mlkshk('https://mlkshk.com/api/user', authtoken=authtoken, authsecret=authsecret)
+
+    person = None
+    if not request.user.is_anonymous():
+        person = request.user.person
+    account = account_for_mlkshk_userinfo(userinfo)
+    if request.user.is_anonymous():
+        person = account.person
+        if person.user is None:
+            # AGH
+            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            while User.objects.filter(username=random_name).exists():
+                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
+            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
+            person.save()
+
+        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
+        login(request, person.user)
+    else:
+        # If the account already existed (because some other user follows
+        # that account and had imported objects by them, say), "merge" it
+        # onto the signed-in user. (This does mean you can intentionally
+        # move an account by signing in as a different django User and re-
+        # associating that account, but that's appropriate.)
+        account.person = person
+
+    account.authinfo = ':'.join((token_data['access_token'], token_data['secret']))
+    account.save()
+
+    return HttpResponseRedirect(reverse('home'))
 
 
 def redirect_home(request):
