@@ -10,7 +10,7 @@ from urlparse import urlparse
 
 import httplib2
 
-from leapfrog.models import Account, Person
+from leapfrog.models import Account, Person, Media, Object, UserStream
 
 
 log = logging.getLogger(__name__)
@@ -81,3 +81,41 @@ def account_for_mlkshk_userinfo(userinfo, person=None):
     account.save()
 
     return account
+
+
+def poll_mlkshk(account):
+    user = account.person.user
+    if user is None:
+        return
+
+    token, secret = account.authinfo.encode('utf8').split(':', 1)
+    friendshake = call_mlkshk('https://mlkshk.com/api/friend_shake', authtoken=token, authsecret=secret)
+    for post in friendshake['friend_shake']:
+        author_info = {
+            'id': post['user_id'],
+            'name': post['user_name'],
+        }
+        author = account_for_mlkshk_userinfo(author_info)
+
+        photo = Media(
+            image_url=post['original_image_url'],
+            width=post['width'],
+            height=post['height'],
+        )
+        photo.save()
+
+        sharekey = post['permalink_page'].split('/')[-1]
+        obj = Object(
+            service='mlkshk.com',
+            foreign_id=sharekey,
+            title=post['title'],
+            image=photo,
+            permalink_url=post['permalink_page'],
+            render_mode='image',
+            author=author,
+        )
+        obj.save()
+
+        # TODO: consider a "save" a share instead of a post?
+        UserStream.objects.get_or_create(user=user, obj=obj,
+            defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})

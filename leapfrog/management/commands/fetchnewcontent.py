@@ -6,17 +6,19 @@ from django.core.management.base import NoArgsCommand, CommandError
 from sentry.client.base import SentryClient
 
 from leapfrog.models import *
+from leapfrog.poll import facebook
+from leapfrog.poll import flickr
+from leapfrog.poll import mlkshk
+from leapfrog.poll import tumblr
 from leapfrog.poll import twitter
 from leapfrog.poll import typepad
-from leapfrog.poll import flickr
-from leapfrog.poll import facebook
 from leapfrog.poll import vimeo
-from leapfrog.poll import tumblr
 
 
 pollers = {
     'facebook.com': facebook.poll_facebook,
     'flickr.com': flickr.poll_flickr,
+    'mlkshk.com': mlkshk.poll_mlkshk,
     'tumblr.com': tumblr.poll_tumblr,
     'twitter.com': twitter.poll_twitter,
     'typepad.com': typepad.poll_typepad,
