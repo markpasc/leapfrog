@@ -12,7 +12,6 @@ from urlparse import urlparse, urljoin
 
 from BeautifulSoup import BeautifulSoup
 import httplib2
-from mimeparse import parse_mime_type
 
 from leapfrog.models import Account, Object, Person, Media
 import leapfrog.poll.flickr
@@ -369,16 +368,18 @@ class Page(object):
         content_type_str = resp.get('content-type')
         if content_type_str is None or '/' not in content_type_str:
             content_type_str = 'application/x-unknown'
+
         try:
-            content_type = parse_mime_type(content_type_str)
+            major_minor_type = content_type_str.split(';', 1)[0].strip()
+            content_type = [x.strip() for x in major_minor_type.split('/', 1)]
         except ValueError:
             raise ValueError("Could not parse purported mime type %r" % content_type_str)
+
         if content_type[0] == 'image':
             log.debug("This seems to be an image")
             self.type = 'image'
             return
 
-        major_minor_type = '/'.join(content_type[0:2])
         if major_minor_type not in ('text/html', 'application/xhtml+xml'):
             # hmm
             raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
