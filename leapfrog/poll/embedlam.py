@@ -1,3 +1,4 @@
+from cookielib import CookieJar, DefaultCookiePolicy
 from datetime import datetime
 import feedparser
 from HTMLParser import HTMLParseError
@@ -322,6 +323,17 @@ def value_for_meta_elems(elems, default=None, base_url=None):
     return default
 
 
+class EmbedlamUserAgent(httplib2.Http):
+
+    def __init__(self, cache=None, timeout=10, proxy_info=None):
+        super(EmbedlamUserAgent, self).__init__(cache, timeout, proxy_info)
+
+    def request(self, uri, method='GET', body=None, headers=None, redirections=httplib2.DEFAULT_MAX_REDIRECTS, connection_type=None):
+        headers = {} if headers is None else dict(headers)
+        headers['user-agent'] = 'leapfrog/1.0'
+        return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
+
+
 class Page(object):
 
     def __init__(self, url):
@@ -334,14 +346,19 @@ class Page(object):
         if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) | vimeo\.com/ \d+ )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return
 
+        if re.match(r'http://(?: nyti\.ms | [^.]*\.nytimes\.com )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+            max_redirects = 10
+        else:
+            max_redirects = httplib2.DEFAULT_MAX_REDIRECTS
+
         # Fetch the resource and soupify it.
-        h = httplib2.Http(timeout=10)
+        h = EmbedlamUserAgent()
         try:
             try:
-                resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0'})
+                resp, content = h.request(url, redirections=max_redirects)
             except httplib2.FailedToDecompressContent:
                 # Try asking again with no compression.
-                resp, content = h.request(url, headers={'User-Agent': 'leapfrog/1.0', 'Accept-Encoding': 'identity'})
+                resp, content = h.request(url, redirections=max_redirects, headers={'Accept-Encoding': 'identity'})
         except socket.timeout:
             raise ValueError("Request to %s timed out" % url)
         except socket.error, exc:
