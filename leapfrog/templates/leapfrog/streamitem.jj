@@ -72,7 +72,7 @@
 
             <div class="item-content item-content-link">
                 <div class="body pkg">
-                    {% if object.image %}
+                    {% if object.image and object.image.image_url %}
                         <a href="{{ object.permalink_url }}"><img class="item-body-image" src="{{ object.image.image_url }}"{% if object.image.width is not none %} width="{{ object.image.width }}"{% endif %}{% if object.image.height is not none %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title or '' }}"></a>
                     {% endif %}
 
@@ -101,7 +101,7 @@
 
         {% else %}
 
-            {% set compact_mode = object.render_mode == 'image' and not object.body and object.image.width and object.image.width >= 700 %}
+            {% set compact_mode = object.render_mode == 'image' and not object.body and object.image.image_url and object.image.width and object.image.width >= 700 %}
             <div class="item-content item-content-{{ object.render_mode }}{% if compact_mode %} item-image-compact{% endif %}">
 
                 <div class="metadata pkg">
@@ -137,7 +137,11 @@
                 {% endif %}
 
                 {% if object.render_mode == 'image' %}
-                    <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}"{% if object.image.width %} width="{{ object.image.width }}"{% endif %}{% if object.image.height %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title }}"></a>
+                    {% if object.image.image_url %}
+                        <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}"{% if object.image.width %} width="{{ object.image.width }}"{% endif %}{% if object.image.height %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title }}"></a>
+                    {% elif object.image.embed_code %}
+                        {{ object.image.embed_code }}
+                    {% endif %}
                 {% endif %}
 
                 {% if object.body %}
