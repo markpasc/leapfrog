@@ -35,18 +35,6 @@ from leapfrog.poll.vimeo import account_for_vimeo_id, call_vimeo
 log = logging.getLogger(__name__)
 
 
-class LoginUrl(object):
-    def __str__(self):
-        try:
-            return self.url
-        except AttributeError:
-            self.url = reverse('signin')
-            return self.url
-
-
-settings.LOGIN_URL = LoginUrl()
-
-
 def stream_items_for_user(user, before=None, after=None, limit=20):
     stream_items = user.stream_items
     if before is not None:
