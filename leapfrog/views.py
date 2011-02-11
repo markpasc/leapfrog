@@ -77,6 +77,9 @@ def home(request):
         display_name = person.display_name
         accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
+        person.last_viewed_home = datetime.now()
+        person.save()
+
     stream_items = stream_items_for_user(user)
     try:
         pagecolor_obj = UserSetting.objects.get(user=user, key='pagecolor')
@@ -117,6 +120,9 @@ def mobile_home(request):
         display_name = user.get_full_name()
     else:
         display_name = person.display_name
+
+        person.last_viewed_home = datetime.now()
+        person.save()
 
     try:
         pagecolor_obj = UserSetting.objects.get(user=user, key='pagecolor')

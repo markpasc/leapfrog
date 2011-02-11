@@ -39,12 +39,18 @@ class Command(NoArgsCommand):
 
     def fetch_new_content(self, **options):
         update_horizon = datetime.now() - timedelta(minutes=15)
+        last_viewed_horizon = datetime.now() - timedelta(days=5)
 
         users = User.objects.all()
         for user in users:
             try:
                 person = user.person
             except Person.DoesNotExist:
+                continue
+
+            # Don't update accounts if someone hasn't viewed the site in some days.
+            if person.last_viewed_home < last_viewed_horizon:
+                logging.getLogger(__name__).debug("User %s hasn't viewed the site in a while; skipping", user.username)
                 continue
 
             for account in person.accounts.all():

@@ -30,6 +30,7 @@ class Person(models.Model):
     display_name = models.CharField(max_length=100)
     avatar = models.ForeignKey(Media, blank=True, null=True)
     permalink_url = models.CharField(max_length=100, blank=True)
+    last_viewed_home = models.DateTimeField(default=datetime.now)
 
     def __unicode__(self):
         return unicode(self.display_name)
