@@ -8,80 +8,142 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
+        # Adding model 'Media'
+        db.create_table('leapfrog_media', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('width', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ('height', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
+            ('image_url', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('embed_code', self.gf('django.db.models.fields.TextField')(blank=True)),
+        ))
+        db.send_create_signal('leapfrog', ['Media'])
+
+        # Adding model 'Person'
+        db.create_table('leapfrog_person', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True, null=True, blank=True)),
+            ('display_name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('avatar', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['leapfrog.Media'], null=True, blank=True)),
+            ('permalink_url', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+        ))
+        db.send_create_signal('leapfrog', ['Person'])
+
         # Adding model 'Account'
-        db.create_table('rhino_account', (
+        db.create_table('leapfrog_account', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('service', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('who', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
-            ('last_updated', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
+            ('ident', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('display_name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('last_updated', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2000, 1, 1, 0, 0))),
+            ('authinfo', self.gf('django.db.models.fields.CharField')(max_length=600, blank=True)),
+            ('person', self.gf('django.db.models.fields.related.ForeignKey')(related_name='accounts', to=orm['leapfrog.Person'])),
+            ('status_background_color', self.gf('django.db.models.fields.CharField')(max_length=6, blank=True)),
+            ('status_background_image_url', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+            ('status_background_tile', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal('rhino', ['Account'])
+        db.send_create_signal('leapfrog', ['Account'])
+
+        # Adding unique constraint on 'Account', fields ['service', 'ident']
+        db.create_unique('leapfrog_account', ['service', 'ident'])
 
         # Adding model 'Object'
-        db.create_table('rhino_object', (
+        db.create_table('leapfrog_object', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('foreign_id', self.gf('django.db.models.fields.CharField')(max_length=255, null=True)),
-            ('foreign_id_hash', self.gf('django.db.models.fields.CharField')(max_length=40, unique=True, null=True, db_index=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('summary', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('service', self.gf('django.db.models.fields.CharField')(max_length=20, blank=True)),
+            ('foreign_id', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
+            ('public', self.gf('django.db.models.fields.BooleanField')(default=True)),
+            ('title', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('body', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('image', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='represented_objects', null=True, to=orm['leapfrog.Media'])),
+            ('author', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='authored_objects', null=True, to=orm['leapfrog.Account'])),
+            ('render_mode', self.gf('django.db.models.fields.CharField')(default='', max_length=15, blank=True)),
+            ('time', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.utcnow, db_index=True)),
             ('permalink_url', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('time', self.gf('django.db.models.fields.DateTimeField')(db_index=True)),
-            ('content', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('image_url', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('image_width', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('image_height', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('author', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='authored', null=True, to=orm['rhino.Object'])),
-            ('in_reply_to', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='replies', null=True, to=orm['rhino.Object'])),
-            ('object_type', self.gf('django.db.models.fields.CharField')(default='', max_length=15, blank=True)),
+            ('in_reply_to', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='replies', null=True, to=orm['leapfrog.Object'])),
         ))
-        db.send_create_signal('rhino', ['Object'])
+        db.send_create_signal('leapfrog', ['Object'])
 
-        # Adding M2M table for field attachments on 'Object'
-        db.create_table('rhino_object_attachments', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('from_object', models.ForeignKey(orm['rhino.object'], null=False)),
-            ('to_object', models.ForeignKey(orm['rhino.object'], null=False))
-        ))
-        db.create_unique('rhino_object_attachments', ['from_object_id', 'to_object_id'])
+        # Adding unique constraint on 'Object', fields ['service', 'foreign_id']
+        db.create_unique('leapfrog_object', ['service', 'foreign_id'])
 
         # Adding model 'UserStream'
-        db.create_table('rhino_userstream', (
+        db.create_table('leapfrog_userstream', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('obj', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stream_items', to=orm['rhino.Object'])),
-            ('who', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stream_items', to=orm['auth.User'])),
-            ('when', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('obj', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stream_items', to=orm['leapfrog.Object'])),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stream_items', to=orm['auth.User'])),
+            ('time', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.utcnow)),
+            ('why_account', self.gf('django.db.models.fields.related.ForeignKey')(related_name='stream_items_caused', to=orm['leapfrog.Account'])),
+            ('why_verb', self.gf('django.db.models.fields.CharField')(max_length=20)),
         ))
-        db.send_create_signal('rhino', ['UserStream'])
+        db.send_create_signal('leapfrog', ['UserStream'])
+
+        # Adding unique constraint on 'UserStream', fields ['user', 'obj']
+        db.create_unique('leapfrog_userstream', ['user_id', 'obj_id'])
 
         # Adding model 'UserReplyStream'
-        db.create_table('rhino_userreplystream', (
+        db.create_table('leapfrog_userreplystream', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('who', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_stream_items', to=orm['auth.User'])),
-            ('root', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_reply_stream_items', to=orm['rhino.Object'])),
-            ('root_when', self.gf('django.db.models.fields.DateTimeField')()),
-            ('reply', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_stream_items', to=orm['rhino.Object'])),
-            ('reply_when', self.gf('django.db.models.fields.DateTimeField')()),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_stream_items', to=orm['auth.User'])),
+            ('root', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_reply_stream_items', to=orm['leapfrog.Object'])),
+            ('root_time', self.gf('django.db.models.fields.DateTimeField')()),
+            ('reply', self.gf('django.db.models.fields.related.ForeignKey')(related_name='reply_stream_items', to=orm['leapfrog.Object'])),
+            ('reply_time', self.gf('django.db.models.fields.DateTimeField')()),
         ))
-        db.send_create_signal('rhino', ['UserReplyStream'])
+        db.send_create_signal('leapfrog', ['UserReplyStream'])
+
+        # Adding unique constraint on 'UserReplyStream', fields ['user', 'reply']
+        db.create_unique('leapfrog_userreplystream', ['user_id', 'reply_id'])
+
+        # Adding model 'UserSetting'
+        db.create_table('leapfrog_usersetting', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('key', self.gf('django.db.models.fields.CharField')(max_length=50)),
+            ('value', self.gf('django.db.models.fields.CharField')(max_length=250)),
+        ))
+        db.send_create_signal('leapfrog', ['UserSetting'])
+
+        # Adding unique constraint on 'UserSetting', fields ['user', 'key']
+        db.create_unique('leapfrog_usersetting', ['user_id', 'key'])
 
 
     def backwards(self, orm):
         
+        # Removing unique constraint on 'UserSetting', fields ['user', 'key']
+        db.delete_unique('leapfrog_usersetting', ['user_id', 'key'])
+
+        # Removing unique constraint on 'UserReplyStream', fields ['user', 'reply']
+        db.delete_unique('leapfrog_userreplystream', ['user_id', 'reply_id'])
+
+        # Removing unique constraint on 'UserStream', fields ['user', 'obj']
+        db.delete_unique('leapfrog_userstream', ['user_id', 'obj_id'])
+
+        # Removing unique constraint on 'Object', fields ['service', 'foreign_id']
+        db.delete_unique('leapfrog_object', ['service', 'foreign_id'])
+
+        # Removing unique constraint on 'Account', fields ['service', 'ident']
+        db.delete_unique('leapfrog_account', ['service', 'ident'])
+
+        # Deleting model 'Media'
+        db.delete_table('leapfrog_media')
+
+        # Deleting model 'Person'
+        db.delete_table('leapfrog_person')
+
         # Deleting model 'Account'
-        db.delete_table('rhino_account')
+        db.delete_table('leapfrog_account')
 
         # Deleting model 'Object'
-        db.delete_table('rhino_object')
-
-        # Removing M2M table for field attachments on 'Object'
-        db.delete_table('rhino_object_attachments')
+        db.delete_table('leapfrog_object')
 
         # Deleting model 'UserStream'
-        db.delete_table('rhino_userstream')
+        db.delete_table('leapfrog_userstream')
 
         # Deleting model 'UserReplyStream'
-        db.delete_table('rhino_userreplystream')
+        db.delete_table('leapfrog_userreplystream')
+
+        # Deleting model 'UserSetting'
+        db.delete_table('leapfrog_usersetting')
 
 
     models = {
@@ -121,48 +183,75 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'rhino.account': {
-            'Meta': {'object_name': 'Account'},
+        'leapfrog.account': {
+            'Meta': {'unique_together': "(('service', 'ident'),)", 'object_name': 'Account'},
+            'authinfo': ('django.db.models.fields.CharField', [], {'max_length': '600', 'blank': 'True'}),
+            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'ident': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'last_updated': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2000, 1, 1, 0, 0)'}),
+            'person': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'accounts'", 'to': "orm['leapfrog.Person']"}),
             'service': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'who': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"})
+            'status_background_color': ('django.db.models.fields.CharField', [], {'max_length': '6', 'blank': 'True'}),
+            'status_background_image_url': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'status_background_tile': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
-        'rhino.object': {
-            'Meta': {'object_name': 'Object'},
-            'attachments': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'attached_to'", 'blank': 'True', 'to': "orm['rhino.Object']"}),
-            'author': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'authored'", 'null': 'True', 'to': "orm['rhino.Object']"}),
-            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'foreign_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True'}),
-            'foreign_id_hash': ('django.db.models.fields.CharField', [], {'max_length': '40', 'unique': 'True', 'null': 'True', 'db_index': 'True'}),
+        'leapfrog.media': {
+            'Meta': {'object_name': 'Media'},
+            'embed_code': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'height': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'image_height': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'image_url': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'image_width': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'in_reply_to': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'replies'", 'null': 'True', 'to': "orm['rhino.Object']"}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'object_type': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '15', 'blank': 'True'}),
+            'image_url': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'width': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
+        },
+        'leapfrog.object': {
+            'Meta': {'unique_together': "(('service', 'foreign_id'),)", 'object_name': 'Object'},
+            'author': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'authored_objects'", 'null': 'True', 'to': "orm['leapfrog.Account']"}),
+            'body': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'foreign_id': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'image': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'represented_objects'", 'null': 'True', 'to': "orm['leapfrog.Media']"}),
+            'in_reply_to': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'replies'", 'null': 'True', 'to': "orm['leapfrog.Object']"}),
             'permalink_url': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'summary': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'time': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'})
+            'public': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'render_mode': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '15', 'blank': 'True'}),
+            'service': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
+            'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.utcnow', 'db_index': 'True'}),
+            'title': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'})
         },
-        'rhino.userreplystream': {
-            'Meta': {'object_name': 'UserReplyStream'},
+        'leapfrog.person': {
+            'Meta': {'object_name': 'Person'},
+            'avatar': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['leapfrog.Media']", 'null': 'True', 'blank': 'True'}),
+            'display_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'reply': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_stream_items'", 'to': "orm['rhino.Object']"}),
-            'reply_when': ('django.db.models.fields.DateTimeField', [], {}),
-            'root': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_reply_stream_items'", 'to': "orm['rhino.Object']"}),
-            'root_when': ('django.db.models.fields.DateTimeField', [], {}),
-            'who': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_stream_items'", 'to': "orm['auth.User']"})
+            'permalink_url': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'})
         },
-        'rhino.userstream': {
-            'Meta': {'object_name': 'UserStream'},
+        'leapfrog.userreplystream': {
+            'Meta': {'unique_together': "(('user', 'reply'),)", 'object_name': 'UserReplyStream'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'obj': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stream_items'", 'to': "orm['rhino.Object']"}),
-            'when': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'who': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stream_items'", 'to': "orm['auth.User']"})
+            'reply': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_stream_items'", 'to': "orm['leapfrog.Object']"}),
+            'reply_time': ('django.db.models.fields.DateTimeField', [], {}),
+            'root': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_reply_stream_items'", 'to': "orm['leapfrog.Object']"}),
+            'root_time': ('django.db.models.fields.DateTimeField', [], {}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'reply_stream_items'", 'to': "orm['auth.User']"})
+        },
+        'leapfrog.usersetting': {
+            'Meta': {'unique_together': "(('user', 'key'),)", 'object_name': 'UserSetting'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'value': ('django.db.models.fields.CharField', [], {'max_length': '250'})
+        },
+        'leapfrog.userstream': {
+            'Meta': {'unique_together': "(('user', 'obj'),)", 'object_name': 'UserStream'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'obj': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stream_items'", 'to': "orm['leapfrog.Object']"}),
+            'time': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.utcnow'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stream_items'", 'to': "orm['auth.User']"}),
+            'why_account': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'stream_items_caused'", 'to': "orm['leapfrog.Account']"}),
+            'why_verb': ('django.db.models.fields.CharField', [], {'max_length': '20'})
         }
     }
 
-    complete_apps = ['rhino']
+    complete_apps = ['leapfrog']
