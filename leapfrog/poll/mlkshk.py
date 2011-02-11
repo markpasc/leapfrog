@@ -91,29 +91,32 @@ def poll_mlkshk(account):
     token, secret = account.authinfo.encode('utf8').split(':', 1)
     friendshake = call_mlkshk('https://mlkshk.com/api/friend_shake', authtoken=token, authsecret=secret)
     for post in friendshake['friend_shake']:
+        sharekey = post['permalink_page'].split('/')[-1]
+
+        try:
+            obj = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
+        except Object.DoesNotExist:
+            photo = Media(
+                image_url=post['original_image_url'],
+                width=post['width'],
+                height=post['height'],
+            )
+            photo.save()
+            obj = Object(
+                service='mlkshk.com',
+                foreign_id=sharekey,
+                image=photo,
+            )
+
         author_info = {
             'id': post['user_id'],
             'name': post['user_name'],
         }
-        author = account_for_mlkshk_userinfo(author_info)
+        obj.author = account_for_mlkshk_userinfo(author_info)
 
-        photo = Media(
-            image_url=post['original_image_url'],
-            width=post['width'],
-            height=post['height'],
-        )
-        photo.save()
-
-        sharekey = post['permalink_page'].split('/')[-1]
-        obj = Object(
-            service='mlkshk.com',
-            foreign_id=sharekey,
-            title=post['title'],
-            image=photo,
-            permalink_url=post['permalink_page'],
-            render_mode='image',
-            author=author,
-        )
+        obj.title = post['title']
+        obj.permalink_url = post['permalink_page']
+        obj.render_mode = 'image'
         obj.save()
 
         # TODO: consider a "save" a share instead of a post?
