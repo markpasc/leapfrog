@@ -11,7 +11,7 @@ class Media(models.Model):
     width = models.IntegerField(null=True, blank=True)
     height = models.IntegerField(null=True, blank=True)
     # TODO: change this when we store images locally
-    image_url = models.CharField(max_length=255, blank=True)
+    image_url = models.CharField(max_length=300, blank=True)
     embed_code = models.TextField(blank=True)
 
     def __unicode__(self):
