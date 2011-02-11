@@ -357,7 +357,13 @@ def poll_twitter(account):
         # Can't get Twitter results right now. Let's try again later.
         return
     if resp.status == 401:
-        raise ValueError("Token for Twitter user %s is no longer valid" % account.ident)
+        # The token may be invalid. Have we successfully scanned this account recently?
+        if account.last_success > datetime.now() - timedelta(days=2):
+            raise ValueError("Token for Twitter user %s came back as invalid (possibly temporary)" % account.ident)
+        # The token is now invalid (maybe they revoked the app). Stop updating this account.
+        account.authinfo = ''
+        account.save()
+        raise ValueError("Token for Twitter user %s came back as invalid (probably permanent, so deleted authinfo)" % account.ident)
     if resp.status != 200:
         raise ValueError("Unexpected %d %s response fetching %s's twitter timeline"
             % (resp.status, resp.reason, account.ident))

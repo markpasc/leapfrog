@@ -70,6 +70,9 @@ class Command(NoArgsCommand):
                 except Exception, exc:
                     log.exception(exc)
                     SentryClient().create_from_exception(view='%s.%s' % (__name__, account.service))
+                else:
+                    account.last_success = datetime.now()
+                    account.save()
 
     def handle_noargs(self, **options):
         try:
