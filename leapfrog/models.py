@@ -49,7 +49,7 @@ class Account(models.Model):
     person = models.ForeignKey(Person, related_name='accounts')
 
     status_background_color = models.CharField(max_length=6, blank=True)
-    status_background_image_url = models.CharField(max_length=100, blank=True)
+    status_background_image_url = models.CharField(max_length=150, blank=True)
     status_background_tile = models.BooleanField(blank=True)
 
     def __unicode__(self):
