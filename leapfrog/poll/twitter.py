@@ -351,9 +351,13 @@ def poll_twitter(account):
     if user is None:
         return
 
+    authtoken = account.authinfo
+    if not authtoken:
+        return
+
     # Get that twitter user's home timeline.
     csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
-    token = oauth.Token(*account.authinfo.split(':', 1))
+    token = oauth.Token(*authtoken.split(':', 1))
     client = oauth.Client(csr, token)
     resp, content = client.request('http://api.twitter.com/1/statuses/home_timeline.json?include_entities=true', 'GET')
     if resp.status in (500, 502, 503):
