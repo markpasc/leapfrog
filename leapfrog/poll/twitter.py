@@ -153,6 +153,9 @@ def object_from_twitpic_url(url):
     except ValueError:
         # Couldn't get twitpic infos... probably because we're banned.
         return None
+    if picdata.get('errors'):
+        # Hmm, well, guess that didn't work.
+        return None
 
     userdata = picdata['user']
     # ugh, why did they rename these
