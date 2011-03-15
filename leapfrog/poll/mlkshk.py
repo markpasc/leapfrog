@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime
 import hashlib
 import hmac
 import json
@@ -117,6 +118,7 @@ def poll_mlkshk(account):
         obj.title = post['title']
         obj.permalink_url = post['permalink_page']
         obj.render_mode = 'image'
+        obj.posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
         obj.save()
 
         # TODO: consider a "save" a share instead of a post?
