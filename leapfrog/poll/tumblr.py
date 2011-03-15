@@ -329,11 +329,14 @@ def poll_tumblr(account):
             root = root.in_reply_to
             why_verb = 'share' if really_a_share else 'reply'
 
+        now = datetime.now()
+        stream_time = obj.time if obj.time <= now else now
         streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
-            defaults={'time': obj.time, 'why_account': why_account, 'why_verb': why_verb})
+            defaults={'time': stream_time, 'why_account': why_account, 'why_verb': why_verb})
 
         superobj = obj
         while superobj.in_reply_to is not None:
+            stream_time = superobj.time if superobj.time <= now else now
             UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
-                defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
+                defaults={'root_time': streamitem.time, 'reply_time': stream_time})
             superobj = superobj.in_reply_to
