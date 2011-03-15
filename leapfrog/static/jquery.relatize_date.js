@@ -66,19 +66,25 @@
      * @param {Boolean} Include the time in the output
      */
     distanceOfTimeInWords: function(fromTime, toTime, includeTime) {
+      var ago = ' ago';
       var delta = parseInt((toTime.getTime() - fromTime.getTime()) / 1000);
+      if (delta < 0) {
+          delta = 0 - delta;
+          ago = ' hence';
+      }
+
       if (delta < 60) {
-          return 'less than a minute ago';
+          return 'less than a minute' + ago;
       } else if (delta < 120) {
           return 'a minute ago';
       } else if (delta < (45*60)) {
-          return (parseInt(delta / 60)).toString() + ' minutes ago';
+          return (parseInt(delta / 60)).toString() + ' minutes' + ago;
       } else if (delta < (120*60)) {
-          return 'an hour ago';
+          return 'an hour' + ago;
       } else if (delta < (24*60*60)) {
-          return (parseInt(delta / 3600)).toString() + ' hours ago';
+          return (parseInt(delta / 3600)).toString() + ' hours' + ago;
       } else if (delta < (48*60*60)) {
-          return '1 day ago';
+          return '1 day' + ago;
       } else {
         var days = (parseInt(delta / 86400)).toString();
         if (days > 5) {
@@ -86,7 +92,7 @@
           if (includeTime) fmt += ' %I:%M <small>%p</small>'
           return $r.strftime(fromTime, fmt);
         } else {
-          return days + " days ago"
+          return days + " days" + ago;
         }
       }
     }
