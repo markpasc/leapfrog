@@ -365,7 +365,7 @@ def poll_twitter(account):
         return
     if resp.status == 401:
         # The token may be invalid. Have we successfully scanned this account recently?
-        if account.last_success > datetime.now() - timedelta(days=2):
+        if account.last_success > datetime.utcnow() - timedelta(days=2):
             raise ValueError("Token for Twitter user %s came back as invalid (possibly temporary)" % account.ident)
         # The token is now invalid (maybe they revoked the app). Stop updating this account.
         account.authinfo = ''

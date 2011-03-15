@@ -30,7 +30,7 @@ class Person(models.Model):
     display_name = models.CharField(max_length=100)
     avatar = models.ForeignKey(Media, blank=True, null=True)
     permalink_url = models.CharField(max_length=100, blank=True)
-    last_viewed_home = models.DateTimeField(default=datetime.now)
+    last_viewed_home = models.DateTimeField(default=datetime.utcnow)
 
     def __unicode__(self):
         return unicode(self.display_name)
@@ -45,7 +45,7 @@ class Account(models.Model):
     ident = models.CharField(max_length=100)
     display_name = models.CharField(max_length=100)
     last_updated = models.DateTimeField(default=datetime(year=2000, month=1, day=1))
-    last_success = models.DateTimeField(default=datetime.now)
+    last_success = models.DateTimeField(default=datetime.utcnow)
     authinfo = models.CharField(max_length=600, blank=True)
     person = models.ForeignKey(Person, related_name='accounts')
 

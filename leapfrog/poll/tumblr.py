@@ -186,7 +186,7 @@ def object_from_post_element(post_el, tumblelog_el):
                     render_mode='link',
                     title=in_reply_to_page.title,
                     permalink_url=in_reply_to_page.url,
-                    time=datetime.now(),
+                    time=datetime.utcnow(),
                 )
                 in_reply_to.save()
 
@@ -329,7 +329,7 @@ def poll_tumblr(account):
             root = root.in_reply_to
             why_verb = 'share' if really_a_share else 'reply'
 
-        now = datetime.now()
+        now = datetime.utcnow()
         stream_time = obj.time if obj.time <= now else now
         streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
             defaults={'time': stream_time, 'why_account': why_account, 'why_verb': why_verb})

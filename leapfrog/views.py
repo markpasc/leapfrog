@@ -77,7 +77,7 @@ def home(request):
         display_name = person.display_name
         accounts = dict((acc.service, acc) for acc in person.accounts.all() if acc.authinfo)
 
-        person.last_viewed_home = datetime.now()
+        person.last_viewed_home = datetime.utcnow()
         person.save()
 
     stream_items = stream_items_for_user(user)
@@ -121,7 +121,7 @@ def mobile_home(request):
     else:
         display_name = person.display_name
 
-        person.last_viewed_home = datetime.now()
+        person.last_viewed_home = datetime.utcnow()
         person.save()
 
     try:

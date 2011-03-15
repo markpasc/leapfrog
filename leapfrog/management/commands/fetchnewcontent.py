@@ -38,8 +38,8 @@ class Command(NoArgsCommand):
     )
 
     def fetch_new_content(self, **options):
-        update_horizon = datetime.now() - timedelta(minutes=15)
-        last_viewed_horizon = datetime.now() - timedelta(days=5)
+        update_horizon = datetime.utcnow() - timedelta(minutes=15)
+        last_viewed_horizon = datetime.utcnow() - timedelta(days=5)
 
         users = User.objects.all()
         for user in users:
@@ -68,7 +68,7 @@ class Command(NoArgsCommand):
 
                 # Mark the account as updated even if the update fails later.
                 log.debug("Polling account %s %s", account.service, account.display_name)
-                account.last_updated = datetime.now()
+                account.last_updated = datetime.utcnow()
                 account.save()
 
                 try:
@@ -77,7 +77,7 @@ class Command(NoArgsCommand):
                     log.exception(exc)
                     SentryClient().create_from_exception(view='%s.%s' % (__name__, account.service))
                 else:
-                    account.last_success = datetime.now()
+                    account.last_success = datetime.utcnow()
                     account.save()
 
     def handle_noargs(self, **options):

@@ -92,7 +92,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
             title=resource.get('title', ''),
             body=resource.get('html', ''),
             author=account_for_embed_resource(resource),
-            time=datetime.now(),
+            time=datetime.utcnow(),
             permalink_url=target_url,
         )
         obj.save()
@@ -111,7 +111,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
             title=resource.get('title', ''),
             image=image,
             author=account_for_embed_resource(resource),
-            time=datetime.now(),
+            time=datetime.utcnow(),
             permalink_url=target_url,
         )
         obj.save()
@@ -126,7 +126,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
             body=resource.get('html', ''),
             author=account_for_embed_resource(resource),
             permalink_url=resource.get('url') or target_url,  # might be given anyway
-            time=datetime.now(),
+            time=datetime.utcnow(),
         )
         if 'thumbnail_url' in resource:
             image = Media(
@@ -220,7 +220,7 @@ def object_from_html_head(url, orig_url, head):
         title=title,
         body=summary,
         permalink_url=url,
-        time=datetime.now(),
+        time=datetime.utcnow(),
         image=image,
     )
     obj.save()
@@ -288,7 +288,7 @@ def object_from_photo_url(url, width, height):
         title='',
         image=image,
         author=None,
-        time=datetime.now(),
+        time=datetime.utcnow(),
         permalink_url=url,
     )
     obj.save()
