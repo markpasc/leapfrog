@@ -89,7 +89,7 @@ def poll_mlkshk(account):
         return
 
     token, secret = account.authinfo.encode('utf8').split(':', 1)
-    friendshake = call_mlkshk('https://mlkshk.com/api/friend_shake', authtoken=token, authsecret=secret)
+    friendshake = call_mlkshk('https://mlkshk.com/api/friends', authtoken=token, authsecret=secret)
     for post in friendshake['friend_shake']:
         sharekey = post['permalink_page'].split('/')[-1]
 
