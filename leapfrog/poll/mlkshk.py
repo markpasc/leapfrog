@@ -12,6 +12,7 @@ from urlparse import urlparse
 import httplib2
 
 from leapfrog.models import Account, Person, Media, Object, UserStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -94,6 +95,38 @@ def poll_mlkshk(account):
     for post in friendshake['friend_shake']:
         sharekey = post['permalink_page'].split('/')[-1]
 
+        author = account_for_mlkshk_userinfo(post['user'])
+        posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
+
+        if 'url' in post:
+            obj = leapfrog.poll.embedlam.object_for_url(post['url'])
+
+            UserStream.objects.get_or_create(user=user, obj=obj,
+                defaults={'time': posted_at, 'why_account': author,
+                    'why_verb': 'share' if post.get('description') else 'share'})
+
+            if not post.get('description'):
+                continue
+
+            try:
+                reply = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
+            except Object.DoesNotExist:
+                reply = Object(
+                    service='mlkshk.com',
+                    foreign_id=sharekey,
+                    in_reply_to=obj,
+                    title=post['title'],
+                    permalink_url=post['permalink_page'],
+                    render_mode='mixed',
+                    body=post['description'],
+                    time=posted_at,
+                )
+                reply.save()
+
+            UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply,
+                defaults={'root_time': obj.time, 'reply_time': posted_at})
+            continue
+
         try:
             obj = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
         except Object.DoesNotExist:
@@ -109,16 +142,13 @@ def poll_mlkshk(account):
                 image=photo,
             )
 
-        author_info = {
-            'id': post['user_id'],
-            'name': post['user_name'],
-        }
-        obj.author = account_for_mlkshk_userinfo(author_info)
-
         obj.title = post['title']
+        obj.author = author
         obj.permalink_url = post['permalink_page']
         obj.render_mode = 'image'
-        obj.posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
+        if post.get('description'):
+            obj.content = post['description']
+        obj.time = posted_at
         obj.save()
 
         # TODO: consider a "save" a share instead of a post?
