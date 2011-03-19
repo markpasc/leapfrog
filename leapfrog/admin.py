@@ -47,7 +47,7 @@ class PersonAdmin(admin.ModelAdmin):
     list_display = ('display_name', 'permalink_url', 'user')
     list_filter = ('user',)
     search_fields = ('display_name',)
-    raw_id_fields = ('user',)
+    raw_id_fields = ('user', 'avatar')
 
 admin.site.register(models.Person, PersonAdmin)
 
