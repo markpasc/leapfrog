@@ -115,6 +115,21 @@
                         <a href="{{ url_for('signin-tumblr') }}">Add Tumblr account</a>
                     </span>
                 </p>
+
+                <p class="account{% if 'mlkshk.com' in accounts %} attached{% endif %}">
+                    <span class="label">MLKSHK</span>
+                    {% if 'mlkshk.com' in accounts %}
+                        {% set account = accounts['mlkshk.com'] %}
+                        <span class="detach">
+                            {{ account.display_name }}
+                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
+                        </span>
+                    {% endif %}
+                    <span class="attach-link">
+                        <a href="{{ url_for('signin-mlkshk') }}" title="Sign in with MLKSHK"><img src="{{ url_for('leapfrog-static', path='img/mlkshk-icon-32px.png') }}" width="32" height="32" alt="MLKSHK"></a>
+                        <a href="{{ url_for('signin-mlkshk') }}">Add MLKSHK account</a>
+                    </span>
+                </p>
             </div>
 
             <div id="page-color" class="column">
@@ -181,7 +196,7 @@
 
     $(document).ready(function () {
         $('#gearbox').click(function () {
-            $('#settings').animate({'height': $('#settings').height() ? '0px' : '275px'}, 'slow');
+            $('#settings').animate({'height': $('#settings').height() ? '0px' : '300px'}, 'slow');
             spinGear(0);
             return false;
         });

@@ -34,6 +34,7 @@
 
         .item p.last {
             margin: 0;
+            font-size: 0.8em;
         }
 
         #what img {
@@ -62,6 +63,7 @@
                 <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('leapfrog-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
                 <a href="{{ url_for('signin-facebook') }}" title="Sign in with Facebook"><img src="{{ url_for('leapfrog-static', path='komodo/facebook_32.png') }}" width="32" height="32" alt="Facebook"></a>
                 <a href="{{ url_for('signin-tumblr') }}" title="Sign in with Tumblr"><img src="{{ url_for('leapfrog-static', path='komodo/tumblr_32.png') }}" width="32" height="32" alt="Tumblr"></a>
+                <a href="{{ url_for('signin-mlkshk') }}" title="Sign in with MLKSHK"><img src="{{ url_for('leapfrog-static', path='img/mlkshk-icon-32px.png') }}" width="32" height="32" alt="MLKSHK"></a>
             </div>
         </div>
     </div>
@@ -88,7 +90,9 @@
                 When several of your friends post the same link, it's collected as one “thing” in your stream, so you only see it once.
             </p>
 
-            <p class="last">Leapfrog is an experiment by <a href="http://markpasc.org/mark/">markpasc</a> &amp; friends. You can see <a href="http://markpasc.typepad.com/blog/leapfrog/">some things he wrote about it</a> or <a href="https://github.com/markpasc/leapfrog">the project on GitHub</a>, or click one of the service icons above to try it out!</p>
+            <p>Leapfrog is an experiment by <a href="http://markpasc.org/mark/">markpasc</a> &amp; friends. You can see <a href="http://markpasc.typepad.com/blog/leapfrog/">some things he wrote about it</a> or <a href="https://github.com/markpasc/leapfrog">the project on GitHub</a>, or click one of the service icons above to try it out!</p>
+
+            <p class="last">Thanks to <a href="http://komodomedia.com/">Komodo Media</a> and <a href="http://inktype.com/">Tevan Alexander</a> for the social media site icons.</p>
         </div>
     </div>
 
