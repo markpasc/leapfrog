@@ -47,6 +47,7 @@ def call_vimeo(method, token=None, **kwargs):
 
 def account_for_vimeo_id(user_id, person=None):
     try:
+        # TODO: update vimeo avatar pictures (but that requires fetching their people info speculatively)
         return Account.objects.get(service='vimeo.com', ident=user_id)
     except Account.DoesNotExist:
         pass

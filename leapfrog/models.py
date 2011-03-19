@@ -29,6 +29,7 @@ class Person(models.Model):
     user = models.OneToOneField(User, null=True, blank=True)
     display_name = models.CharField(max_length=100)
     avatar = models.ForeignKey(Media, blank=True, null=True)
+    avatar_source = models.CharField(max_length=20, blank=True)
     permalink_url = models.CharField(max_length=100, blank=True)
     last_viewed_home = models.DateTimeField(default=datetime.utcnow)
 

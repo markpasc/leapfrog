@@ -41,6 +41,22 @@ def account_for_twitter_user(userdata, person=None):
             status_background_tile=userdata.get('profile_background_tile') or '',
         )
         account.save()
+    else:
+        person = account.person
+        if not person.avatar_source or person.avatar_source == 'twitter.com':
+            if person.avatar.image_url != userdata['profile_image_url']:
+                avatar = Media(
+                    width=48,
+                    height=48,
+                    image_url=userdata['profile_image_url'],
+                )
+                avatar.save()
+                person.avatar = avatar
+                person.avatar_source = 'twitter.com'
+                person.save()
+            elif not person.avatar_source:
+                person.avatar_source = 'twitter.com'
+                person.save()
 
     return account
 

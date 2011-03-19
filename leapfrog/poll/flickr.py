@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 
 def account_for_flickr_id(nsid, person=None):
     try:
+        # TODO: update flickr avatar pictures (but that requires fetching their people info speculatively)
         return Account.objects.get(service='flickr.com', ident=nsid)
     except Account.DoesNotExist:
         pass

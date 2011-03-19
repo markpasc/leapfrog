@@ -23,9 +23,31 @@ log = logging.getLogger(__name__)
 def account_for_tumblelog_element(tumblelog_elem, person=None):
     account_name = tumblelog_elem.attrib['name']
     try:
-        return Account.objects.get(service='tumblr.com', ident=account_name)
+        account = Account.objects.get(service='tumblr.com', ident=account_name)
     except Account.DoesNotExist:
         pass
+    else:
+        person = account.person
+        if not person.avatar_source or person.avatar_source == 'tumblr.com':
+            try:
+                tumblr_avatar_url = tumblelog_elem.attrib['avatar-url-64']
+            except KeyError:
+                pass
+            else:
+                if not person.avatar or person.avatar.image_url != tumblr_avatar_url:
+                    avatar = Media(
+                        image_url=tumblr_avatar_url,
+                        width=64,
+                        height=64,
+                    )
+                    avatar.save()
+                    person.avatar = avatar
+                    person.avatar_source = 'tumblr.com'
+                    person.save()
+                elif not person.avatar_source:
+                    person.avatar_source = 'tumblr.com'
+                    person.save()
+        return account
 
     display_name = tumblelog_elem.attrib.get('title', account_name)
     if person is None:

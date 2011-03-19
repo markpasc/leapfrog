@@ -46,6 +46,34 @@ def account_for_typepad_user(tp_user, person=None):
             person=person,
         )
         account.save()
+    else:
+        person = account.person
+        if not person.avatar_source or person.avatar_source == 'typepad.com':
+            if tp_user.avatar_link.url_template:
+                tp_avatar_url = tp_user.avatar_link.url_template.replace('{spec}', '50si')
+            else:
+                tp_avatar_url = tp_user.avatar_link.url
+
+            if person.avatar.image_url != tp_avatar_url:
+                if tp_user.avatar_link.url_template:
+                    avatar = Media(
+                        width=50,
+                        height=50,
+                        image_url=tp_avatar_url,
+                    )
+                else:
+                    avatar = Media(
+                        width=tp_user.avatar_link.width,
+                        height=tp_user.avatar_link.height,
+                        image_url=tp_avatar_url,
+                    )
+                avatar.save()
+                person.avatar = avatar
+                person.avatar_source = 'typepad.com'
+                person.save()
+            elif not person.avatar_source:
+                person.avatar_source = 'typepad.com'
+                person.save()
 
     return account
 
