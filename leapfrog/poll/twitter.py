@@ -38,7 +38,7 @@ def account_for_twitter_user(userdata, person=None):
             person=person,
             status_background_color=userdata.get('profile_background_color') or '',
             status_background_image_url=userdata.get('profile_background_image_url') or '',
-            status_background_tile=userdata.get('profile_background_tile') or '',
+            status_background_tile=userdata.get('profile_background_tile') or False,
         )
         account.save()
     else:
@@ -57,6 +57,15 @@ def account_for_twitter_user(userdata, person=None):
             elif not person.avatar_source:
                 person.avatar_source = 'twitter.com'
                 person.save()
+
+        # We can always update these (but only pay for saving if they changed).
+        if not (account.status_background_color == (userdata.get('profile_background_color') or '')
+            and account.status_background_image_url == userdata.get('profile_background_image_url') or ''
+            and account.status_background_tile == (userdata.get('profile_background_tile') or False)):
+            account.status_background_color = userdata.get('profile_background_color') or ''
+            account.status_background_image_url = userdata.get('profile_background_image_url') or ''
+            account.status_background_tile = userdata.get('profile_background_tile') or False
+            account.save()
 
     return account
 
