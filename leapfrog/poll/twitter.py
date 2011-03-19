@@ -44,7 +44,7 @@ def account_for_twitter_user(userdata, person=None):
     else:
         person = account.person
         if not person.avatar_source or person.avatar_source == 'twitter.com':
-            if person.avatar.image_url != userdata['profile_image_url']:
+            if not person.avatar or person.avatar.image_url != userdata['profile_image_url']:
                 avatar = Media(
                     width=48,
                     height=48,

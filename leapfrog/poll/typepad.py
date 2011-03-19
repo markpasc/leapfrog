@@ -54,7 +54,7 @@ def account_for_typepad_user(tp_user, person=None):
             else:
                 tp_avatar_url = tp_user.avatar_link.url
 
-            if person.avatar.image_url != tp_avatar_url:
+            if not person.avatar or person.avatar.image_url != tp_avatar_url:
                 if tp_user.avatar_link.url_template:
                     avatar = Media(
                         width=50,
