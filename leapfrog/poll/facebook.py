@@ -40,6 +40,9 @@ def poll_facebook(account):
     if 'error' in feed:
         log.error("Facebook returned %s: %s", feed['error']['type'], feed['error']['message'])
         return
+    if 'data' not in feed:
+        log.error("Facebook returned unexpected data-free feed for %s (%s): %r", account.display_name, account.ident, feed)
+        return
 
     items = feed["data"]
 

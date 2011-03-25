@@ -327,6 +327,9 @@ def poll_tumblr(account):
     if resp.status == 500:
         log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
         return
+    if resp.status == 408:
+        log.info("Timeout polling Tumblr user %s's dashboard (is Tumblr down/slow?)", account.ident)
+        return
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
     content_type = resp.get('content-type')
