@@ -72,11 +72,10 @@ def account_for_twitter_user(userdata, person=None):
 
 def tweet_html(tweetdata):
     tweet = tweetdata['text']
-    if 'entities' not in tweetdata:
-        return tweet
+    entities = tweetdata.get('entities', {})
 
     mutations = list()
-    for urldata in tweetdata['entities'].get('urls', ()):
+    for urldata in entities.get('urls', ()):
         url = urldata['expanded_url'] or urldata['url']
         start, end = urldata['indices']
         text = urldata.get('text', tweet[start:end])
@@ -85,16 +84,33 @@ def tweet_html(tweetdata):
             'indices': (start, end),
             'html': u"""<a %shref="%s">%s</a>""" % (classattr, url, text),
         })
-    for mentiondata in tweetdata['entities'].get('user_mentions', ()):
+    for mentiondata in entities.get('user_mentions', ()):
         mutations.append({
             'indices': mentiondata['indices'],
             'html': u"""@<a href="http://twitter.com/%(screen_name)s" title="%(name)s">%(screen_name)s</a>""" % mentiondata,
         })
-    for tagdata in tweetdata['entities'].get('hashtags', ()):
+    for tagdata in entities.get('hashtags', ()):
         mutations.append({
             'indices': tagdata['indices'],
             'html': u"""<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
         })
+
+    # Mutate HTML characters into escaped entities too.
+    def indices_of_char_in(c, tweet):
+        i = -1
+        while True:
+            try:
+                i = tweet.index(c, i+1)
+            except ValueError:
+                break
+            else:
+                yield i
+    for char, escaped_char in (('<', '&lt;'), ('&', '&amp;')):
+        for i in indices_of_char_in(char, tweet):
+            mutations.append({
+                'indices': (i, i+1),
+                'html': escaped_char,
+            })
 
     # Mutate the tweet from the end, so the replacements don't invalidate the remaining indices.
     for mutation in sorted(mutations, key=lambda x: x['indices'][0], reverse=True):

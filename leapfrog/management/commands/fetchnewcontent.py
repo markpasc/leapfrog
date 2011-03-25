@@ -35,6 +35,10 @@ class Command(NoArgsCommand):
             default=False,
             help='Update all accounts, even ones that have been updated recently',
         ),
+        make_option('--service',
+            dest='service',
+            help='Update only accounts on this service',
+        ),
     )
 
     def fetch_new_content(self, **options):
@@ -60,6 +64,10 @@ class Command(NoArgsCommand):
                     poller = pollers[account.service]
                 except KeyError:
                     log.debug("Account service %s has no poller, skipping", account.service)
+                    continue
+
+                if options['service'] and account.service != options['service']:
+                    log.debug("Account is for service %s but we're only polling %s, skipping", account.service, options['service'])
                     continue
 
                 if not options['force'] and account.last_updated > update_horizon:
