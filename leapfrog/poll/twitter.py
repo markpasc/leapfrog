@@ -95,22 +95,12 @@ def tweet_html(tweetdata):
             'html': u"""<a href="http://twitter.com/search?q=%%23%(text)s">#%(text)s</a>""" % tagdata,
         })
 
-    # Mutate HTML characters into escaped entities too.
-    def indices_of_char_in(c, tweet):
-        i = -1
-        while True:
-            try:
-                i = tweet.index(c, i+1)
-            except ValueError:
-                break
-            else:
-                yield i
-    for char, escaped_char in (('<', '&lt;'), ('&', '&amp;')):
-        for i in indices_of_char_in(char, tweet):
-            mutations.append({
-                'indices': (i, i+1),
-                'html': escaped_char,
-            })
+    # Mutate bare '&'s into escaped entities too.
+    for mo in re.finditer(r'&(?!gt;|lt;)', tweet):
+        mutations.append({
+            'indices': mo.span(),
+            'html': '&amp;',
+        })
 
     # Mutate the tweet from the end, so the replacements don't invalidate the remaining indices.
     for mutation in sorted(mutations, key=lambda x: x['indices'][0], reverse=True):
