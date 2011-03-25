@@ -96,6 +96,19 @@ def poll_mlkshk(account):
         sharekey = post['permalink_page'].split('/')[-1]
 
         author = account_for_mlkshk_userinfo(post['user'])
+        if not author.person.avatar_source and author.person.avatar is None:
+            userinfo = call_mlkshk('https://mlkshk.com/api/user_id/%s' % author.ident,
+                authtoken=token, authsecret=secret)
+            avatar_url = userinfo['profile_image_url']
+            if 'default-icon' not in avatar_url:
+                avatar = Media(
+                    width=100,
+                    height=100,
+                    image_url=avatar_url,
+                )
+                avatar.save()
+                author.person.avatar = avatar
+                author.person.save()
         posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
 
         if 'url' in post:
@@ -114,6 +127,7 @@ def poll_mlkshk(account):
                 reply = Object(
                     service='mlkshk.com',
                     foreign_id=sharekey,
+                    author=author,
                     in_reply_to=obj,
                     title=post['title'],
                     permalink_url=post['permalink_page'],
