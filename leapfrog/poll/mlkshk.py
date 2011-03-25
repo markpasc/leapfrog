@@ -11,7 +11,7 @@ from urlparse import urlparse
 
 import httplib2
 
-from leapfrog.models import Account, Person, Media, Object, UserStream
+from leapfrog.models import Account, Person, Media, Object, UserStream, UserReplyStream
 import leapfrog.poll.embedlam
 
 
