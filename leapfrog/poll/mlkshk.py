@@ -147,7 +147,7 @@ def poll_mlkshk(account):
         obj.permalink_url = post['permalink_page']
         obj.render_mode = 'image'
         if post.get('description'):
-            obj.content = post['description']
+            obj.body = post['description']
         obj.time = posted_at
         obj.save()
 
