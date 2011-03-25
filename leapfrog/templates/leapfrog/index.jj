@@ -25,6 +25,7 @@
                 <code>j n</code> next item<br>
                 <code>k p</code> previous item<br>
                 <code>b ⏎</code> open the current item<br>
+                <code>  f</code> favorite/like the current item<br>
                 <code>  ?</code> close this guide
             </div>
         </div>
@@ -338,7 +339,7 @@
             }
 
             // Skip out if it's not one of the other keys we handle.
-            if (-1 == $.inArray(evt.charCode, [106, 110, 107, 112, 98, 13])) {
+            if (-1 == $.inArray(evt.charCode, [102, 106, 110, 107, 112, 98, 13])) {
                 return;
             }
 
@@ -379,6 +380,10 @@
                 // immediately. Since this happens for a keypress,
                 // Chrome at least lets us.
                 window.focus();
+            }
+            // f: favorite/like this item
+            else if (evt.charCode == 102) {
+                $currentItem.find('.metadata .response .favorite').click();
             }
         }
 
