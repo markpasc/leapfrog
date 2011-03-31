@@ -770,6 +770,20 @@ div.reply {
     background-image: url(../img/loadinfo.net.gif);
 }
 
+.reply .item-content-status .status {
+    padding: 0;
+}
+.reply .item-content-status .twitter-byline a.screenname:link,
+.reply .item-content-status .twitter-byline a.screenname:hover,
+.reply .item-content-status .twitter-byline a.screenname:visited,
+.reply .item-content-status .twitter-byline a.screenname:focus,
+.reply .item-content-status .twitter-byline a.screenname:active {
+    font-size: 1.2em;
+}
+.reply .item-content-status .status .summary {
+    font-size: 1em;
+    line-height: 1.4em;
+}
 
 /* zendesk integration */
 
