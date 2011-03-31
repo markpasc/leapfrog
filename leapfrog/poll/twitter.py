@@ -278,6 +278,9 @@ def raw_object_for_tweet(tweetdata, client):
         # TODO: remove the mention from the front of the tweet
         next_tweetid = tweetdata['in_reply_to_status_id']
         really_a_share, in_reply_to = object_from_tweet_id(next_tweetid, client)
+        if in_reply_to is not None and not in_reply_to.public:
+            # No.
+            in_reply_to = None
 
     # Is this status a reply to a link?
     elif len(tweetdata['entities']['urls']) == 1:
@@ -368,6 +371,7 @@ def raw_object_for_tweet(tweetdata, client):
         render_mode='status',
         body=tweet_html(tweetdata),
         time=datetime.strptime(tweetdata['created_at'], '%a %b %d %H:%M:%S +0000 %Y'),
+        public=not tweetdata['user']['protected'],
         permalink_url='http://twitter.com/%s/status/%d'
             % (tweetdata['user']['screen_name'], tweetdata['id']),
         author=account_for_twitter_user(tweetdata['user']),
