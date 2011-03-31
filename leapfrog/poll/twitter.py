@@ -76,13 +76,14 @@ def tweet_html(tweetdata):
 
     mutations = list()
     for urldata in entities.get('urls', ()):
+        orig_url = urldata['url']
         url = urldata['expanded_url'] or urldata['url']
         start, end = urldata['indices']
         text = urldata.get('text', tweet[start:end])
         classattr = 'class="%s" ' % urldata['class'] if 'class' in urldata else ''
         mutations.append({
             'indices': (start, end),
-            'html': u"""<a %shref="%s">%s</a>""" % (classattr, url, text),
+            'html': u"""<a %shref="%s" title="%s">%s</a>""" % (classattr, orig_url, url, text),
         })
     for mentiondata in entities.get('user_mentions', ()):
         mutations.append({
