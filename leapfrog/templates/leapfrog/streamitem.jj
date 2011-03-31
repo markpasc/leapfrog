@@ -49,20 +49,26 @@
                         style="background: {% if object.author and object.author.status_background_color %}#{{ object.author.status_background_color }} {% endif %}{% if object.author.status_background_image_url %}url({{ object.author.status_background_image_url }}) {% endif %}{% if object.author.status_background_tile %}repeat{% else %}no-repeat{% endif %};"
                         ></div>
                     <div class="status">
+                        <div class="twitter-byline">
+                            {% set screenname = author.permalink_url.split('/')[-1] %}
+                            <a href="{{ author.permalink_url }}" class="screenname">{{ screenname }}</a>
+                            {% if screenname != author.display_name %}
+                                <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                            {% endif %}
+                        </div>
                         <p class="summary">{{ object.body }}</p>
                         <div class="metadata pkg">
-                            <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                            <a href="{{ object.permalink_url }}" class="permalink timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
 
                             {% if object.service and object.service in accounts %}
                                 {% if object.service == 'twitter.com' %}
                                     <span class="response response-twitter" data-tweet="{{ object.foreign_id }}">
-                                        <a class="favorite" href="#">Favorite</a>
+                                        <a class="reply" href="http://twitter.com/intent/tweet?in_reply_to={{ object.foreign_id }}">Reply</a>
                                         <a class="retweet" href="#">Retweet</a>
+                                        <a class="favorite" href="#">Favorite</a>
                                     </span>
                                 {% endif %}
                             {% endif %}
-
-                            <a href="{{ object.permalink_url }}" class="permalink timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
                         </div>
                     </div>
                 </div>

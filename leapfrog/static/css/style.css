@@ -272,7 +272,7 @@ a:visited {
     background: white;
 }
 
-.reply {
+div.reply {
     margin: 10px 0 10px 100px;
 }
 
@@ -676,6 +676,98 @@ a:visited {
     background-image: url(../img/nogo-grey.png);
     text-decoration: none;
     cursor: normal;
+}
+
+
+/* twitter */
+
+.item-content-status .twitter-byline {
+    display: block;
+    font-size: 0.8em;
+    color: #999;
+    margin: 0 0 1ex;
+}
+.item-content-status .twitter-byline a:link,
+.item-content-status .twitter-byline a:hover,
+.item-content-status .twitter-byline a:visited,
+.item-content-status .twitter-byline a:focus,
+.item-content-status .twitter-byline a:active,
+.item-content-status .metadata a:link,
+.item-content-status .metadata a:hover,
+.item-content-status .metadata a:visited,
+.item-content-status .metadata a:focus,
+.item-content-status .metadata a:active {
+    color: inherit;
+    text-decoration: none;
+}
+.item-content-status .twitter-byline a.screenname:link,
+.item-content-status .twitter-byline a.screenname:hover,
+.item-content-status .twitter-byline a.screenname:visited,
+.item-content-status .twitter-byline a.screenname:focus,
+.item-content-status .twitter-byline a.screenname:active {
+    color: #00e;
+    font-size: 1.4em;
+    font-weight: bold;
+    text-decoration: none;
+}
+.item-content-status .twitter-byline a.screenname:visited {
+    color: #551a8b;
+}
+.item-content-status .twitter-byline a.screenname:hover,
+.item-content-status .twitter-byline a.screenname:active,
+.item-content-status .twitter-byline a:hover,
+.item-content-status .twitter-byline a:active,
+.item-content-status .metadata a:hover,
+.item-content-status .metadata a:active {
+    text-decoration: underline;
+}
+
+.item-content-status .metadata {
+    margin-top: 1ex;
+}
+.item-content-status .metadata .authorname,
+.item-content-status .metadata .timestamp {
+    float: none;
+}
+
+.item-content-status .metadata .timestamp {
+    padding-left: 22px;
+    min-height: 16px;
+    background: transparent url(../img/twitter/bird_16_blue.png) no-repeat top left;
+}
+
+.item-content-status .metadata .response .reply {
+    background-image: url(../img/twitter/reply.png);
+}
+.item-content-status .metadata .response .reply:hover {
+    background-image: url(../img/twitter/reply_hover.png);
+}
+
+.item-content-status .metadata .response .favorite {
+    background-image: url(../img/twitter/favorite.png);
+}
+.item-content-status .metadata .response .favorite:hover {
+    background-image: url(../img/twitter/favorite_hover.png);
+}
+.item-content-status .metadata .response .favorited,
+.item-content-status .metadata .response .favorited:hover {
+    background-image: url(../img/twitter/favorite_on.png);
+}
+
+.item-content-status .metadata .response .retweet {
+    background-image: url(../img/twitter/retweet.png);
+}
+.item-content-status .metadata .response .retweet:hover {
+    background-image: url(../img/twitter/retweet_hover.png);
+}
+.item-content-status .metadata .response .retweeted,
+.item-content-status .metadata .response .retweeted:hover {
+    background-image: url(../img/twitter/retweet_on.png);
+}
+
+.item-content-status .metadata .response .spinning,
+.item-content-status .metadata .response .spinning:hover {
+    background-image: url(../img/loadinfo.net.gif);
 }
 
 

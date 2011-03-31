@@ -125,6 +125,26 @@
             if (!$root)
                 $root = $(document);
 
+            $root.find('.response-twitter .reply').click(function () {
+                {% if ganalytics_code %}
+                _gaq.push(['_trackPageview', '/goal/feedback/twitterreply']);
+                {% endif %}
+
+                // This is how (roughly) twitter says to do it.
+                var targethref = $(this).attr('href'),
+                    windowOptions = 'scrollbars=yes,resizable=yes,toolbar=no,location=yes',
+                    winHeight = screen.height,
+                    winWidth = screen.width,
+                    width = 550,
+                    height = 420;  // we're only tweeting, which is short
+
+                var left = Math.round((winWidth - width) / 2);
+                var top = winHeight <= height ? 0 : Math.round((winHeight - height) / 2);
+                window.open(targethref, 'intent', windowOptions + ',width=' + width + ',height=' + height
+                    + ',left=' + left + ',top=' + top);
+
+                return false;
+            });
             $root.find('.response-twitter .favorite').click(function () {
                 {% if ganalytics_code %}
                 _gaq.push(['_trackPageview', '/goal/feedback/twitterfav']);
