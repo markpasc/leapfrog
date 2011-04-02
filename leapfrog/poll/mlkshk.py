@@ -9,6 +9,7 @@ import string
 import time
 from urlparse import urlparse
 
+from django.conf import settings
 import httplib2
 
 from leapfrog.models import Account, Person, Media, Object, UserStream, UserReplyStream
@@ -85,6 +86,100 @@ def account_for_mlkshk_userinfo(userinfo, person=None):
     return account
 
 
+def object_from_url(url):
+    urlparts = urlparse(url)
+    mo = re.match(r'/[rp]/(\w+)', urlparts.path)  # the path, not the whole url
+    if mo is None:
+        log.debug("URL %r did not match Mlkshk URL pattern", url)
+        return None, None
+    mlkshk_id = mo.group(1)
+
+    # Ask the API about it?
+    oembed_url = '?'.join(('http://mlkshk.com/services/oembed', urlencode({'url': url})))
+    h = httplib2.Http()
+    resp, cont = h.request(oembed_url, headers={'User-Agent': 'leapfrog/1.0'})
+    if resp.status != 200:
+        raise ValueError("Unexpected response asking about MLKSHK post #%s: %d %s"
+            % (mlkshk_id, resp.status, resp.reason))
+
+    postdata = json.loads(cont)
+
+    # Mold the OEmbed data into a MLKSHK API shape.
+    postdata['user'] = {'name': postdata['author_name']}
+    # TODO: ...and so on
+
+    return object_from_post(postdata)
+
+
+def object_from_post(post):
+    sharekey = post['permalink_page'].split('/')[-1]
+
+    author = account_for_mlkshk_userinfo(post['user'])
+    if not author.person.avatar_source and author.person.avatar is None:
+        userinfo = call_mlkshk('https://mlkshk.com/api/user_id/%s' % author.ident,
+            authtoken=token, authsecret=secret)
+        avatar_url = userinfo['profile_image_url']
+        if 'default-icon' not in avatar_url:
+            avatar = Media(
+                width=100,
+                height=100,
+                image_url=avatar_url,
+            )
+            avatar.save()
+            author.person.avatar = avatar
+            author.person.save()
+    posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
+
+    if 'url' in post:
+        obj = leapfrog.poll.embedlam.object_for_url(post['url'])
+        if not post.get('description'):
+            return True, obj
+
+        try:
+            reply = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
+        except Object.DoesNotExist:
+            reply = Object(
+                service='mlkshk.com',
+                foreign_id=sharekey,
+                author=author,
+                in_reply_to=obj,
+                title=post['title'],
+                permalink_url=post['permalink_page'],
+                render_mode='mixed',
+                body=post['description'],
+                time=posted_at,
+            )
+            reply.save()
+
+        return False, reply
+
+    try:
+        obj = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
+    except Object.DoesNotExist:
+        photo = Media(
+            image_url=post['original_image_url'],
+            width=post['width'],
+            height=post['height'],
+        )
+        photo.save()
+        obj = Object(
+            service='mlkshk.com',
+            foreign_id=sharekey,
+            image=photo,
+        )
+
+    obj.title = post['title']
+    obj.author = author
+    obj.permalink_url = post['permalink_page']
+    obj.render_mode = 'image'
+    obj.body = post.get('description')
+    obj.time = posted_at
+    obj.save()
+
+    # TODO: consider a "save" a share instead of a post?
+    return False, obj
+
+
 def poll_mlkshk(account):
     user = account.person.user
     if user is None:
@@ -93,78 +188,21 @@ def poll_mlkshk(account):
     token, secret = account.authinfo.encode('utf8').split(':', 1)
     friendshake = call_mlkshk('https://mlkshk.com/api/friends', authtoken=token, authsecret=secret)
     for post in friendshake['friend_shake']:
-        sharekey = post['permalink_page'].split('/')[-1]
+        really_a_share, obj = object_from_post(post)
+        why_account = account_for_mlkshk_userinfo(post['user']) if really_a_share else obj.author
 
-        author = account_for_mlkshk_userinfo(post['user'])
-        if not author.person.avatar_source and author.person.avatar is None:
-            userinfo = call_mlkshk('https://mlkshk.com/api/user_id/%s' % author.ident,
-                authtoken=token, authsecret=secret)
-            avatar_url = userinfo['profile_image_url']
-            if 'default-icon' not in avatar_url:
-                avatar = Media(
-                    width=100,
-                    height=100,
-                    image_url=avatar_url,
-                )
-                avatar.save()
-                author.person.avatar = avatar
-                author.person.save()
-        posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
+        # Save the root object as a UserStream (with the leaf object's time).
+        root = obj
+        why_verb = 'share' if really_a_share else 'post'
+        while root.in_reply_to is not None:
+            root = root.in_reply_to
+            why_verb = 'share' if really_a_share else 'reply'
 
-        if 'url' in post:
-            obj = leapfrog.poll.embedlam.object_for_url(post['url'])
+        streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
+            defaults={'time': obj.time, 'why_account': why_account, 'why_verb': why_verb})
 
-            UserStream.objects.get_or_create(user=user, obj=obj,
-                defaults={'time': posted_at, 'why_account': author,
-                    'why_verb': 'share' if post.get('description') else 'share'})
-
-            if not post.get('description'):
-                continue
-
-            try:
-                reply = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
-            except Object.DoesNotExist:
-                reply = Object(
-                    service='mlkshk.com',
-                    foreign_id=sharekey,
-                    author=author,
-                    in_reply_to=obj,
-                    title=post['title'],
-                    permalink_url=post['permalink_page'],
-                    render_mode='mixed',
-                    body=post['description'],
-                    time=posted_at,
-                )
-                reply.save()
-
-            UserReplyStream.objects.get_or_create(user=user, root=obj, reply=reply,
-                defaults={'root_time': obj.time, 'reply_time': posted_at})
-            continue
-
-        try:
-            obj = Object.objects.get(service='mlkshk.com', foreign_id=sharekey)
-        except Object.DoesNotExist:
-            photo = Media(
-                image_url=post['original_image_url'],
-                width=post['width'],
-                height=post['height'],
-            )
-            photo.save()
-            obj = Object(
-                service='mlkshk.com',
-                foreign_id=sharekey,
-                image=photo,
-            )
-
-        obj.title = post['title']
-        obj.author = author
-        obj.permalink_url = post['permalink_page']
-        obj.render_mode = 'image'
-        if post.get('description'):
-            obj.body = post['description']
-        obj.time = posted_at
-        obj.save()
-
-        # TODO: consider a "save" a share instead of a post?
-        UserStream.objects.get_or_create(user=user, obj=obj,
-            defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
+        superobj = obj
+        while superobj.in_reply_to is not None:
+            UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
+                defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
+            superobj = superobj.in_reply_to

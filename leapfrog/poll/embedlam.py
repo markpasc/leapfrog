@@ -16,6 +16,7 @@ import httplib2
 
 from leapfrog.models import Account, Object, Person, Media
 import leapfrog.poll.flickr
+import leapfrog.poll.mlkshk
 import leapfrog.poll.tumblr
 import leapfrog.poll.twitter
 import leapfrog.poll.typepad
@@ -446,17 +447,21 @@ class Page(object):
             # TODO: Inspect the image header to find out what size the image is
             return object_from_photo_url(url, None, None)
 
-        if re.match(r'http:// [^/]* flickr\.com/photos/[^/]+/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        xms = re.MULTILINE | re.DOTALL | re.VERBOSE
+        if re.match(r'http:// [^/]* flickr\.com/photos/[^/]+/\d+', url, xms):
             return leapfrog.poll.flickr.object_from_url(url)
-        if re.match(r'http://twitpic\.com/ \w+ ', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http://twitpic\.com/ \w+ ', url, xms):
             return leapfrog.poll.twitter.object_from_twitpic_url(url)
-        if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, xms):
             return leapfrog.poll.twitter.object_from_url(url)
-        if re.match(r'http://vimeo\.com/ \d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http://vimeo\.com/ \d+', url, xms):
             return leapfrog.poll.vimeo.object_from_url(url)
+        if re.match(r'http://mlkshk\.com/[rp]/(\w+)', url, xms):
+            really_a_share, mlkshk_obj = leapfrog.poll.mlkshk.object_from_url(url)
+            return mlkshk_obj
 
         # If it looks like a Tumblr URL, try asking Tumblr about it.
-        if re.match(r'http://[^/]+/post/\d+', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http://[^/]+/post/\d+', url, xms):
             try:
                 really_a_share, tumblr_obj = leapfrog.poll.tumblr.object_from_url(url)
             except ValueError:
@@ -466,8 +471,8 @@ class Page(object):
                 return tumblr_obj
 
         # If the site mentions TypePad, try asking TypePad about it.
-        is_typepad_url = re.match(r'http:// .* \.typepad\.com/', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
-        mentions_typepad = lambda: re.search(r'typepad', self.content, re.IGNORECASE | re.MULTILINE | re.DOTALL | re.VERBOSE)
+        is_typepad_url = re.match(r'http:// .* \.typepad\.com/', url, xms)
+        mentions_typepad = lambda: re.search(r'typepad', self.content, re.IGNORECASE | xms)
         if is_typepad_url or mentions_typepad():
             try:
                 return leapfrog.poll.typepad.object_from_url(url)
