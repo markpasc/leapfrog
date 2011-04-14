@@ -100,7 +100,7 @@ class Object(models.Model):
             soup = BeautifulSoup(self.body)
             for script_node in soup.findAll('script'):
                 script_node.extract()
-            self.body = unicode(soup).strip()
+            self.body = str(soup).decode('utf8').strip()
         return super(Object, self).save(**kwargs)
 
     @property

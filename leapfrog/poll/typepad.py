@@ -95,7 +95,7 @@ def remove_reblog_boilerplate_from_obj(obj):
     else:
         return
 
-    obj.body = unicode(soup).strip()
+    obj.body = str(soup).decode('utf8').strip()
 
 
 def object_for_typepad_object(tp_obj):

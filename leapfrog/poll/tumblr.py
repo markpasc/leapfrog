@@ -104,7 +104,7 @@ def remove_reblog_boilerplate_from_obj(obj, in_reply_to):
 
     maybe_p.extract()
     maybe_quote.extract()
-    obj.body = unicode(soup).strip()
+    obj.body = str(soup).decode('utf8').strip()
 
 
 def object_from_post_element(post_el, tumblelog_el):
