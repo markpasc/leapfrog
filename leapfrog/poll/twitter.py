@@ -102,6 +102,12 @@ def tweet_html(tweetdata):
             'indices': mo.span(),
             'html': '&amp;',
         })
+    # Let's also display line feeds.
+    for mo in re.finditer(r'\n', tweet):
+        mutations.append({
+            'indices': mo.span(),
+            'html': '<br>',
+        })
 
     # Mutate the tweet from the end, so the replacements don't invalidate the remaining indices.
     for mutation in sorted(mutations, key=lambda x: x['indices'][0], reverse=True):
