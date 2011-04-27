@@ -40,7 +40,8 @@
         {% endfor %}
 
         <div id="navigate">
-            <span>Loading... <img src="{{ url_for('leapfrog-static', path='img/loadinfo.net.gif') }}" width="16" height="16"></span>
+            <a id="navigate-load-more" href="#">Load more</a>
+            <span id="navigate-loading">Loading... <img src="{{ url_for('leapfrog-static', path='img/loadinfo.net.gif') }}" width="16" height="16"></span>
         </div>
 
         <script type="text/javascript">
@@ -55,6 +56,9 @@
             if (showing_more)
                 return;
             showing_more = true;
+
+            $('#navigate-load-more').hide();
+            $('#navigate-loading').show();
 
             var $nav = $('#navigate');
             $.ajax({
@@ -74,9 +78,12 @@
                     });
 
                     if (!had_new) {
-                        $('#navigate span').text('All done! No more items!');
+                        $('#navigate').text('All done! No more items!');
                         return;  // still "showing_more"
                     }
+
+                    $('#navigate-load-more').show();
+                    $('#navigate-loading').hide();
 
                     oldest_item_date = items.slice(-1)[0]['time'];
                     showing_more = false;
@@ -89,7 +96,8 @@
                     $nextpage.children().unwrap();
                 },
                 error: function (xhr) {
-                    $('#navigate span').text(xhr.responseText);
+                    $('#navigate').text(xhr.responseText);
+
                     showing_more = false;
                 }
             });
@@ -369,7 +377,7 @@
             if (evt.charCode == 106 || evt.charCode == 110) {
                 var $nextItem = $currentItem.next('.item');
                 if (!$nextItem.size())
-                    return;
+                    $nextItem = $('#navigate');
 
                 var nextPos = $nextItem.offset().top - 30;
                 scrollPageTo($page, nextPos);
@@ -410,6 +418,7 @@
         $(document).ready(function () {
             setUpPaginator();
             setUpResponseLinks();
+            $('#navigate-load-more').click(showMore);
             setInterval("checkForUpdates()", 3 * 60 * 1000);
             updateTimestamps();
             setInterval("updateTimestamps()", 60 * 1000);
