@@ -188,6 +188,10 @@ a:visited {
     background: white;
 }
 
+#navigate-loading {
+    display: none;
+}
+
 #new-updates, #keyboard-shortcuts {
     position: fixed;
     width: 100%;
