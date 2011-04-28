@@ -418,7 +418,10 @@
         $(document).ready(function () {
             setUpPaginator();
             setUpResponseLinks();
-            $('#navigate-load-more a').click(showMore);
+            $('#navigate-load-more a').click(function () {
+                showMore();
+                return false;
+            });
             setInterval("checkForUpdates()", 3 * 60 * 1000);
             updateTimestamps();
             setInterval("updateTimestamps()", 60 * 1000);
