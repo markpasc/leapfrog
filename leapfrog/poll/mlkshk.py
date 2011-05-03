@@ -111,23 +111,24 @@ def object_from_url(url):
     return object_from_post(postdata)
 
 
-def object_from_post(post):
+def object_from_post(post, authtoken=None, authsecret=None):
     sharekey = post['permalink_page'].split('/')[-1]
 
     author = account_for_mlkshk_userinfo(post['user'])
     if not author.person.avatar_source and author.person.avatar is None:
-        userinfo = call_mlkshk('https://mlkshk.com/api/user_id/%s' % author.ident,
-            authtoken=token, authsecret=secret)
-        avatar_url = userinfo['profile_image_url']
-        if 'default-icon' not in avatar_url:
-            avatar = Media(
-                width=100,
-                height=100,
-                image_url=avatar_url,
-            )
-            avatar.save()
-            author.person.avatar = avatar
-            author.person.save()
+        if authtoken and authsecret:
+            userinfo = call_mlkshk('https://mlkshk.com/api/user_id/%s' % author.ident,
+                authtoken=authtoken, authsecret=authsecret)
+            avatar_url = userinfo['profile_image_url']
+            if 'default-icon' not in avatar_url:
+                avatar = Media(
+                    width=100,
+                    height=100,
+                    image_url=avatar_url,
+                )
+                avatar.save()
+                author.person.avatar = avatar
+                author.person.save()
     posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
 
     if 'url' in post:
@@ -188,7 +189,7 @@ def poll_mlkshk(account):
     token, secret = account.authinfo.encode('utf8').split(':', 1)
     friendshake = call_mlkshk('https://mlkshk.com/api/friends', authtoken=token, authsecret=secret)
     for post in friendshake['friend_shake']:
-        really_a_share, obj = object_from_post(post)
+        really_a_share, obj = object_from_post(post, authtoken=token, authsecret=secret)
         why_account = account_for_mlkshk_userinfo(post['user']) if really_a_share else obj.author
 
         # Save the root object as a UserStream (with the leaf object's time).
