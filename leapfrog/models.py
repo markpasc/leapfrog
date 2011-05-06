@@ -1,5 +1,5 @@
 from datetime import datetime
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 
 from BeautifulSoup import BeautifulSoup
 from django.db import models
@@ -106,6 +106,10 @@ class Object(models.Model):
     @property
     def permalink_host(self):
         return urlparse(self.permalink_url).netloc
+
+    @property
+    def permalink_root(self):
+        return urljoin(self.permalink_url, '/')
 
     class Meta:
         unique_together = (('service', 'foreign_id'),)

@@ -117,6 +117,8 @@
                     <div class="metadata-inner">
                         {% if author %}
                             <a href="{{ author.permalink_url }}" class="authorname">{{ author.display_name }}</a>
+                        {% else %}
+                            <a href="{{ object.permalink_root }}">{{ object.permalink_host }}</a>
                         {% endif %}
 
                         {% if object.service and object.service in accounts %}
