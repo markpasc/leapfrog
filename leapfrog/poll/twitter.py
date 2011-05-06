@@ -273,10 +273,11 @@ def raw_object_for_tweet(tweetdata, client):
 
     log.debug('Making new tweet for %s status #%d', tweetdata['user']['screen_name'], tweetdata['id'])
 
-    if 'foursquare.com' in tweetdata.get('source', ''):
-        log.debug("Skipping %s's tweet #%d as it's from foursquare", tweetdata['user']['screen_name'], tweetdata['id'])
-        # TODO: really we should end generation less tragically but callers don't expect us to return None for a tweet
-        return False, None
+    source = tweetdata.get('source', '')
+    for meh_source in ('foursquare.com', 'soundtracking.com'):
+        if meh_source in source:
+            log.debug("Skipping %s's tweet #%d as it's from %s", tweetdata['user']['screen_name'], tweetdata['id'], meh_source)
+            return False, None
 
     in_reply_to = None
     if tweetdata.get('in_reply_to_status_id'):
