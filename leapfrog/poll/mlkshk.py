@@ -5,6 +5,7 @@ import hmac
 import json
 import logging
 from random import choice
+import re
 import string
 import time
 from urlparse import urlparse
