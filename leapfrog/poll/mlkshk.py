@@ -173,7 +173,7 @@ def object_from_post(post, authtoken=None, authsecret=None):
     obj.author = author
     obj.permalink_url = post['permalink_page']
     obj.render_mode = 'image'
-    obj.body = post.get('description', '')
+    obj.body = post.get('description') or ''
     obj.time = posted_at
     obj.save()
 
