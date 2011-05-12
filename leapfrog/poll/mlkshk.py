@@ -11,10 +11,12 @@ import time
 from urlparse import urlparse
 
 from django.conf import settings
+from django.utils.html import escape
 import httplib2
 
 from leapfrog.models import Account, Person, Media, Object, UserStream, UserReplyStream
 import leapfrog.poll.embedlam
+import leapfrog.poll.twitter
 
 
 log = logging.getLogger(__name__)
@@ -112,6 +114,20 @@ def object_from_url(url):
     return object_from_post(postdata)
 
 
+def replacement_text_for_url(match):
+    url = match.group(0)
+
+    try:
+        url_page = leapfrog.poll.embedlam.Page(url)
+    except ValueError:
+        text = url
+    else:
+        url = url_page.permalink_url
+        text = url_page.title or url
+
+    return r'<a class="aboutlink" href="%s">%s</a>' % (escape(url), escape(text))
+
+
 def object_from_post(post, authtoken=None, authsecret=None):
     sharekey = post['permalink_page'].split('/')[-1]
 
@@ -132,6 +148,10 @@ def object_from_post(post, authtoken=None, authsecret=None):
                 author.person.save()
     posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
 
+    body = post.get('description') or ''
+    body = re.sub(r'\r?\n', '<br>', body)
+    body = re.sub(leapfrog.poll.twitter.url_re, replacement_text_for_url, body)
+
     if 'url' in post:
         obj = leapfrog.poll.embedlam.object_for_url(post['url'])
         if not post.get('description'):
@@ -148,7 +168,7 @@ def object_from_post(post, authtoken=None, authsecret=None):
                 title=post['title'],
                 permalink_url=post['permalink_page'],
                 render_mode='mixed',
-                body=post['description'],
+                body=body,
                 time=posted_at,
             )
             reply.save()
@@ -174,7 +194,7 @@ def object_from_post(post, authtoken=None, authsecret=None):
     obj.author = author
     obj.permalink_url = post['permalink_page']
     obj.render_mode = 'image'
-    obj.body = post.get('description') or ''
+    obj.body = body
     obj.time = posted_at
     obj.save()
 
