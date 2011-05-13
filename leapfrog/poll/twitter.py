@@ -4,6 +4,7 @@ import logging
 import re
 
 from django.conf import settings
+from django.utils.http import urlquote
 import httplib2
 import oauth2 as oauth
 
@@ -78,6 +79,10 @@ def tweet_html(tweetdata):
     for urldata in entities.get('urls', ()):
         orig_url = urldata['url']
         url = urldata['expanded_url'] or urldata['url']
+
+        # Make sure the URL is ascii-safe so we can enstringify it.
+        url = urlquote(url, safe='/&=:;#?+*')
+
         start, end = urldata['indices']
         text = urldata.get('text', tweet[start:end])
         classattr = 'class="%s" ' % urldata['class'] if 'class' in urldata else ''
