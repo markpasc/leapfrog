@@ -219,23 +219,40 @@ def poll_mlkshk(account):
         return
 
     token, secret = account.authinfo.encode('utf8').split(':', 1)
-    friendshake = call_mlkshk('https://mlkshk.com/api/friends', authtoken=token, authsecret=secret)
-    for post in friendshake['friend_shake']:
-        really_a_share, obj = object_from_post(post, authtoken=token, authsecret=secret)
-        why_account = account_for_mlkshk_userinfo(post['user']) if really_a_share else obj.author
+    overlap = False
+    post = None
+    while not overlap:
+        if post is None:
+            mlkshk_url = 'https://mlkshk.com/api/friends'
+        else:
+            permalink_page = post['permalink_page']
+            sharekey = permalink_page.rsplit('/', 1)[1]
+            mlkshk_url = 'https://mlkshk.com/api/friends/before/%s' % sharekey
 
-        # Save the root object as a UserStream (with the leaf object's time).
-        root = obj
-        why_verb = 'share' if really_a_share else 'post'
-        while root.in_reply_to is not None:
-            root = root.in_reply_to
-            why_verb = 'share' if really_a_share else 'reply'
+        friendshake = call_mlkshk(mlkshk_url, authtoken=token, authsecret=secret)
+        if not friendshake.get('friend_shake'):
+            log.debug("Premature end of friend shake for %s at %s, stopping", account.ident, mlkshk_url)
+            break
 
-        streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
-            defaults={'time': obj.time, 'why_account': why_account, 'why_verb': why_verb})
+        for post in friendshake['friend_shake']:
+            really_a_share, obj = object_from_post(post, authtoken=token, authsecret=secret)
+            why_account = account_for_mlkshk_userinfo(post['user']) if really_a_share else obj.author
 
-        superobj = obj
-        while superobj.in_reply_to is not None:
-            UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
-                defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
-            superobj = superobj.in_reply_to
+            # Save the root object as a UserStream (with the leaf object's time).
+            root = obj
+            why_verb = 'share' if really_a_share else 'post'
+            while root.in_reply_to is not None:
+                root = root.in_reply_to
+                why_verb = 'share' if really_a_share else 'reply'
+
+            streamitem, created = UserStream.objects.get_or_create(user=user, obj=root,
+                defaults={'time': obj.time, 'why_account': why_account, 'why_verb': why_verb})
+            if not created:
+                log.debug("~~ found existing post %s in stream, about to stop ~~", post['permalink_page'])
+                overlap = True
+
+            superobj = obj
+            while superobj.in_reply_to is not None:
+                UserReplyStream.objects.get_or_create(user=user, root=root, reply=superobj,
+                    defaults={'root_time': streamitem.time, 'reply_time': superobj.time})
+                superobj = superobj.in_reply_to
