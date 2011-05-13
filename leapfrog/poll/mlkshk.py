@@ -114,9 +114,7 @@ def object_from_url(url):
     return object_from_post(postdata)
 
 
-def replacement_text_for_url(match):
-    url = match.group(0)
-
+def replacement_text_for_url(url):
     try:
         url_page = leapfrog.poll.embedlam.Page(url)
     except ValueError:
@@ -126,6 +124,19 @@ def replacement_text_for_url(match):
         text = url_page.title or url
 
     return r'<a class="aboutlink" href="%s">%s</a>' % (escape(url), escape(text))
+
+
+def urlized_words(text):
+    from django.utils.html import word_split_re, punctuation_re
+    from django.utils.http import urlquote
+    for word in word_split_re.split(text):
+        if '.' in word or ':' in word:
+            match = punctuation_re.match(word)
+            lead, middle, trail = match.groups()
+            if any(middle.startswith(scheme) for scheme in ('http://', 'https://')):
+                yield replacement_text_for_url(urlquote(middle, safe='/&=:;#?+*'))
+                continue
+        yield word
 
 
 def object_from_post(post, authtoken=None, authsecret=None):
@@ -149,8 +160,8 @@ def object_from_post(post, authtoken=None, authsecret=None):
     posted_at = datetime.strptime(post['posted_at'], '%Y-%m-%dT%H:%M:%SZ')
 
     body = post.get('description') or ''
+    body = u''.join(urlized_words(body))
     body = re.sub(r'\r?\n', '<br>', body)
-    body = re.sub(leapfrog.poll.twitter.url_re, replacement_text_for_url, body)
 
     if 'url' in post:
         obj = leapfrog.poll.embedlam.object_for_url(post['url'])
