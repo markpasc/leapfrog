@@ -8,6 +8,7 @@ from random import choice
 import re
 import string
 import time
+from urllib import urlencode
 from urlparse import urlparse
 
 from django.conf import settings
