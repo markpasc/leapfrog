@@ -110,6 +110,7 @@ def object_from_url(url):
 
     # Mold the OEmbed data into a MLKSHK API shape.
     postdata['user'] = {'name': postdata['author_name']}
+    postdata['permalink_page'] = postdata['url']
     # TODO: ...and so on
 
     return object_from_post(postdata)
