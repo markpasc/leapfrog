@@ -194,6 +194,7 @@ def object_from_post(post, authtoken=None, authsecret=None):
             image_url=post['original_image_url'],
             width=post['width'],
             height=post['height'],
+            sfw=not post['nsfw'],
         )
         photo.save()
         obj = Object(

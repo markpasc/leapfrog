@@ -148,10 +148,16 @@
                 {% endif %}
 
                 {% if object.render_mode == 'image' %}
+                    {% if not object.image.sfw %}
+                        <div class="sfw-protection">
+                    {% endif %}
                     {% if object.image.image_url %}
                         <a href="{{ object.permalink_url }}" title="{{ object.title }}"><img src="{{ object.image.image_url }}"{% if object.image.width %} width="{{ object.image.width }}"{% endif %}{% if object.image.height %} height="{{ object.image.height }}"{% endif %} alt="{{ object.title }}"></a>
                     {% elif object.image.embed_code %}
                         {{ object.image.embed_code }}
+                    {% endif %}
+                    {% if not object.image.sfw %}
+                        </div>
                     {% endif %}
                 {% endif %}
 

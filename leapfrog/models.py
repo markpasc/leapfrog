@@ -13,6 +13,7 @@ class Media(models.Model):
     # TODO: change this when we store images locally
     image_url = models.CharField(max_length=300, blank=True)
     embed_code = models.TextField(blank=True)
+    sfw = models.BooleanField(blank=True, default=True)
 
     def __unicode__(self):
         if self.image_url:
