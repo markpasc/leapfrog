@@ -134,6 +134,10 @@
                                 <span class="response response-tumblr" data-post="{{ object.foreign_id }}">
                                     <a class="favorite" href="#">Like</a>
                                 </span>
+                            {% elif object.service == 'mlkshk.com' %}
+                                <span class="response response-mlkshk" data-post="{{ object.foreign_id }}">
+                                    <a class="favorite" href="#">Like</a>
+                                </span>
                             {% endif %}
                         {% endif %}
 

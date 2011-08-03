@@ -37,6 +37,7 @@ urlpatterns += patterns('',
     url(r'^action/typepad/favorite$', 'leapfrog.views.favorite_typepad', name='action-typepad-favorite'),
     url(r'^action/flickr/favorite$', 'leapfrog.views.favorite_flickr', name='action-flickr-favorite'),
     url(r'^action/tumblr/like$', 'leapfrog.views.like_tumblr', name='action-tumblr-like'),
+    url(r'^action/mlkshk/like$', 'leapfrog.views.like_mlkshk', name='action-mlkshk-like'),
     url(r'^action/detach-account$', 'leapfrog.views.detach_account', name='action-detach-account'),
 )
 

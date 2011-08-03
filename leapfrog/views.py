@@ -926,6 +926,41 @@ def favorite_flickr(request):
     return HttpResponse('OK', content_type='text/plain')
 
 
+def like_mlkshk(request):
+    if request.method != 'POST':
+        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
+        resp['Allow'] = ('POST',)
+        return resp
+
+    user = request.user
+    if not user.is_authenticated():
+        return HttpResponse('Authentication required to response', status=400, content_type='text/plain')
+    try:
+        person = user.person
+    except Person.DoesNotExist:
+        return HttpResponse('Real reader account required to response', status=400, content_type='text/plain')
+
+    try:
+        post_id = request.POST['post']
+    except KeyError:
+        post_id = False
+    if not post_id:
+        return HttpResponse("Parameter 'post' is required", status=400, content_type='text/plain')
+
+    like_url = 'https://mlkshk.com/api/sharedfile/%s/like' % post_id
+
+    accounts = person.accounts.filter(service='mlkshk.com')
+    for account in accounts:
+        token, secret = account.authinfo.encode('utf8').split(':', 1)
+        try:
+            resp = call_mlkshk(like_url, method='POST', authtoken=token, authsecret=secret)
+        except Exception, exc:
+            log.warning("Error liking post %s for MLKSHK user %s: %s", post_id, account.display_name, str(exc))
+            return HttpResponse('Error liking post: %s' % str(exc), status=400, content_type='text/plain')
+
+    return HttpResponse('OK', content_type='text/plain')
+
+
 def like_tumblr(request):
     if request.method != 'POST':
         resp = HttpResponse('POST is required', status=405, content_type='text/plain')

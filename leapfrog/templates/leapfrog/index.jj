@@ -296,6 +296,33 @@
 
                 return false;
             });
+            $root.find('.response-mlkshk .favorite').click(function () {
+                {% if ganalytics_code %}
+                _gaq.push(['_trackPageview', '/goal/feedback/mlkshklike']);
+                {% endif %}
+
+                var $favlink = $(this);
+                $favlink.addClass('spinning');
+
+                $.ajax({
+                    url: '{{ url_for('action-mlkshk-like') }}',
+                    type: 'POST',
+                    data: {'post': $favlink.parent('.response-mlkshk').attr('data-post')},
+                    dataType: 'text',
+                    success: function (data) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('favorited');
+                        $favlink.text("Liked it!");
+                    },
+                    error: function (xhr) {
+                        $favlink.removeClass('spinning');
+                        $favlink.addClass('nogo');
+                        $favlink.text(xhr.responseText);
+                    }
+                });
+
+                return false;
+            });
         }
 
         function updateTimestamps() {
