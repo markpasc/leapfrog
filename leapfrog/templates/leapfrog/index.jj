@@ -92,6 +92,7 @@
                         $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
                     });
                     setUpResponseLinks($nextpage);
+                    setUpSfwProtection($nextpage);
 
                     $nextpage.children().unwrap();
                 },
@@ -325,6 +326,16 @@
             });
         }
 
+        function setUpSfwProtection($root) {
+            if (!$root)
+                $root = $(document);
+
+            $root.find('.sfw-protection').click(function (e) {
+                $(this).replaceWith($(this).children());
+                return false;
+            });
+        }
+
         function updateTimestamps() {
             $('.relativedatestamp').each(function (i, val) {
                 $(val).html($.relatizeDate.timeAgoInWords(new Date($(val).attr('title')), true));
@@ -445,6 +456,7 @@
         $(document).ready(function () {
             setUpPaginator();
             setUpResponseLinks();
+            setUpSfwProtection();
             $('#navigate-load-more a').click(function () {
                 showMore();
                 return false;

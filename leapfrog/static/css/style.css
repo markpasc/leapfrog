@@ -642,6 +642,17 @@ div.reply {
     margin-left: 1em;
 }
 
+.item .sfw-protection {
+    background: white url(../img/nsfw.png);
+}
+.item .sfw-protection:hover {
+    background-color: #eef;
+    cursor: pointer;
+}
+.item .sfw-protection a {
+    visibility: hidden;
+}
+
 
 /* response styles */
 
