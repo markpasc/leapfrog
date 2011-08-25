@@ -98,22 +98,16 @@ def object_from_url(url):
         return None, None
     mlkshk_id = mo.group(1)
 
-    # Ask the API about it?
-    oembed_url = '?'.join(('http://mlkshk.com/services/oembed', urlencode({'url': url})))
-    h = httplib2.Http()
-    resp, cont = h.request(oembed_url, headers={'User-Agent': 'leapfrog/1.0'})
-    if resp.status != 200:
-        raise ValueError("Unexpected response asking about MLKSHK post #%s: %d %s"
-            % (mlkshk_id, resp.status, resp.reason))
+    try:
+        return False, Object.objects.get(service='mlkshk.com', foreign_id=mlkshk_id)
+    except Object.DoesNotExist:
+        pass
 
-    postdata = json.loads(cont)
+    authtoken, authsecret = settings.MLKSHK_ANONYMOUS_TOKEN
+    postdata = call_mlkshk('https://mlkshk.com/api/sharedfile/%s' % mlkshk_id,
+        authtoken=authtoken, authsecret=authsecret)
 
-    # Mold the OEmbed data into a MLKSHK API shape.
-    postdata['user'] = {'name': postdata['author_name']}
-    postdata['permalink_page'] = postdata['url']
-    # TODO: ...and so on
-
-    return object_from_post(postdata)
+    return object_from_post(postdata, authtoken=authtoken, authsecret=authsecret)
 
 
 def replacement_text_for_url(url):
