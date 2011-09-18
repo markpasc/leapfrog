@@ -279,7 +279,7 @@ def raw_object_for_tweet(tweetdata, client):
     log.debug('Making new tweet for %s status #%d', tweetdata['user']['screen_name'], tweetdata['id'])
 
     source = tweetdata.get('source', '')
-    for meh_source in ('foursquare.com', 'soundtracking.com'):
+    for meh_source in ('foursquare.com', 'soundtracking.com', 'goscoville.com', 'paper.li'):
         if meh_source in source:
             log.debug("Skipping %s's tweet #%d as it's from %s", tweetdata['user']['screen_name'], tweetdata['id'], meh_source)
             return False, None
