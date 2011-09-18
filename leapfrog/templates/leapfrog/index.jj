@@ -368,6 +368,9 @@
             if (document.activeElement.localName.toLowerCase() == 'input' || document.activeElement.localName.toLowerCase() == 'textarea')
                 return;
 
+            if (evt.metaKey)
+                return true;
+
             // Let's do all the shortcuts that don't need a "this" item.
             var $page = $('body');
 
