@@ -302,7 +302,7 @@ def raw_object_for_tweet(tweetdata, client):
             in_reply_to = None
 
     # Is this status a reply to a link?
-    elif len(tweetdata['entities']['urls']) == 1 and not len(tweetdata['entities']['media']):
+    elif len(tweetdata['entities']['urls']) == 1 and not tweetdata['entities'].get('media', ()):
         about_urldata = tweetdata['entities']['urls'][0]
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
