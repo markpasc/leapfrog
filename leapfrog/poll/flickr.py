@@ -101,13 +101,7 @@ def photo_url_for_photo(photodata):
     return 'http://farm%(farm)s.static.flickr.com/%(server)s/%(id)s_%(secret)s_b.jpg' % photodata
 
 
-def object_from_photo_data(photodata):
-    try:
-        obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
-        log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
-        return obj
-    except Object.DoesNotExist:
-        pass
+def make_object_from_photo_data(photodata):
     log.debug("Creating new object for %s's Flickr photo #%s", photodata['owner'], photodata['id'])
 
     # We aren't supposed to be able to ask for the dimensions, but we can, so use 'em.
@@ -155,6 +149,7 @@ def object_from_photo_data(photodata):
         render_mode='image',
         title=phototitle,
         #body=,
+        public=photodata.get('ispublic'),
         image=image,
         time=datetime.utcfromtimestamp(int(timestr)),
         permalink_url='http://www.flickr.com/photos/%s/%s/' % (owner_nsid, photodata['id']),
@@ -171,6 +166,15 @@ def object_from_url(url):
 
     resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims')
     photodata = resp['photo']
+
+    try:
+        obj = Object.objects.get(service='flickr.com', foreign_id=photodata['id'])
+    except Object.DoesNotExist:
+        pass
+    else:
+        log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
+        return obj
+
     obj = object_from_photo_data(photodata)
     return obj
 
@@ -180,11 +184,28 @@ def poll_flickr(account):
     if user is None:
         return
 
-    recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo, extras='date_upload,o_dims')
-    for photodata in recent['photos']['photo']:
+    recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo)
+    for slim_photodata in recent['photos']['photo']:
+        photo_id = slim_photodata['id']
         try:
-            obj = object_from_photo_data(photodata)
-            UserStream.objects.get_or_create(user=user, obj=obj,
-                defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
-        except Exception, exc:
-            log.exception(exc)
+            obj = Object.objects.get(service='flickr.com', foreign_id=photo_id)
+            log.debug("Reusing existing object %r for Flickr photo #%s", obj, photo_id)
+        except Object.DoesNotExist:
+            resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, auth_token=account.authinfo, extras='date_upload,o_dims')
+            photodata = resp['photo']
+
+            # Omit instagram and picplz shares.
+            for tagdata in photodata['tags']['tag']:
+                if tagdata['raw'] in ('uploaded:by=instagram', 'picplz'):
+                    continue
+
+            try:
+                obj = object_from_photo_data(photodata)
+            except Exception, exc:
+                log.exception(exc)
+                continue
+            if obj is None:
+                continue
+
+        UserStream.objects.get_or_create(user=user, obj=obj,
+            defaults={'time': obj.time, 'why_account': obj.author, 'why_verb': 'post'})
