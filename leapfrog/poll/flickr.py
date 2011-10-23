@@ -175,7 +175,7 @@ def object_from_url(url):
         log.debug("Reusing existing object %r for Flickr photo #%s", obj, photodata['id'])
         return obj
 
-    obj = object_from_photo_data(photodata)
+    obj = make_object_from_photo_data(photodata)
     return obj
 
 
@@ -201,7 +201,7 @@ def poll_flickr(account):
                     continue
 
             try:
-                obj = object_from_photo_data(photodata)
+                obj = make_object_from_photo_data(photodata)
             except Exception, exc:
                 log.exception(exc)
                 continue
