@@ -191,7 +191,8 @@ def poll_flickr(account):
             obj = Object.objects.get(service='flickr.com', foreign_id=photo_id)
             log.debug("Reusing existing object %r for Flickr photo #%s", obj, photo_id)
         except Object.DoesNotExist:
-            resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, auth_token=account.authinfo, extras='date_upload,o_dims')
+            resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims',
+                sign=True, auth_token=account.authinfo)
             photodata = resp['photo']
 
             # Omit instagram and picplz shares.
