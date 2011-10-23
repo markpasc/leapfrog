@@ -258,6 +258,11 @@ def object_from_url(url):
     urlparts = urlparse(url)
     try:
         result = t.domains.resolve_path(id=urlparts.netloc, path=urlparts.path)
+    except KeyError, exc:
+        if str(exc) == 'Generic':
+            # A link to an uploaded file (so our typd couldn't make a result asset), so let's ignore it.
+            return
+        raise
     except typd.NotFound, exc:
         raise ValueError("TypePad could not resolve URL %s: %s" % (url, str(exc)))
     if result.is_full_match and result.asset:
