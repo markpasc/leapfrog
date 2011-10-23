@@ -90,6 +90,13 @@ def tweet_html(tweetdata):
             'indices': (start, end),
             'html': u"""<a %shref="%s" title="%s">%s</a>""" % (classattr, orig_url, url, text),
         })
+    for mediadata in entities.get('media', ()):
+        size = mediadata['sizes']['large']
+        mutations.append({
+            'indices': mediadata['indices'],
+            'html': u"""<a href="%s"><img src="%s" width="%s" height="%s" alt=""></a>"""
+                % (mediadata['expanded_url'], mediadata['media_url'], size['w'], size['h']),
+        })
     for mentiondata in entities.get('user_mentions', ()):
         mutations.append({
             'indices': mentiondata['indices'],
@@ -295,7 +302,7 @@ def raw_object_for_tweet(tweetdata, client):
             in_reply_to = None
 
     # Is this status a reply to a link?
-    elif len(tweetdata['entities']['urls']) == 1:
+    elif len(tweetdata['entities']['urls']) == 1 and not len(tweetdata['entities']['media']):
         about_urldata = tweetdata['entities']['urls'][0]
         about_url = about_urldata['expanded_url'] or about_urldata['url']
 
