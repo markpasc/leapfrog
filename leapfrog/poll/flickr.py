@@ -149,7 +149,7 @@ def make_object_from_photo_data(photodata):
         render_mode='image',
         title=phototitle,
         #body=,
-        public=photodata.get('ispublic'),
+        public=True if photodata.get('ispublic') else False,
         image=image,
         time=datetime.utcfromtimestamp(int(timestr)),
         permalink_url='http://www.flickr.com/photos/%s/%s/' % (owner_nsid, photodata['id']),
