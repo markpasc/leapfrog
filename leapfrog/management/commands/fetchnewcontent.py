@@ -92,5 +92,5 @@ class Command(NoArgsCommand):
         try:
             self.fetch_new_content(**options)
         except Exception, exc:
-            log.exception(exc)
+            logging.exception(exc)
             SentryClient().create_from_exception(view=__name__)
