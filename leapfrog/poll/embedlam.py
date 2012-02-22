@@ -386,6 +386,8 @@ class Page(object):
 
         if resp.status == 404:
             raise RequestError("404 Not Found discovering %s" % url)
+        if resp.status == 403:
+            raise RequestError("403 Forbidden discovering %s" % url)
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
         url = resp['content-location']
