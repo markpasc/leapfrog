@@ -335,6 +335,10 @@ class EmbedlamUserAgent(httplib2.Http):
         return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
 
 
+class RequestError(ValueError):
+    pass
+
+
 class Page(object):
 
     def __init__(self, url):
@@ -361,24 +365,26 @@ class Page(object):
                 # Try asking again with no compression.
                 resp, content = h.request(url, redirections=max_redirects, headers={'Accept-Encoding': 'identity'})
         except socket.timeout:
-            raise ValueError("Request to %s timed out" % url)
+            raise RequestError("Request to %s timed out" % url)
         except socket.error, exc:
-            raise ValueError("Request to %s could not complete: %s" % (url, str(exc)))
+            raise RequestError("Request to %s could not complete: %s" % (url, str(exc)))
         except httplib2.RedirectLimit:
-            raise ValueError("%s redirected too many times" % url)
+            raise RequestError("%s redirected too many times" % url)
         except httplib2.ServerNotFoundError, exc:
-            raise ValueError(str(exc))
+            raise RequestError(str(exc))
         except httplib2.RelativeURIError:
-            raise ValueError("httplib2 won't resolve relative URL %r" % url)
+            raise RequestError("httplib2 won't resolve relative URL %r" % url)
         except httplib.BadStatusLine:
-            raise ValueError("%s returned an empty response (probably)" % url)
+            raise RequestError("%s returned an empty response (probably)" % url)
         except httplib.IncompleteRead:
-            raise ValueError("Got an incomplete read trying to load %s" % url)
+            raise RequestError("Got an incomplete read trying to load %s" % url)
         except httplib.InvalidURL:
-            raise ValueError("Invalid URL %r according to httplib" % url)
+            raise RequestError("Invalid URL %r according to httplib" % url)
         except ssl.SSLError, exc:
-            raise ValueError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
+            raise RequestError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
 
+        if resp.status == 404:
+            raise RequestError("404 Not Found discovering %s" % url)
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
         url = resp['content-location']
@@ -400,7 +406,7 @@ class Page(object):
 
         if major_minor_type not in ('text/html', 'application/xhtml+xml'):
             # hmm
-            raise ValueError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
+            raise RequestError("Unsupported content type %s/%s for resource %s" % (content_type[0], content_type[1], url))
 
         try:
             soup = BeautifulSoup(content)
@@ -408,7 +414,7 @@ class Page(object):
             raise ValueError("Could not parse HTML response for %s: %s" % (url, str(exc)))
         head = soup.head
         if head is None:
-            raise ValueError('Could not discover against HTML target %s with no head' % url)
+            raise RequestError('Could not discover against HTML target %s with no head' % url)
 
         # What's the real URL?
         orig_url = url
