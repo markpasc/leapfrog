@@ -67,8 +67,8 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     if not discovered:
         endpoint_url = '%s?%s' % (endpoint_url, urlencode({'format': 'json', 'url': target_url}))
 
-    h = httplib2.Http()
-    resp, cont = h.request(endpoint_url, headers={'User-Agent': 'leapfrog/1.0'})
+    h = EmbedlamUserAgent()
+    resp, cont = h.request(endpoint_url)
     if resp.status != 200:
         raise ValueError("Unexpected response requesting OEmbed data %s: %d %s" % (endpoint_url, resp.status, resp.reason))
     log.debug('JSON OEmbed endpoint %r returned resource of type %r', endpoint_url, resp['content-type'])
@@ -324,6 +324,10 @@ def value_for_meta_elems(elems, default=None, base_url=None):
     return default
 
 
+class RequestError(ValueError):
+    pass
+
+
 class EmbedlamUserAgent(httplib2.Http):
 
     def __init__(self, cache=None, timeout=10, proxy_info=None):
@@ -332,11 +336,31 @@ class EmbedlamUserAgent(httplib2.Http):
     def request(self, uri, method='GET', body=None, headers=None, redirections=httplib2.DEFAULT_MAX_REDIRECTS, connection_type=None):
         headers = {} if headers is None else dict(headers)
         headers['user-agent'] = 'leapfrog/1.0'
-        return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
-
-
-class RequestError(ValueError):
-    pass
+        try:
+            try:
+                return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
+            except httplib2.FailedToDecompressContent:
+                # Try asking again with no compression.
+                headers['Accept-Encoding'] = 'identity'
+                return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
+        except socket.timeout:
+            raise RequestError("Request to %s timed out" % url)
+        except socket.error, exc:
+            raise RequestError("Request to %s could not complete: %s" % (url, str(exc)))
+        except httplib2.RedirectLimit:
+            raise RequestError("%s redirected too many times" % url)
+        except httplib2.ServerNotFoundError, exc:
+            raise RequestError(str(exc))
+        except httplib2.RelativeURIError:
+            raise RequestError("httplib2 won't resolve relative URL %r" % url)
+        except httplib.BadStatusLine:
+            raise RequestError("%s returned an empty response (probably)" % url)
+        except httplib.IncompleteRead:
+            raise RequestError("Got an incomplete read trying to load %s" % url)
+        except httplib.InvalidURL:
+            raise RequestError("Invalid URL %r according to httplib" % url)
+        except ssl.SSLError, exc:
+            raise RequestError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
 
 
 class Page(object):
@@ -358,30 +382,7 @@ class Page(object):
 
         # Fetch the resource and soupify it.
         h = EmbedlamUserAgent()
-        try:
-            try:
-                resp, content = h.request(url, redirections=max_redirects)
-            except httplib2.FailedToDecompressContent:
-                # Try asking again with no compression.
-                resp, content = h.request(url, redirections=max_redirects, headers={'Accept-Encoding': 'identity'})
-        except socket.timeout:
-            raise RequestError("Request to %s timed out" % url)
-        except socket.error, exc:
-            raise RequestError("Request to %s could not complete: %s" % (url, str(exc)))
-        except httplib2.RedirectLimit:
-            raise RequestError("%s redirected too many times" % url)
-        except httplib2.ServerNotFoundError, exc:
-            raise RequestError(str(exc))
-        except httplib2.RelativeURIError:
-            raise RequestError("httplib2 won't resolve relative URL %r" % url)
-        except httplib.BadStatusLine:
-            raise RequestError("%s returned an empty response (probably)" % url)
-        except httplib.IncompleteRead:
-            raise RequestError("Got an incomplete read trying to load %s" % url)
-        except httplib.InvalidURL:
-            raise RequestError("Invalid URL %r according to httplib" % url)
-        except ssl.SSLError, exc:
-            raise RequestError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
+        resp, content = h.request(url, redirections=max_redirects)
 
         if resp.status == 404:
             raise RequestError("404 Not Found discovering %s" % url)
