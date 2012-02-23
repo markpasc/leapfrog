@@ -340,7 +340,7 @@ def poll_tumblr(account):
         log.info("Unexpected response of type %r looking for dashboard for Tumblr user %s", content_type, account.ident)
         return
 
-    doc = ElementTree.fromstring(cont)
+    doc = ElementTree.fromstring(cont.lstrip())
     for post_el in doc.findall('./posts/post'):
         tumblelog_el = post_el.find('./tumblelog')
         really_a_share, obj = object_from_post_element(post_el, tumblelog_el)
