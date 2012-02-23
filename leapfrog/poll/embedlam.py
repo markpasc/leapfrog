@@ -344,23 +344,23 @@ class EmbedlamUserAgent(httplib2.Http):
                 headers['Accept-Encoding'] = 'identity'
                 return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
         except socket.timeout:
-            raise RequestError("Request to %s timed out" % url)
+            raise RequestError("Request to %s timed out" % uri)
         except socket.error, exc:
-            raise RequestError("Request to %s could not complete: %s" % (url, str(exc)))
+            raise RequestError("Request to %s could not complete: %s" % (uri, str(exc)))
         except httplib2.RedirectLimit:
-            raise RequestError("%s redirected too many times" % url)
+            raise RequestError("%s redirected too many times" % uri)
         except httplib2.ServerNotFoundError, exc:
             raise RequestError(str(exc))
         except httplib2.RelativeURIError:
-            raise RequestError("httplib2 won't resolve relative URL %r" % url)
+            raise RequestError("httplib2 won't resolve relative URL %r" % uri)
         except httplib.BadStatusLine:
-            raise RequestError("%s returned an empty response (probably)" % url)
+            raise RequestError("%s returned an empty response (probably)" % uri)
         except httplib.IncompleteRead:
-            raise RequestError("Got an incomplete read trying to load %s" % url)
+            raise RequestError("Got an incomplete read trying to load %s" % uri)
         except httplib.InvalidURL:
-            raise RequestError("Invalid URL %r according to httplib" % url)
+            raise RequestError("Invalid URL %r according to httplib" % uri)
         except ssl.SSLError, exc:
-            raise RequestError("Error occurred fetching %s over SSL: %s" % (url, str(exc)))
+            raise RequestError("Error occurred fetching %s over SSL: %s" % (uri, str(exc)))
 
 
 class Page(object):
