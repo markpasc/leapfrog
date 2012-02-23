@@ -12,7 +12,7 @@ from django.conf import settings
 import httplib2
 
 from leapfrog.models import Account, Media, Person, Object, UserStream
-from leapfrog.poll.embedlam import RequestError, EmbedlamUserAgent
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ def account_for_flickr_id(nsid, person=None):
 
     try:
         result = call_flickr('flickr.people.getInfo', user_id=nsid)
-    except RequestError:
+    except leapfrog.poll.embedlam.RequestError:
         return
     persondata = result['person']
 
@@ -89,10 +89,10 @@ def call_flickr(method, sign=False, **kwargs):
 
     url = urlunparse(('http', 'api.flickr.com', 'services/rest/', None, urlencode(query), None))
 
-    h = EmbedlamUserAgent()
+    h = leapfrog.poll.embedlam.EmbedlamUserAgent()
     resp, cont = h.request(url)
     if resp.status == 500:
-        raise RequestError("500 Server Error querying Flickr method %s" % method)
+        raise leapfrog.poll.embedlam.RequestError("500 Server Error querying Flickr method %s" % method)
     if resp.status != 200:
         raise ValueError("Unexpected response querying Flickr method %s: %d %s" % (method, resp.status, resp.reason))
 
@@ -172,7 +172,7 @@ def object_from_url(url):
 
     try:
         resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims')
-    except RequestError:
+    except leapfrog.poll.embedlam.RequestError:
         return
     photodata = resp['photo']
 
@@ -195,7 +195,7 @@ def poll_flickr(account):
 
     try:
         recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo)
-    except RequestError:
+    except leapfrog.poll.embedlam.RequestError:
         log.debug("Expected problem polling Flickr photos for account %s", account.ident, exc_info=True)
         return
     for slim_photodata in recent['photos']['photo']:
