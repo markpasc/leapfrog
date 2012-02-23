@@ -294,7 +294,15 @@ def object_from_url(url):
     api_url = urlunparse(('http', 'tumblr.com', '/api/read', None, query, None))
 
     client = httplib2.Http()
-    resp, cont = client.request(api_url, headers={'Host': urlparts.netloc})
+    client.follow_redirects = False
+
+    while True:
+        resp, cont = client.request(api_url, headers={'Host': urlparts.netloc})
+        if resp.status not in (301, 303, 307):
+            break
+        urlparts = urlparse(resp['location'])
+        api_url = urlunparse(('http', 'tumblr.com', urlparts.path, urlparts.params, urlparts.query, urlparts.fragment))
+
     if resp.status == 500:
         raise ValueError("Server error asking about Tumblr post #%s (is Tumblr down?)" % tumblr_id)
     if resp.status != 200:
