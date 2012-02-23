@@ -12,6 +12,7 @@ from django.conf import settings
 import httplib2
 
 from leapfrog.models import Account, Media, Person, Object, UserStream
+from leapfrog.poll.embedlam import RequestError, EmbedlamUserAgent
 
 
 log = logging.getLogger(__name__)
@@ -24,7 +25,10 @@ def account_for_flickr_id(nsid, person=None):
     except Account.DoesNotExist:
         pass
 
-    result = call_flickr('flickr.people.getInfo', user_id=nsid)
+    try:
+        result = call_flickr('flickr.people.getInfo', user_id=nsid)
+    except RequestError:
+        return
     persondata = result['person']
 
     if person is None:
@@ -85,8 +89,10 @@ def call_flickr(method, sign=False, **kwargs):
 
     url = urlunparse(('http', 'api.flickr.com', 'services/rest/', None, urlencode(query), None))
 
-    h = httplib2.Http()
+    h = EmbedlamUserAgent()
     resp, cont = h.request(url)
+    if resp.status == 500:
+        raise RequestError("500 Server Error querying Flickr method %s" % method)
     if resp.status != 200:
         raise ValueError("Unexpected response querying Flickr method %s: %d %s" % (method, resp.status, resp.reason))
 
@@ -164,7 +170,10 @@ def object_from_url(url):
     mo = re.match(r'http:// [^/]* flickr\.com/ photos/ [^/]+/ (\d+)', url, re.MULTILINE | re.DOTALL | re.VERBOSE)
     photo_id = mo.group(1)
 
-    resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims')
+    try:
+        resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims')
+    except RequestError:
+        return
     photodata = resp['photo']
 
     try:
@@ -184,7 +193,11 @@ def poll_flickr(account):
     if user is None:
         return
 
-    recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo)
+    try:
+        recent = call_flickr('flickr.photos.getContactsPhotos', sign=True, auth_token=account.authinfo)
+    except RequestError:
+        log.debug("Expected problem polling Flickr photos for account %s", account.ident, exc_info=True)
+        return
     for slim_photodata in recent['photos']['photo']:
         photo_id = slim_photodata['id']
         try:
