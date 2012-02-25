@@ -99,7 +99,7 @@ def call_flickr(method, sign=False, **kwargs):
     result = json.loads(cont)
     if result.get('stat') != 'ok':
         if result.get('message') == 'Photo not found':
-            raise RequestError("Photo tried to do method %s about doesn't exist" % (method,))
+            raise leapfrog.poll.embedlam.RequestError("Photo tried to do method %s about doesn't exist" % (method,))
         raise ValueError("Error making Flickr request with method %s: %s" % (method, result.get('message')))
 
     return result
