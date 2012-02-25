@@ -217,6 +217,8 @@ def poll_flickr(account):
 
             try:
                 obj = make_object_from_photo_data(photodata)
+            except leapfrog.poll.embedlam.RequestError:
+                log.debug("Expected problem making object from photo data, ignoring", exc_data=True)
             except Exception, exc:
                 log.exception(exc)
                 continue

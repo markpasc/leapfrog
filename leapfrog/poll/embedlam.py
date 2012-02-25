@@ -73,6 +73,8 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         raise RequestError("404 Not Found requesting OEmbed resource %s" % endpoint_url)
     if resp.status == 403:
         raise RequestError("403 Forbidden requesting OEmbed resource %s" % endpoint_url)
+    if resp.status == 401:
+        raise RequestError("401 Unauthorized requesting OEmbed resource %s" % endpoint_url)
     if resp.status != 200:
         raise ValueError("Unexpected response requesting OEmbed data %s: %d %s" % (endpoint_url, resp.status, resp.reason))
     log.debug('JSON OEmbed endpoint %r returned resource of type %r', endpoint_url, resp['content-type'])
