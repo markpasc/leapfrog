@@ -89,7 +89,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
         resource_type = resource['type']
     except KeyError:
         log.debug("wtf is %r", resource)
-        raise ValueError("Resource from OEmbed request %s has no 'type'" % (endpoint_url,))
+        raise RequestError("Resource from OEmbed request %s has no 'type'" % (endpoint_url,))
 
     if resource_type in ('video', 'rich'):
         obj = Object(
