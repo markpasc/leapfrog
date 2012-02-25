@@ -54,6 +54,8 @@ def call_mlkshk(uri, method='GET', body=None, headers=None, authtoken=None, auth
 
     h = httplib2.Http()
     resp, cont = h.request(uri, method, body, headers)
+    if resp.status == 401:
+        raise leapfrog.poll.embedlam.RequestError("401 Unauthorized requesting %s (probably an expired token?)" % uri)
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s requesting %s" % (resp.status, resp.reason, uri))
 
