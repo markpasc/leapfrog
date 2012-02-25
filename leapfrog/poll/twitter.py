@@ -310,7 +310,7 @@ def raw_object_for_tweet(tweetdata, client):
         try:
             about_page = leapfrog.poll.embedlam.Page(about_url)
         except leapfrog.poll.embedlam.RequestError, exc:
-            log.debug("Expected problem making page data from reference %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
+            log.debug("Expected problem making page data from reference %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
         except ValueError, exc:
             log.error("Error making page data from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
             log.exception(exc)

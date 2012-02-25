@@ -11,6 +11,7 @@ import httplib2
 import oauth2 as oauth
 
 from leapfrog.models import Account, Media, Person, Object, UserStream
+import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
@@ -28,14 +29,18 @@ def call_vimeo(method, token=None, **kwargs):
     oauth_request.sign_request(oauth_sign_method, csr, token)
     oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, token)
     oauth_header = oauth_request.to_header()
+
     h = httplib2.Http()
     h.follow_redirects = 0
     normal_url = oauth_request.to_url()
     log.debug('Making request to URL %r', normal_url)
     resp, content = h.request(normal_url, method=oauth_request.method,
         headers=oauth_header)
+
+    if resp.status == 500:
+        raise leapfrog.poll.embedlam.RequestError("500 Server Error making Vimeo request %s" % normal_url)
     if resp.status != 200:
-        raise ValueError("Unexpected response verifying Vimeo credentials: %d %s" % (resp.status, resp.reason))
+        raise ValueError("Unexpected response making Vimeo request %s: %d %s" % (normal_url, resp.status, resp.reason))
 
     data = json.loads(content)
     if data['stat'] == 'fail':

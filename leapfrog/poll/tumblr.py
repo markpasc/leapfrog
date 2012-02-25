@@ -315,7 +315,7 @@ def object_from_url(url):
         raise ValueError("Unexpected response of type %r asking about Tumblr post #%s"
             % (content_type, tumblr_id))
 
-    doc = ElementTree.fromstring(cont)
+    doc = ElementTree.fromstring(cont.lstrip())
     tumblelog_el = doc.find('./tumblelog')
     post_el = doc.find('./posts/post')
 
