@@ -234,7 +234,10 @@ def poll_mlkshk(account):
             break
 
         for post in friendshake['friend_shake']:
-            really_a_share, obj = object_from_post(post, authtoken=token, authsecret=secret)
+            try:
+                really_a_share, obj = object_from_post(post, authtoken=token, authsecret=secret)
+            except leapfrog.poll.embedlam.RequestError:
+                continue
             why_account = account_for_mlkshk_userinfo(post['user']) if really_a_share else obj.author
 
             # Save the root object as a UserStream (with the leaf object's time).
