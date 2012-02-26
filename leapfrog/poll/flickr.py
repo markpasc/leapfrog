@@ -215,6 +215,7 @@ def poll_flickr(account):
                 if tagdata['raw'] in ('uploaded:by=instagram', 'picplz'):
                     continue
 
+            obj = None
             try:
                 obj = make_object_from_photo_data(photodata)
             except leapfrog.poll.embedlam.RequestError:
