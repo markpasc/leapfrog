@@ -38,6 +38,10 @@ def poll_facebook(account):
     feed = json.loads(content)
 
     if 'error' in feed:
+        if feed['error']['type'] == 'OAuthException':
+            # User probably changed their password. Ignore it.
+            log.debug("Facebook returned OAuthException I'm ignoring: %s", feed['error']['message'])
+            return
         log.error("Facebook returned %s: %s", feed['error']['type'], feed['error']['message'])
         return
     if 'data' not in feed:
