@@ -236,7 +236,11 @@ def object_from_html_head(url, orig_url, head):
 
 
 def object_from_feed_entry(feed_url, item_url):
-    feed = feedparser.parse(feed_url)
+    try:
+        feed = feedparser.parse(feed_url)
+    except IndexError, exc:
+        log.debug("Got a %s parsing feed %s: %s", type(exc).__name__, feed_url, str(exc))
+        return None
     matching_entries = [entry for entry in feed.entries if getattr(entry, 'link', None) == item_url]
     if len(matching_entries) > 0:
         entry = matching_entries[0]
@@ -344,11 +348,11 @@ class EmbedlamUserAgent(httplib2.Http):
         headers['user-agent'] = 'leapfrog/1.0'
         try:
             try:
-                return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
+                resp, cont = super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
             except httplib2.FailedToDecompressContent:
                 # Try asking again with no compression.
                 headers['Accept-Encoding'] = 'identity'
-                return super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
+                resp, cont = super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
         except socket.timeout:
             raise RequestError("Request to %s timed out" % uri)
         except socket.error, exc:
@@ -367,6 +371,11 @@ class EmbedlamUserAgent(httplib2.Http):
             raise RequestError("Invalid URL %r according to httplib" % uri)
         except ssl.SSLError, exc:
             raise RequestError("Error occurred fetching %s over SSL: %s" % (uri, str(exc)))
+
+        if resp.status >= 500:
+            raise RequestError("Server Error %d fetching %s", resp.status, uri)
+
+        return resp, cont
 
 
 class Page(object):
@@ -394,10 +403,6 @@ class Page(object):
             raise RequestError("404 Not Found discovering %s" % url)
         if resp.status == 403:
             raise RequestError("403 Forbidden discovering %s" % url)
-        if resp.status == 500:
-            raise RequestError("500 Server Error discovering %s" % url)
-        if resp.status == 502:
-            raise RequestError("502 Bad Gateway discovering %s" % url)
         if resp.status == 401:
             raise RequestError("401 Unauthorized discovering %s" % url)
         if resp.status != 200:

@@ -149,6 +149,8 @@ def object_for_typepad_object(tp_obj):
         reblog_url = tp_obj.reblog_of_url
         try:
             in_reply_to = leapfrog.poll.embedlam.object_for_url(reblog_url)
+        except leapfrog.poll.embedlam.RequestError, exc:
+            in_reply_to = None
         except ValueError, exc:
             in_reply_to = None
             log.error("Error making object from referent %s of %s's post %s", reblog_url, author.display_name, tp_obj.url_id)

@@ -91,8 +91,6 @@ def call_flickr(method, sign=False, **kwargs):
 
     h = leapfrog.poll.embedlam.EmbedlamUserAgent()
     resp, cont = h.request(url)
-    if resp.status == 500:
-        raise leapfrog.poll.embedlam.RequestError("500 Server Error querying Flickr method %s" % method)
     if resp.status != 200:
         raise ValueError("Unexpected response querying Flickr method %s: %d %s" % (method, resp.status, resp.reason))
 
