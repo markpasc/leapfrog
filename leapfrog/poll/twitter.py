@@ -318,6 +318,8 @@ def raw_object_for_tweet(tweetdata, client):
         if about_page is not None:
             try:
                 in_reply_to = about_page.to_object()
+            except leapfrog.poll.embedlam.RequestError, exc:
+                log.debug("Expected problem making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
             except ValueError, exc:
                 log.error("Error making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
                 log.exception(exc)
