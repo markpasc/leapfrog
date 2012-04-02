@@ -204,8 +204,12 @@ def poll_flickr(account):
             obj = Object.objects.get(service='flickr.com', foreign_id=photo_id)
             log.debug("Reusing existing object %r for Flickr photo #%s", obj, photo_id)
         except Object.DoesNotExist:
-            resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims',
-                sign=True, auth_token=account.authinfo)
+            try:
+                resp = call_flickr('flickr.photos.getInfo', photo_id=photo_id, extras='date_upload,o_dims',
+                    sign=True, auth_token=account.authinfo)
+            except leapfrog.poll.embedlam.RequestError:
+                log.debug("Expected problem making requesting photo data, ignoring", exc_data=True)
+                continue
             photodata = resp['photo']
 
             # Omit instagram and picplz shares.
