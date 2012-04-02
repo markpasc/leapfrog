@@ -190,6 +190,9 @@ def object_for_facebook_item(item, requesting_account=None):
 
     try:
         referent = leapfrog.poll.embedlam.object_for_url(referent_url)
+    except leapfrog.poll.embedlam.RequestError:
+        # some expected request error
+        return None, None
     except ValueError, exc:
         log.error("Error making object from referent %s of Facebook item %s", referent_url, fb_id)
         log.exception(exc)
