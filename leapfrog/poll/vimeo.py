@@ -143,7 +143,11 @@ def poll_vimeo(account):
         return
 
     token = oauth.Token(*account.authinfo.split(':'))
-    subdata = call_vimeo('vimeo.videos.getSubscriptions', token=token, full_response='true')
+    try:
+        subdata = call_vimeo('vimeo.videos.getSubscriptions', token=token, full_response='true')
+    except leapfrog.poll.embedlam.RequestError:
+        log.debug("An expected error occurred getting Vimeo subscriptions, tsk", exc_data=True)
+        return
     for videodata in subdata['videos']['video']:
         try:
             obj = object_from_video_data(videodata)
