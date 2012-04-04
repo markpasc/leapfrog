@@ -331,15 +331,22 @@ def poll_tumblr(account):
     token = oauth.Token(*account.authinfo.split(':', 1))
     client = oauth.Client(csr, token)
     body = urlencode({'num': 30})
+
     resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
     if resp.status == 500:
         log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
         return
     if resp.status == 408:
         log.info("Timeout polling Tumblr user %s's dashboard (is Tumblr down/slow?)", account.ident)
         return
+    if resp.status == 401:
+        log.info("401 Unauthorized fetching Tumblr user %s's dashboard (maybe suspended?)", account.ident)
+        return
+
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
+
     content_type = resp.get('content-type')
     if content_type is None:
         log.info("Response polling Tumblr user %s's dashboard had no content type (is Tumblr down?)", account.ident)
