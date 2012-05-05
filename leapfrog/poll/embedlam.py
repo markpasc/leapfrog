@@ -407,6 +407,8 @@ class Page(object):
             raise RequestError("401 Unauthorized discovering %s" % url)
         if resp.status == 400 and resp.reason == 'BAD_REQUEST' and url.startswith('http://bit.ly/'):
             raise RequestError("Spurious 400 Bad Request from bit.ly requesting %s" % url)
+        if resp.status == 429:
+            raise RequestError("429 Too Many Requests from bitly (?) requesting %s" % url)
         if resp.status != 200:
             raise ValueError("Unexpected response discovering %s: %d %s" % (url, resp.status, resp.reason))
         url = resp['content-location']
