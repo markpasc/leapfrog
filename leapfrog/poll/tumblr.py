@@ -4,6 +4,7 @@ from base64 import b64decode
 from datetime import datetime
 import logging
 import re
+import socket
 from urllib import urlencode
 from urlparse import urlparse, urlunparse
 from xml.etree import ElementTree
@@ -332,7 +333,11 @@ def poll_tumblr(account):
     client = oauth.Client(csr, token)
     body = urlencode({'num': 30})
 
-    resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    try:
+        resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+    except socket.error:
+        log.info("Socket error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
+        return
 
     if resp.status == 500:
         log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)

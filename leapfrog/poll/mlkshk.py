@@ -228,7 +228,11 @@ def poll_mlkshk(account):
             sharekey = permalink_page.rsplit('/', 1)[1]
             mlkshk_url = 'https://mlkshk.com/api/friends/before/%s' % sharekey
 
-        friendshake = call_mlkshk(mlkshk_url, authtoken=token, authsecret=secret)
+        try:
+            friendshake = call_mlkshk(mlkshk_url, authtoken=token, authsecret=secret)
+        except leapfrog.poll.embedlam.RequestError, exc:
+            log.info("Expected failure polling friend shake for %s: %s", account.ident, str(exc))
+            break
         if not friendshake.get('friend_shake'):
             log.debug("Premature end of friend shake for %s at %s, stopping", account.ident, mlkshk_url)
             break
