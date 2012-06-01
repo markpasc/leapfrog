@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import httplib
 import json
 import logging
 import re
@@ -418,9 +419,14 @@ def poll_twitter(account):
     csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
     token = oauth.Token(*authtoken.split(':', 1))
     client = oauth.Client(csr, token)
-    resp, content = client.request('http://api.twitter.com/1/statuses/home_timeline.json?include_entities=true&count=50', 'GET')
+    try:
+        resp, content = client.request('http://api.twitter.com/1/statuses/home_timeline.json?include_entities=true&count=50', 'GET')
+    except httplib.IncompleteRead:
+        log.info("Twitter returned an incomplete response asking for %s's feed", account.ident)
+        return
     if resp.status in (500, 502, 503):
         # Can't get Twitter results right now. Let's try again later.
+        log.info("Twitter returned a server error status %d asking for %s's feed (Twitter's down?)", resp.status, account.ident)
         return
     if resp.status == 401:
         # The token may be invalid. Have we successfully scanned this account recently?

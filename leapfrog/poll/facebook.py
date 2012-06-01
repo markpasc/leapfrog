@@ -33,9 +33,17 @@ def poll_facebook(account):
     query = { 'access_token': access_token }
     url = urlunparse(('https', 'graph.facebook.com', 'me/home', None, urlencode(query), None))
     log.debug("Fetching news feed for %r from %s", account, url)
-    h = httplib2.Http()
-    resp, content = h.request(url, method='GET')
-    feed = json.loads(content)
+    h = leapfrog.poll.embedlam.EmbedlamUserAgent()
+    try:
+        resp, content = h.request(url, method='GET')
+    except leapfrog.poll.embedlam.RequestError, exc:
+        log.info("Expected error asking for %s's feed: %s", str(exc))
+        return
+    try:
+        feed = json.loads(content)
+    except ValueError:
+        log.info("Facebook returned non-JSON content for %s's feed: %r", account.display_name, content)
+        return
 
     if 'error' in feed:
         if feed['error']['type'] == 'OAuthException':
