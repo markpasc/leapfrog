@@ -110,7 +110,7 @@ def tweet_html(tweetdata):
         })
 
     # Mutate bare '&'s into escaped entities too.
-    for mo in re.finditer(r'&(?!gt;|lt;)', tweet):
+    for mo in re.finditer(r'&(?!gt;|lt;|amp;)', tweet):
         mutations.append({
             'indices': mo.span(),
             'html': '&amp;',
