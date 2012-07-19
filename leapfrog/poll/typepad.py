@@ -265,7 +265,7 @@ def object_from_url(url):
             # A link to an uploaded file (so our typd couldn't make a result asset), so let's ignore it.
             return
         raise
-    except typd.NotFound, exc:
+    except (typd.NotFound, typd.Unauthorized), exc:
         raise ValueError("TypePad could not resolve URL %s: %s" % (url, str(exc)))
     if result.is_full_match and result.asset:
         really_a_share, obj = object_for_typepad_object(result.asset)
