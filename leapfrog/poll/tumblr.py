@@ -21,6 +21,61 @@ import leapfrog.poll.embedlam
 log = logging.getLogger(__name__)
 
 
+def account_for_tumblr_userinfo(userinfo, person=None):
+    username = userinfo['name']
+    try:
+        account = Account.objects.get(service='tumblr.com', ident=username)
+    except Account.DoesNotExist:
+        pass
+    else:
+        person = account.person
+        if not person.avatar_source or person.avatar_source == 'tumblr.com':
+            (primary_blog,) = [blog for blog in userinfo['blogs'] if blog.get('primary', False)]
+            tumblr_avatar_url = 'http://api.tumblr.com/v2/blog/%s.tumblr.com/avatar/64' % primary_blog['name']
+            if not person.avatar or person.avatar.image_url != tumblr_avatar_url:
+                avatar = Media(
+                    image_url=tumblr_avatar_url,
+                    width=64,
+                    height=64,
+                )
+                avatar.save()
+                person.avatar = avatar
+                person.avatar_source = 'tumblr.com'
+                person.save()
+            elif not person.avatar_source:
+                person.avatar_source = 'tumblr.com'
+                person.save()
+        return account
+
+    (primary_blog,) = [blog for blog in userinfo['blogs'] if blog.get('primary', False)]
+    display_name = primary_blog.get('title', username)
+    if person is None:
+        tumblr_avatar_url = 'http://api.tumblr.com/v2/blog/%s.tumblr.com/avatar/64' % primary_blog['name']
+        avatar = Media(
+            image_url=tumblr_avatar_url,
+            width=64,
+            height=64,
+        )
+        avatar.save()
+
+        person = Person(
+            display_name=display_name,
+            permalink_url=primary_blog['url'],
+            avatar=avatar,
+        )
+        person.save()
+
+    account = Account(
+        service='tumblr.com',
+        ident=account_name,
+        display_name=display_name,
+        person=person,
+    )
+    account.save()
+
+    return account
+
+
 def account_for_tumblelog_element(tumblelog_elem, person=None):
     account_name = tumblelog_elem.attrib['name']
     try:

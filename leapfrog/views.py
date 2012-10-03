@@ -26,7 +26,7 @@ from leapfrog.models import Person, Account, UserSetting, Object
 from leapfrog.poll.facebook import account_for_facebook_user
 from leapfrog.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
 from leapfrog.poll.mlkshk import account_for_mlkshk_userinfo, call_mlkshk
-from leapfrog.poll.tumblr import account_for_tumblelog_element
+from leapfrog.poll.tumblr import account_for_tumblr_userinfo
 from leapfrog.poll.twitter import account_for_twitter_user
 from leapfrog.poll.typepad import account_for_typepad_user
 from leapfrog.poll.vimeo import account_for_vimeo_id, call_vimeo
@@ -582,7 +582,7 @@ def complete_tumblr(request):
 
     access_token = oauth.Token(access_token_data['oauth_token'], access_token_data['oauth_token_secret'])
     oauth_request = oauth.Request.from_consumer_and_token(csr, access_token,
-        http_method='POST', http_url='http://www.tumblr.com/api/authenticate')
+        http_method='POST', http_url='http://api.tumblr.com/v2/user/info')
     oauth_request.sign_request(oauth_sign_method, csr, access_token)
 
     resp, cont = h.request(oauth_request.normalized_url, method=oauth_request.method,
@@ -590,14 +590,13 @@ def complete_tumblr(request):
     if resp.status != 200:
         raise ValueError("Unexpected response checking Tumblr access token: %d %s" % (resp.status, resp.reason))
 
-    doc = ElementTree.fromstring(cont)
-    blognodes = [blognode for blognode in doc.findall('./tumblelog') if blognode.attrib.get('is-primary') == 'yes']
-    blognode = blognodes[0]
+    data = json.loads(cont)
+    userinfo = data['response']['user']
 
     person = None
     if not request.user.is_anonymous():
         person = request.user.person
-    account = account_for_tumblelog_element(blognode, person=person)
+    account = account_for_tumblr_userinfo(userinfo, person=person)
     if request.user.is_anonymous():
         person = account.person
         if person.user is None:
