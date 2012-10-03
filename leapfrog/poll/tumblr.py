@@ -348,6 +348,8 @@ def poll_tumblr(account):
     if resp.status == 401:
         log.info("401 Unauthorized fetching Tumblr user %s's dashboard (maybe suspended?)", account.ident)
         return
+    if resp.status == 403:
+        raise ValueError("403 Forbidden fetching Tumblr user %s's dashboard\n\n%s" % (account.ident, cont))
 
     if resp.status != 200:
         raise ValueError("Unexpected HTTP response %d %s looking for dashboard for Tumblr user %s" % (resp.status, resp.reason, account.ident))
