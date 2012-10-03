@@ -341,7 +341,7 @@ class RequestError(ValueError):
 class EmbedlamUserAgent(httplib2.Http):
 
     def __init__(self, cache=None, timeout=10, proxy_info=None):
-        super(EmbedlamUserAgent, self).__init__(cache, timeout, proxy_info)
+        super(EmbedlamUserAgent, self).__init__(cache, timeout, proxy_info, disable_ssl_certificate_validation=True)
 
     def request(self, uri, method='GET', body=None, headers=None, redirections=httplib2.DEFAULT_MAX_REDIRECTS, connection_type=None):
         headers = {} if headers is None else dict(headers)
