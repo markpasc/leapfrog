@@ -2,6 +2,7 @@ from __future__ import division
 
 from base64 import b64decode
 from datetime import datetime
+import json
 import logging
 import re
 import socket
@@ -19,6 +20,62 @@ import leapfrog.poll.embedlam
 
 
 log = logging.getLogger(__name__)
+
+
+def account_for_tumblr_shortname(shortname):
+    try:
+        # We don't have any data to update the account with, so whatever we have is fine.
+        return Account.objects.get(service='tumblr.com', ident=shortname)
+    except Account.DoesNotExist:
+        pass
+
+    csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
+    url = 'http://api.tumblr.com/v2/blog/%s.tumblr.com/info?api_key=%s' % (shortname, csr.key)
+
+    http = httplib2.Http()
+    resp, cont = http.request(url)
+    if resp.status == 500:
+        log.info("Server error fetching tumblr info %s (is Tumblr down?)", account.ident)
+        return
+    if resp.status == 408:
+        log.info("Timeout fetching tumblr info %s (is Tumblr down/slow?)", account.ident)
+        return
+    if resp.status == 401:
+        log.info("401 Unauthorized fetching tumblr info %s (maybe suspended?)", account.ident)
+        return
+    if resp.status == 403:
+        raise ValueError("403 Forbidden fetching tumblr info %s\n\n%s" % (account.ident, cont))
+    if resp.status != 200:
+        raise ValueError("Unexpected HTTP response %d %s fetching tumblr info %s" % (resp.status, resp.reason, account.ident))
+
+    data = json.loads(cont)
+    blogdata = data['response']['blog']
+    display_name = blogdata['title']
+
+    tumblr_avatar_url = 'http://api.tumblr.com/v2/blog/%s.tumblr.com/avatar/64' % shortname
+    avatar = Media(
+        image_url=tumblr_avatar_url,
+        width=64,
+        height=64,
+    )
+    avatar.save()
+
+    person = Person(
+        display_name=display_name,
+        permalink_url=blogdata['url'],
+        avatar=avatar,
+    )
+    person.save()
+
+    account = Account(
+        service='tumblr.com',
+        ident=shortname,
+        display_name=blogdata['title'],
+        person=person,
+    )
+    account.save()
+
+    return account
 
 
 def account_for_tumblr_userinfo(userinfo, person=None):
@@ -161,6 +218,139 @@ def remove_reblog_boilerplate_from_obj(obj, in_reply_to):
     maybe_p.extract()
     maybe_quote.extract()
     obj.body = str(soup).decode('utf8').strip()
+
+
+def object_from_postdata(postdata):
+    tumblr_id = postdata['id']
+    try:
+        return False, Object.objects.get(service='tumblr.com', foreign_id=tumblr_id)
+    except Object.DoesNotExist:
+        pass
+
+    obj = Object(
+        service='tumblr.com',
+        foreign_id=tumblr_id,
+        permalink_url=postdata['post_url'],
+        title='',
+        body='',
+        render_mode='mixed',
+        time=datetime.strptime(postdata['date'], '%Y-%m-%d %H:%M:%S GMT'),
+        author=account_for_tumblr_shortname(postdata['blog_name']),
+    )
+
+    post_type = postdata['type']
+    if post_type == 'regular':
+        obj.title = postdata.get('title', '')
+        obj.body = postdata.get('body', '')
+    elif post_type == 'video':
+        player = max((player for player in postdata['player'] if player['width'] <= 700), key=lambda pl: pl['width'])
+        body = player['embed_code']
+        caption = postdata.get('caption', None)
+        if caption:
+            body = '\n\n'.join((body, caption))
+        obj.body = body
+    elif post_type == 'audio':
+        obj.title = postdata.get('track_name', '')
+        artist = postdata.get('artist', '')
+        if artist and obj.title:
+            obj.title = u'%s \u2013 %s' % (artist, obj.title)
+        elif artist:
+            obj.title = artist
+
+        body = postdata.get('player', '')
+        album_art = postdata.get('album_art', '')
+        if album_art:
+            body = u'\n\n'.join((u'<p><img src="%s"></p>' % album_art, body))
+        caption = postdata.get('caption', '')
+        if caption:
+            body = u'\n\n'.join((body, caption))
+
+        obj.body = body
+    elif post_type == 'photo' and len(postdata['photos']) > 1:  # photoset
+        photobodies = list()
+
+        for photo in postdata['photos']:
+            photosize = max((size for size in photo['alt_sizes'] if size['width'] <= 700), key=lambda sz: sz['width'])
+            body = u'<p><img src="%(url)s" width="%(width)s" height="%(height)s"></p>' % photosize
+            photobodies.append(body)
+            caption = photo.get('caption', '')
+            if caption:
+                photobodies.append(u'<p>%s</p>' % photo['caption'])
+
+        caption = postdata.get('caption', '')
+        if caption:
+            photobodies.append(caption)
+
+        obj.body = u'\n\n'.join(photobodies)
+    elif post_type == 'photo':  # single photo
+        photo = postdata['photos'][0]
+        photosize = max((size for size in photo['alt_sizes'] if size['width'] <= 700), key=lambda sz: sz['width'])
+
+        image = Media(
+            image_url=photosize['url'],
+            width=photosize['width'],
+            height=photosize['height'],
+        )
+        image.save()
+
+        obj.image = image
+        obj.render_mode = 'image'
+
+        obj.body = postdata.get('caption', '')
+    elif post_type == 'link':
+        # TODO: display the link if we can't make an in_reply_to object.
+        # handle the Page manually to always provide an in_reply_to?
+        # should this just be a render_mode=link object itself instead
+        # of a reply?
+        link_url = postdata['url']
+        try:
+            in_reply_to_page = leapfrog.poll.embedlam.Page(link_url)
+        except ValueError:
+            pass
+        else:
+            try:
+                in_reply_to = in_reply_to_page.to_object()
+            except ValueError:
+                in_reply_to = None
+            if in_reply_to is None:
+                in_reply_to = Object(
+                    service='',
+                    foreign_id=in_reply_to_page.url,
+                    render_mode='link',
+                    title=in_reply_to_page.title,
+                    permalink_url=in_reply_to_page.url,
+                    time=datetime.utcnow(),
+                )
+                in_reply_to.save()
+
+            obj.in_reply_to = in_reply_to
+
+        obj.title = postdata.get('title', link_url)
+        desc = postdata.get('description', '')
+        if desc:
+            obj.body = desc
+        # If we added no description, make this a share instead.
+        elif obj.in_reply_to:
+            return True, obj.in_reply_to
+    elif post_type == 'quote':
+        quote_text = postdata.get('quote', '')
+        body = u"""<blockquote><p>%s</p></blockquote>""" % (quote_text,)
+
+        quote_source = postdata.get('source', '')
+        if quote_source:
+            body = u'\n\n'.join((body, u"<p>\u2014%s</p>" % quote_source))
+
+        obj.body = body
+
+    # TODO: handle chat posts (i guess)
+    else:
+        log.debug("Unhandled Tumblr post type %r for post #%s; skipping", post_type, tumblr_id)
+        return None, None
+
+    # TODO: make reblogs into replies
+
+    obj.save()
+    return False, obj
 
 
 def object_from_post_element(post_el, tumblelog_el):
@@ -386,10 +576,9 @@ def poll_tumblr(account):
     csr = oauth.Consumer(*settings.TUMBLR_CONSUMER)
     token = oauth.Token(*account.authinfo.split(':', 1))
     client = oauth.Client(csr, token)
-    body = urlencode({'num': 30})
 
     try:
-        resp, cont = client.request('http://www.tumblr.com/api/dashboard', method='POST', body=body, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        resp, cont = client.request('http://api.tumblr.com/v2/user/dashboard')
     except socket.error:
         log.info("Socket error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
         return
@@ -413,17 +602,16 @@ def poll_tumblr(account):
     if content_type is None:
         log.info("Response polling Tumblr user %s's dashboard had no content type (is Tumblr down?)", account.ident)
         return
-    if not content_type.startswith('text/xml'):
-        log.info("Unexpected response of type %r looking for dashboard for Tumblr user %s", content_type, account.ident)
+    if not content_type.startswith('application/json'):
+        log.info("Unexpected response of type %r looking for dashboard for Tumblr user %s (expected application/json)", content_type, account.ident)
         return
 
-    doc = ElementTree.fromstring(cont.lstrip())
-    for post_el in doc.findall('./posts/post'):
-        tumblelog_el = post_el.find('./tumblelog')
-        really_a_share, obj = object_from_post_element(post_el, tumblelog_el)
+    data = json.loads(cont)
+    for postdata in data['response']['posts']:
+        really_a_share, obj = object_from_postdata(postdata)
         if obj is None:
             continue
-        why_account = account_for_tumblelog_element(tumblelog_el) if really_a_share else obj.author
+        why_account = account_for_tumblr_shortname(postdata['blog_name']) if really_a_share else obj.author
 
         root = obj
         why_verb = 'share' if really_a_share else 'post'
