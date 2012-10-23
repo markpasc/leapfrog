@@ -586,6 +586,9 @@ def poll_tumblr(account):
     if resp.status == 500:
         log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
         return
+    if resp.status == 503:
+        log.info("503 Service Unavailable polling Tumblr user %s's dashboard (Tumblr is down)", account.ident)
+        return
     if resp.status == 408:
         log.info("Timeout polling Tumblr user %s's dashboard (is Tumblr down/slow?)", account.ident)
         return
