@@ -346,6 +346,15 @@ class EmbedlamUserAgent(httplib2.Http):
     def request(self, uri, method='GET', body=None, headers=None, redirections=httplib2.DEFAULT_MAX_REDIRECTS, connection_type=None):
         headers = {} if headers is None else dict(headers)
         headers['user-agent'] = 'leapfrog/1.0'
+
+        # Discover the connection_type ourselves since httplib2 might KeyError doing it.
+        if connection_type is None:
+            urlparts = urlparse(uri)
+            try:
+                connection_type = httplib2.SCHEME_TO_CONNECTION[urlparts.scheme]
+            except KeyError:
+                raise RequestError("Unknown scheme %r for URL %r" % (urlparts.scheme, uri))
+
         try:
             try:
                 resp, cont = super(EmbedlamUserAgent, self).request(uri, method, body, headers, redirections, connection_type)
