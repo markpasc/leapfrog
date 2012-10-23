@@ -53,7 +53,12 @@ def call_mlkshk(uri, method='GET', body=None, headers=None, authtoken=None, auth
         log.debug("Mlkshk authentication header: %r", headers['Authorization'])
 
     h = httplib2.Http()
-    resp, cont = h.request(uri, method, body, headers)
+    try:
+        resp, cont = h.request(uri, method, body, headers)
+    except httplib.BadStatusLine:
+        raise leapfrog.poll.embedlam.RequestError("Bad status line requesting %s (is Mlkshk down?)" % uri)
+    if resp.status == 502:
+        raise leapfrog.poll.embedlam.RequestError("502 Bad Gateway requesting %s (is Mlkshk down?)" % uri)
     if resp.status == 401:
         raise leapfrog.poll.embedlam.RequestError("401 Unauthorized requesting %s (probably an expired token?)" % uri)
     if resp.status != 200:
