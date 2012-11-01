@@ -43,11 +43,14 @@ def call_vimeo(method, token=None, **kwargs):
         raise ValueError("Unexpected response making Vimeo request %s: %d %s" % (normal_url, resp.status, resp.reason))
 
     data = json.loads(content)
-    if data['stat'] == 'fail':
-        err = data['err']
-        raise ValueError("Error retrieving data for %s call: %s: %s" % (method, err['msg'], err['expl']))
+    if data['stat'] != 'fail':
+        return data
 
-    return data
+    err = data['err']
+    if method == 'vimeo.videos.getSubscriptions' and err['msg'] == 'Internal error.':
+        raise leapfrog.poll.embedlam.RequestError("Internal error getting Vimeo subscriptions (try again later?)")
+
+    raise ValueError("Error retrieving data for %s call: %s: %s" % (method, err['msg'], err['expl']))
 
 
 def account_for_vimeo_id(user_id, person=None):
