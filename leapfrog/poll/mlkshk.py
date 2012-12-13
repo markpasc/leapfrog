@@ -53,9 +53,9 @@ def call_mlkshk(uri, method='GET', body=None, headers=None, authtoken=None, auth
         headers['Authorization'] = sign(uri, method, authtoken, authsecret)
         log.debug("Mlkshk authentication header: %r", headers['Authorization'])
 
-    h = httplib2.Http()
+    h = httplib2.Http(disable_ssl_certificate_validation=True)
     try:
-        resp, cont = h.request(uri, method, body, headers, disable_ssl_certificate_validation=True)
+        resp, cont = h.request(uri, method, body, headers)
     except httplib.BadStatusLine:
         raise leapfrog.poll.embedlam.RequestError("Bad status line requesting %s (is Mlkshk down?)" % uri)
     if resp.status == 502:
