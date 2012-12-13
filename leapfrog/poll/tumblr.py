@@ -582,6 +582,9 @@ def poll_tumblr(account):
     except socket.error:
         log.info("Socket error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
         return
+    except httplib2.ServerNotFoundError:
+        log.info("ServerNotFoundError polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
+        return
 
     if resp.status == 500:
         log.info("Server error polling Tumblr user %s's dashboard (is Tumblr down?)", account.ident)
