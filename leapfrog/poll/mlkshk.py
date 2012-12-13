@@ -2,6 +2,7 @@ import base64
 from datetime import datetime
 import hashlib
 import hmac
+import httplib
 import json
 import logging
 from random import choice
@@ -54,7 +55,7 @@ def call_mlkshk(uri, method='GET', body=None, headers=None, authtoken=None, auth
 
     h = httplib2.Http()
     try:
-        resp, cont = h.request(uri, method, body, headers)
+        resp, cont = h.request(uri, method, body, headers, disable_ssl_certificate_validation=True)
     except httplib.BadStatusLine:
         raise leapfrog.poll.embedlam.RequestError("Bad status line requesting %s (is Mlkshk down?)" % uri)
     if resp.status == 502:
