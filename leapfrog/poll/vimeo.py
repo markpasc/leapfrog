@@ -30,12 +30,15 @@ def call_vimeo(method, token=None, **kwargs):
     oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, token)
     oauth_header = oauth_request.to_header()
 
-    h = leapfrog.poll.embedlam.EmbedlamUserAgent()
+    h = httplib2.Http()
     h.follow_redirects = 0
     normal_url = oauth_request.to_url()
     log.debug('Making request to URL %r', normal_url)
-    resp, content = h.request(normal_url, method=oauth_request.method,
-        headers=oauth_header)
+    try:
+        resp, content = h.request(normal_url, method=oauth_request.method,
+            headers=oauth_header)
+    except socket.error, exc:
+        raise leapfrog.poll.embedlam.RequestError("Request to %s could not complete: %s" % (uri, str(exc)))
 
     if resp.status == 500:
         raise leapfrog.poll.embedlam.RequestError("500 Server Error making Vimeo request %s" % normal_url)
