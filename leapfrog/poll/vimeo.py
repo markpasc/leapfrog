@@ -30,7 +30,7 @@ def call_vimeo(method, token=None, **kwargs):
     oauth_signing_base = oauth_sign_method.signing_base(oauth_request, csr, token)
     oauth_header = oauth_request.to_header()
 
-    h = httplib2.Http()
+    h = leapfrog.poll.embedlam.EmbedlamUserAgent()
     h.follow_redirects = 0
     normal_url = oauth_request.to_url()
     log.debug('Making request to URL %r', normal_url)
