@@ -41,6 +41,8 @@ def call_vimeo(method, token=None, **kwargs):
     except socket.error, exc:
         raise leapfrog.poll.embedlam.RequestError("Request to %s could not complete: %s" % (uri, str(exc)))
 
+    if resp.status == 502:
+        raise leapfrog.poll.embedlam.RequestError("502 Bad Gateway making Vimeo request %s" % normal_url)
     if resp.status == 503:
         raise leapfrog.poll.embedlam.RequestError("503 Service Unavailable making Vimeo request %s" % normal_url)
     if resp.status == 500:

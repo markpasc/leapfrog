@@ -7,6 +7,7 @@ import json
 import logging
 from random import choice
 import re
+import ssl
 import string
 import time
 from urllib import urlencode
@@ -58,6 +59,10 @@ def call_mlkshk(uri, method='GET', body=None, headers=None, authtoken=None, auth
         resp, cont = h.request(uri, method, body, headers)
     except httplib.BadStatusLine:
         raise leapfrog.poll.embedlam.RequestError("Bad status line requesting %s (is Mlkshk down?)" % uri)
+    except ssl.SSLError, exc:
+        raise leapfrog.poll.embedlam.RequestError("SSL error requesting %s: %s (is Mlkshk down?)" % (uri, str(exc)))
+    if resp.status == 500:
+        raise leapfrog.poll.embedlam.RequestError("500 Server Error requesting %s (is Mlkshk down?)" % uri)
     if resp.status == 502:
         raise leapfrog.poll.embedlam.RequestError("502 Bad Gateway requesting %s (is Mlkshk down?)" % uri)
     if resp.status == 401:
