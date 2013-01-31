@@ -440,7 +440,11 @@ def poll_twitter(account):
         raise ValueError("Unexpected %d %s response fetching %s's twitter timeline"
             % (resp.status, resp.reason, account.ident))
 
-    tl = json.loads(content)
+    try:
+        tl = json.loads(content)
+    except ValueError:
+        raise ValueError("Got %d bytes of purported %s that isn't a JSON object: %r..."
+            % (len(content), resp.get('content-type', '(no content type)'), content[:20]))
 
     for orig_tweetdata in reversed(tl):
         try:
