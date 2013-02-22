@@ -255,6 +255,7 @@ def object_from_url(url):
     csr = oauth.Consumer(*settings.TYPEPAD_CONSUMER)
     token = oauth.Token(*settings.TYPEPAD_ANONYMOUS_ACCESS_TOKEN)
     cl = oauth.Client(csr, token)
+    cl.disable_ssl_certificate_validation = True
     t = typd.TypePad(endpoint='https://api.typepad.com/', client=cl)
 
     urlparts = urlparse(url)
