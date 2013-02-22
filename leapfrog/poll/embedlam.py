@@ -82,7 +82,7 @@ def object_from_oembed(endpoint_url, target_url, discovered=False):
     try:
         resource = json.loads(cont)
     except ValueError, exc:
-        log.error("Couldn't decode JSON from OEmbed endpoint %r", endpoint_url, exc_info=exc)
+        log.debug("Couldn't decode JSON from OEmbed endpoint %r, loooooooool", endpoint_url, exc_info=exc)
         return
 
     try:

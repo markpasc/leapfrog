@@ -47,6 +47,8 @@ def call_vimeo(method, token=None, **kwargs):
         raise leapfrog.poll.embedlam.RequestError("503 Service Unavailable making Vimeo request %s" % normal_url)
     if resp.status == 500:
         raise leapfrog.poll.embedlam.RequestError("500 Server Error making Vimeo request %s" % normal_url)
+    if resp.status == 404:
+        raise leapfrog.poll.embedlam.RequestError("404 Not Found making Vimeo request %s, wtf" % normal_url)
     if resp.status != 200:
         raise ValueError("Unexpected response making Vimeo request %s: %d %s" % (normal_url, resp.status, resp.reason))
 

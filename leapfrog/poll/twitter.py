@@ -310,20 +310,14 @@ def raw_object_for_tweet(tweetdata, client):
         about_page = None
         try:
             about_page = leapfrog.poll.embedlam.Page(about_url)
-        except leapfrog.poll.embedlam.RequestError, exc:
-            log.debug("Expected problem making page data from reference %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
         except ValueError, exc:
-            log.error("Error making page data from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
-            log.exception(exc)
+            log.debug("Expected problem making page data from reference %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
 
         if about_page is not None:
             try:
                 in_reply_to = about_page.to_object()
-            except leapfrog.poll.embedlam.RequestError, exc:
-                log.debug("Expected problem making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
             except ValueError, exc:
-                log.error("Error making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'])
-                log.exception(exc)
+                log.debug("Expected problem making object from referent %s of %s's tweet %s", about_url, tweetdata['user']['screen_name'], tweetdata['id'], exc_info=True)
 
             # If the tweet was only the object's url and its title, make it a share.
             if in_reply_to is not None:
