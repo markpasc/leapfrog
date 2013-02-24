@@ -282,10 +282,10 @@ def poll_typepad(account):
 
     # Get that TypePad user's notifications.
     t = typd.TypePad(endpoint='http://api.typepad.com/')
-    notes = t.users.get_notifications(account.ident)
     try:
+        notes = t.users.get_notifications(account.ident)
         notes.entries
-    except typd.ServerError:
+    except (typd.ServerError, typd.UnexpectedResponse):
         # Guess we can't get those notes right now.
         return
 
