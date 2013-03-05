@@ -27,21 +27,6 @@
             <div id="signin-services" class="column">
                 <h2>Your accounts</h2>
 
-                <p class="account{% if 'twitter.com' in accounts %} attached{% endif %}">
-                    <span class="label">Twitter</span>
-                    {% if 'twitter.com' in accounts %}
-                        {% set account = accounts['twitter.com'] %}
-                        <span class="detach">
-                            {{ account.display_name }}
-                            <a href="#" class="detach-account" data-account="{{ account.pk }}"><span>Detach</span></a>
-                        </span>
-                    {% endif %}
-                    <span class="attach-link">
-                        <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('leapfrog-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
-                        <a href="{{ url_for('signin-twitter') }}">Add Twitter account</a>
-                    </span>
-                </p>
-
                 <p class="account{% if 'typepad.com' in accounts %} attached{% endif %}">
                     <span class="label">TypePad</span>
                     {% if 'typepad.com' in accounts %}

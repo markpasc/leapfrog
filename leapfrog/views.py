@@ -27,7 +27,6 @@ from leapfrog.poll.facebook import account_for_facebook_user
 from leapfrog.poll.flickr import sign_flickr_query, account_for_flickr_id, call_flickr
 from leapfrog.poll.mlkshk import account_for_mlkshk_userinfo, call_mlkshk
 from leapfrog.poll.tumblr import account_for_tumblr_userinfo
-from leapfrog.poll.twitter import account_for_twitter_user
 from leapfrog.poll.typepad import account_for_typepad_user
 from leapfrog.poll.vimeo import account_for_vimeo_id, call_vimeo
 
@@ -139,84 +138,6 @@ def mobile_home(request):
     template = 'leapfrog/mobile_index.jj'
     return render_to_response(template, data,
         context_instance=RequestContext(request))
-
-
-def signin_twitter(request):
-    csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
-    client = oauth.Client(csr)
-
-    oauth_callback = quote(request.build_absolute_uri(reverse('complete-twitter')))
-    resp, content = client.request('https://api.twitter.com/oauth/request_token?oauth_callback=%s' % oauth_callback)
-    if resp.status != 200:
-        raise ValueError("Unexpected response asking for request token: %d %s" % (resp.status, resp.reason))
-
-    request_token = dict(parse_qsl(content))
-    request.session['twitter_request_token'] = request_token
-
-    return HttpResponseRedirect('https://api.twitter.com/oauth/authorize?oauth_token=%s&oauth_access_type=write' % request_token['oauth_token'])
-
-
-def complete_twitter(request):
-    try:
-        request_token = request.session['twitter_request_token']
-    except KeyError:
-        raise ValueError("Can't complete Twitter authentication without a request token for this session")
-
-    try:
-        verifier = request.GET['oauth_verifier']
-    except KeyError:
-        raise ValueError("Can't complete Twitter authentication without a verifier")
-
-    csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
-    token = oauth.Token(request_token['oauth_token'], request_token['oauth_token_secret'])
-    client = oauth.Client(csr, token)
-
-    body = urlencode({'oauth_verifier': verifier})
-    resp, content = client.request('https://api.twitter.com/oauth/access_token', method='POST', body=body)
-    if resp.status != 200:
-        raise ValueError("Unexpected response exchanging for access token: %d %s" % (resp.status, resp.reason))
-
-    access_token = dict(parse_qsl(content))
-    del request.session['twitter_request_token']
-    #request.session['access_token'] = access_token
-
-    # But who is that?
-    client = oauth.Client(csr, oauth.Token(access_token['oauth_token'], access_token['oauth_token_secret']))
-    resp, content = client.request('https://api.twitter.com/1/account/verify_credentials.json')
-    if resp.status != 200:
-        raise ValueError("Unexpected response verifying credentials: %d %s" % (resp.status, resp.reason))
-
-    userdata = json.loads(content)
-
-    person = None
-    if not request.user.is_anonymous():
-        person = request.user.person
-    account = account_for_twitter_user(userdata, person=person)
-    if request.user.is_anonymous():
-        person = account.person
-        if person.user is None:
-            # AGH
-            random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
-            while User.objects.filter(username=random_name).exists():
-                random_name = ''.join(choice(string.letters + string.digits) for i in range(20))
-            person.user = User.objects.create_user(random_name, '%s@example.com' % random_name)
-            person.save()
-
-        person.user.backend = 'django.contrib.auth.backends.ModelBackend'
-        login(request, person.user)
-    else:
-        # If the account already existed (because some other user follows
-        # that account and had imported objects by them, say), "merge" it
-        # onto the signed-in user. (This does mean you can intentionally
-        # move an account by signing in as a different django User and re-
-        # associating that account, but that's appropriate.)
-        account.person = person
-
-    log.debug('Updating authinfo for Twitter account %s to have token %s : %s', account.display_name, access_token['oauth_token'], access_token['oauth_token_secret'])
-    account.authinfo = ':'.join((access_token['oauth_token'], access_token['oauth_token_secret']))
-    account.save()
-
-    return HttpResponseRedirect(reverse('home'))
 
 
 def signin_typepad(request):
@@ -771,71 +692,6 @@ def json_stream(request):
         } for item in stream_items]}
 
     return HttpResponse(json.dumps(result), mimetype="application/json")
-
-
-def respond_twitter(request, urlpattern):
-    if request.method != 'POST':
-        resp = HttpResponse('POST is required', status=405, content_type='text/plain')
-        resp['Allow'] = ('POST',)
-        return resp
-
-    user = request.user
-    if not user.is_authenticated():
-        return HttpResponse('Authentication required to respond', status=400, content_type='text/plain')
-    try:
-        person = user.person
-    except Person.DoesNotExist:
-        return HttpResponse('Real reader account required to respond', status=400, content_type='text/plain')
-
-    try:
-        tweet_id = request.POST['tweet']
-    except KeyError:
-        tweet_id = False
-    if not tweet_id:
-        return HttpResponse("Parameter 'tweet' is required", status=400, content_type='text/plain')
-
-    # TODO: get only one account once we enforce (service,person) uniqueness
-    accounts = person.accounts.filter(service='twitter.com')
-    for account in accounts:
-        # FAVED
-        csr = oauth.Consumer(*settings.TWITTER_CONSUMER)
-        twitter_token = account.authinfo.split(':', 1)
-        log.debug('Authorizing client as Twitter user %s with token %s : %s', account.display_name, *twitter_token)
-        token = oauth.Token(*twitter_token)
-        client = oauth.Client(csr, token)
-
-        resp, content = client.request(urlpattern % {'tweet_id': tweet_id}, method='POST')
-
-        if resp.status != 200:
-            try:
-                errordata = json.loads(content)
-            except ValueError:
-                error = content
-            else:
-                error = errordata.get('error', content)
-
-            if error == 'You have already favorited this status.':
-                # Yay, just go on.
-                continue
-
-            log.warning('Unexpected HTTP response %d %s trying to respond to tweet %s for %s (%s): %s',
-                resp.status, resp.reason, tweet_id, account.ident, account.display_name, error)
-
-            if error == 'Read-only application cannot POST':
-                ret_error = 'Our Twitter token for that account is read-only'
-            else:
-                ret_error = 'Error favoriting tweet: %s' % error
-            return HttpResponse(ret_error, status=400, content_type='text/plain')
-
-    return HttpResponse('OK', content_type='text/plain')
-
-
-def favorite_twitter(request):
-    return respond_twitter(request, 'http://api.twitter.com/1/favorites/create/%(tweet_id)s.json')
-
-
-def retweet_twitter(request):
-    return respond_twitter(request, 'http://api.twitter.com/1/statuses/retweet/%(tweet_id)s.json')
 
 
 def favorite_typepad(request):

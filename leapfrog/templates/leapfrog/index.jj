@@ -154,60 +154,6 @@
 
                 return false;
             });
-            $root.find('.response-twitter .favorite').click(function () {
-                {% if ganalytics_code %}
-                _gaq.push(['_trackPageview', '/goal/feedback/twitterfav']);
-                {% endif %}
-
-                var $favlink = $(this);
-                $favlink.addClass('spinning');
-
-                $.ajax({
-                    url: '{{ url_for('action-twitter-favorite') }}',
-                    type: 'POST',
-                    data: {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
-                    dataType: 'text',
-                    success: function (data) {
-                        $favlink.removeClass('spinning');
-                        $favlink.addClass('favorited');
-                        $favlink.text("Marked a favorite!");
-                    },
-                    error: function (xhr) {
-                        $favlink.removeClass('spinning');
-                        $favlink.addClass('nogo');
-                        $favlink.text(xhr.responseText);
-                    }
-                });
-
-                return false;
-            });
-            $root.find('.response-twitter .retweet').click(function () {
-                {% if ganalytics_code %}
-                _gaq.push(['_trackPageview', '/goal/feedback/twitterrt']);
-                {% endif %}
-
-                var $favlink = $(this);
-                $favlink.addClass('spinning');
-
-                $.ajax({
-                    url: '{{ url_for('action-twitter-retweet') }}',
-                    type: 'POST',
-                    data: {'tweet': $favlink.parent('.response-twitter').attr('data-tweet')},
-                    dataType: 'text',
-                    success: function (data) {
-                        $favlink.removeClass('spinning');
-                        $favlink.addClass('retweeted');
-                        $favlink.text("Retweeted!");
-                    },
-                    error: function (data) {
-                        $favlink.removeClass('spinning');
-                        $favlink.addClass('nogo');
-                        $favlink.text(xhr.responseText);
-                    }
-                });
-
-                return false;
-            });
             $root.find('.response-typepad .favorite').click(function () {
                 {% if ganalytics_code %}
                 _gaq.push(['_trackPageview', '/goal/feedback/typepadfav']);

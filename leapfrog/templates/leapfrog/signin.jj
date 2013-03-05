@@ -57,7 +57,6 @@
             <p>Read your friends better by signing in with one of these services:</p>
 
             <div id="signin-services">
-                <a href="{{ url_for('signin-twitter') }}" title="Sign in with Twitter"><img src="{{ url_for('leapfrog-static', path='komodo/twitter_32.png') }}" width="32" height="32" alt="Twitter"></a>
                 <a href="{{ url_for('signin-typepad') }}" title="Sign in with TypePad"><img src="{{ url_for('leapfrog-static', path='img/typepad-komodo-style-20100311-32px.png') }}" width="32" height="32" alt="TypePad"></a>
                 <a href="{{ url_for('signin-flickr') }}" title="Sign in with Flickr"><img src="{{ url_for('leapfrog-static', path='komodo/flickr_32.png') }}" width="32" height="32" alt="Flickr"></a>
                 <a href="{{ url_for('signin-vimeo') }}" title="Sign in with Vimeo"><img src="{{ url_for('leapfrog-static', path='komodo/vimeo_32.png') }}" width="32" height="32" alt="Vimeo"></a>
@@ -73,7 +72,7 @@
         <div class="item-inner">
             <h2 class="blamfx">What is leapfrog?</h2>
 
-            <p>Leapfrog is a way to read what your friends post on some social websites all together in one place. Inspired by longer form sites like LiveJournal and Vox, Leapfrog collects things that your friends share on Twitter, TypePad, Facebook and Tumblr into one “internet neighborhood” view.</p>
+            <p>Leapfrog is a way to read what your friends post on some social websites all together in one place. Inspired by longer form sites like LiveJournal and Vox, Leapfrog collects things that your friends share on TypePad, Facebook and Tumblr into one “internet neighborhood” view.</p>
 
             <p>
                 <a class="zoom" href="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dfdaf970b-pi"><img class="asset  asset-image at-xid-6a00d83451ce6b69e20147e03dfdaf970b" alt="Content-reply" title="Content-reply" src="http://markpasc.typepad.com/.a/6a00d83451ce6b69e20147e03dfdaf970b-120wi" width="120" height="95"></a>

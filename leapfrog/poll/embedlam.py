@@ -396,7 +396,7 @@ class Page(object):
         self.type = 'html'
 
         # These we can already ask about by URL, so don't bother fetching about them.
-        if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+) | vimeo\.com/ \d+ )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
+        if re.match(r'http:// (?: [^/]* flickr\.com/photos/[^/]+/\d+ | twitpic\.com/\w+ | vimeo\.com/ \d+ )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
             return
 
         if re.match(r'http://(?: nyti\.ms | [^.]*\.nytimes\.com )', url, re.MULTILINE | re.DOTALL | re.VERBOSE):
@@ -491,8 +491,6 @@ class Page(object):
             return leapfrog.poll.flickr.object_from_url(url)
         if re.match(r'http://twitpic\.com/ \w+ ', url, xms):
             return leapfrog.poll.twitter.object_from_twitpic_url(url)
-        if re.match(r'http://twitter\.com/ (?: \#!/ )? [^/]+/ status/ (\d+)', url, xms):
-            return leapfrog.poll.twitter.object_from_url(url)
         if re.match(r'http://vimeo\.com/ \d+', url, xms):
             return leapfrog.poll.vimeo.object_from_url(url)
         if re.match(r'http://mlkshk\.com/[rp]/(\w+)', url, xms):

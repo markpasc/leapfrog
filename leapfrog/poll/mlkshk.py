@@ -19,7 +19,6 @@ import httplib2
 
 from leapfrog.models import Account, Person, Media, Object, UserStream, UserReplyStream
 import leapfrog.poll.embedlam
-import leapfrog.poll.twitter
 
 
 log = logging.getLogger(__name__)

@@ -50,9 +50,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 # web service API settings
 #
 
-# create an app at http://dev.twitter.com/apps and set this setting:
-TWITTER_CONSUMER = ('consumer key', 'secret')
-
 # create an Application at http://www.typepad.com/account/access/developer and set these settings:
 TYPEPAD_APPLICATION = '6p...'  # application ID
 TYPEPAD_CONSUMER = ('consumer key', 'secret')

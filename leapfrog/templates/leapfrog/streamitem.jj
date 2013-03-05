@@ -63,15 +63,9 @@
                             {% endif %}
                             <a href="{{ object.permalink_url }}" class="permalink timestamp relativedatestamp" title="{{ object.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ object.time.strftime("%d %b %Y %H:%M") }}</a>
 
-                            {% if object.service and object.service in accounts %}
-                                {% if object.service == 'twitter.com' %}
-                                    <span class="response response-twitter" data-tweet="{{ object.foreign_id }}">
-                                        <a class="reply" href="http://twitter.com/intent/tweet?in_reply_to={{ object.foreign_id }}">Reply</a>
-                                        <a class="retweet" href="#">Retweet</a>
-                                        <a class="favorite" href="#">Favorite</a>
-                                    </span>
-                                {% endif %}
-                            {% endif %}
+                            <span class="response response-twitter" data-tweet="{{ object.foreign_id }}">
+                                <a class="reply" href="http://twitter.com/intent/tweet?in_reply_to={{ object.foreign_id }}">Reply</a>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -210,15 +204,9 @@
                     <div class="metadata pkg">
                         <a href="{{ reply.permalink_url }}" class="permalink timestamp relativedatestamp" title="{{ reply.time.strftime("%a %b %d %H:%M:%S +0000 %Y") }}">{{ reply.time.strftime("%d %b %Y %H:%M") }}</a>
 
-                        {% if reply.service and reply.service in accounts %}
-                            {% if reply.service == 'twitter.com' %}
-                                <span class="response response-twitter" data-tweet="{{ reply.foreign_id }}">
-                                    <a class="reply" href="http://twitter.com/intent/tweet?in_reply_to={{ reply.foreign_id }}">Reply</a>
-                                    <a class="retweet" href="#">Retweet</a>
-                                    <a class="favorite" href="#">Favorite</a>
-                                </span>
-                            {% endif %}
-                        {% endif %}
+                        <span class="response response-twitter" data-tweet="{{ reply.foreign_id }}">
+                            <a class="reply" href="http://twitter.com/intent/tweet?in_reply_to={{ reply.foreign_id }}">Reply</a>
+                        </span>
                     </div>
                 </div>
             </div>
